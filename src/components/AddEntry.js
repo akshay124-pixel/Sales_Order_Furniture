@@ -449,7 +449,7 @@ function AddEntry({ onSubmit, onClose }) {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:4000/api/orders",
+        "https://sales-order-furniture-server.onrender.com/api/orders",
         newEntry,
         {
           headers: {

@@ -19,7 +19,7 @@ const BillGeneration = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:4000/api/get-bill-orders",
+        "https://sales-order-furniture-server.onrender.com/api/get-bill-orders",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

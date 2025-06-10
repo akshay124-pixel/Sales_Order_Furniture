@@ -219,11 +219,14 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       if (!token) {
         throw new Error("No authentication token found. Please log in.");
       }
-      const response = await axios.get("http://localhost:4000/api/get-orders", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        "https://sales-order-furniture-server.onrender.com/api/get-orders",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       console.log("Fetched orders:", response.data); // Debug: Log raw orders
       setOrders(response.data);
     } catch (error) {
@@ -249,7 +252,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       fetchOrders();
 
       // Connect to Socket.IO server
-      const socket = io("http://localhost:4000", {
+      const socket = io("https://sales-order-furniture-server.onrender.com", {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,

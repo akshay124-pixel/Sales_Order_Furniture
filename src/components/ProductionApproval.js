@@ -20,7 +20,7 @@ const ProductionApproval = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:4000/api/production-approval-orders",
+        "https://sales-order-furniture-server.onrender.com/api/production-approval-orders",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

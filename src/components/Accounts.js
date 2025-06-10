@@ -35,7 +35,7 @@ function Accounts() {
     setError(null);
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/accounts-orders",
+        "https://sales-order-furniture-server.onrender.com/api/accounts-orders",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -238,7 +238,7 @@ function Accounts() {
       };
 
       const response = await axios.put(
-        `http://localhost:4000/api/edit/${editOrder?._id}`,
+        `https://sales-order-furniture-server.onrender.com/api/edit/${editOrder?._id}`,
         submissionData,
         {
           headers: {

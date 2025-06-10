@@ -80,7 +80,7 @@ const EditProductionApproval = ({
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `http://localhost:4000/api/edit/${entryToEdit._id}`,
+        `https://sales-order-furniture-server.onrender.com/api/edit/${entryToEdit._id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

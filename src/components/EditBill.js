@@ -52,7 +52,7 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
           : null,
       };
       const response = await axios.put(
-        `http://localhost:4000/api/edit/${entryToEdit._id}`,
+        `https://sales-order-furniture-server.onrender.com/api/edit/${entryToEdit._id}`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
