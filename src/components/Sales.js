@@ -631,16 +631,7 @@ const Row = React.memo(({ index, style, data }) => {
           content: `${gstValues}%`,
           title: gstValues,
         },
-        {
-          width: columnWidths[23],
-          content: firstProduct.brand || "-",
-          title: firstProduct.brand || "-",
-        },
-        {
-          width: columnWidths[24],
-          content: firstProduct.warranty || "-",
-          title: firstProduct.warranty || "-",
-        },
+
         {
           width: columnWidths[25],
           content: `₹${order.total?.toFixed(2) || "0.00"}`,
@@ -1760,7 +1751,6 @@ const Sales = () => {
       "installation",
       "installationStatus",
       "transporter",
-
       "dispatchFrom",
       "dispatchDate",
       "dispatchStatus",
@@ -1797,11 +1787,7 @@ const Sales = () => {
               product.spec &&
               product.spec.trim() !== "" &&
               product.gst !== undefined &&
-              product.gst.trim() !== "" &&
-              product.brand &&
-              product.brand.trim() !== "" &&
-              product.warranty &&
-              product.warranty.trim() !== ""
+              product.gst.trim() !== ""
           )
         );
       }
@@ -1914,8 +1900,7 @@ const Sales = () => {
     "Qty",
     "Unit Price",
     "GST",
-    "Brand",
-    "Warranty",
+
     "Total",
     "Payment Collected",
     "Payment Method",
