@@ -154,12 +154,59 @@ const DatePickerWrapper = styled.div`
     z-index: 1000 !important;
   }
 `;
-
 const columnWidths = [
-  80, 130, 190, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
-  300, 150, 130, 130, 100, 150, 100, 150, 150, 150, 150, 150, 130, 150, 150,
-  150, 150, 150, 150, 150, 150, 200, 150, 130, 150, 130, 130, 150, 150, 150,
-  150, 150, 150, 130, 150, 200,
+  80, // Seq No
+  130, // Order ID
+  190, // SO Date
+  150, // Customer Name
+  200, // Contact Person Name
+  150, // Contact No
+  200, // Customer Email
+  150, // SO Status
+  200, // Actions
+  150, // Alternate No
+  130, // City
+  130, // State
+  100, // Pin Code
+  150, // GST No
+  300, // Shipping Address
+  300, // Billing Address
+  250, // Product Details
+  150, // Product Type
+  100, // Size
+  100, // Spec
+  80, // Qty
+  130, // Unit Price
+  100, // GST
+  130, // Total
+  150, // Payment Collected
+  150, // Payment Method
+  130, // Payment Due
+  150, // Payment Terms
+  100, // Credit Days
+  150, // Payment Received
+  130, // Freight Charges
+  150, // Freight Status
+  130, // Actual Freight
+  150, // Install Charges Status
+  130, // Installation
+  150, // Installation Status
+  150, // Transporter
+  200, // Transporter Details
+  150, // Dispatch From
+  130, // Dispatch Date
+  150, // Dispatch Status
+  130, // Order Type
+  130, // Report
+  130, // Stock Status
+  150, // Bill Status
+  150, // Production Status
+  130, // Bill Number
+  130, // PI Number
+  150, // Sales Person
+  150, // Company
+  150, // Created By
+  200, // Remarks
 ];
 
 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
