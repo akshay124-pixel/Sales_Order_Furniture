@@ -155,63 +155,62 @@ const DatePickerWrapper = styled.div`
   }
 `;
 const columnWidths = [
-  80, // Seq No
-  130, // Order ID
-  190, // SO Date
-  150, // Customer Name
-  200, // Contact Person Name
-  150, // Contact No
-  200, // Customer Email
-  150, // SO Status
-  200, // Actions
-  150, // Alternate No
-  130, // City
-  130, // State
-  100, // Pin Code
-  150, // GST No
-  300, // Shipping Address
-  300, // Billing Address
-  250, // Product Details
-  150, // Product Type
-  100, // Size
-  100, // Spec
-  80, // Qty
-  130, // Unit Price
-  100, // GST
-  130, // Total
-  150, // Payment Collected
-  150, // Payment Method
-  130, // Payment Due
-  150, // Payment Terms
-  100, // Credit Days
-  150, // Payment Received
-  130, // Freight Charges
-  150, // Freight Status
-  130, // Actual Freight
-  150, // Install Charges Status
-  130, // Installation
-  150, // Installation Status
-  150, // Transporter
-  200, // Transporter Details
-  150, // Dispatch From
-  130, // Dispatch Date
-  150, // Dispatch Status
-  130, // Order Type
-  130, // Report
-  130, // Stock Status
-  150, // Bill Status
-  150, // Production Status
-  130, // Bill Number
-  130, // PI Number
-  150, // Sales Person
-  150, // Company
-  150, // Created By
-  200, // Remarks
+  60, // Seq No
+  120, // Order ID
+  180, // SO Date
+  140, // Customer Name
+  180, // Contact Person Name
+  130, // Contact No
+  180, // Customer Email
+  140, // SO Status
+  180, // Actions
+  130, // Alternate No
+  120, // City
+  120, // State
+  90, // Pin Code
+  140, // GST No
+  280, // Shipping Address
+  280, // Billing Address
+  240, // Product Details
+  140, // Product Type
+  90, // Size
+  90, // Spec
+  70, // Qty
+  120, // Unit Price
+  90, // GST
+  120, // Total
+  140, // Payment Collected
+  140, // Payment Method
+  120, // Payment Due
+  140, // Payment Terms
+  90, // Credit Days
+  140, // Payment Received
+  120, // Freight Charges
+  140, // Freight Status
+  120, // Actual Freight
+  140, // Install Charges Status
+  120, // Installation
+  140, // Installation Status
+  140, // Transporter
+  180, // Transporter Details
+  140, // Dispatch From
+  120, // Dispatch Date
+  140, // Dispatch Status
+  120, // Order Type
+  120, // Report
+  120, // Stock Status
+  140, // Bill Status
+  140, // Production Status
+  120, // Bill Number
+  120, // PI Number
+  140, // Sales Person
+  140, // Company
+  140, // Created By
+  180, // Remarks
 ];
 
 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
 
-// Updated CSS for perfect table alignment
 const tableStyles = `
 /* Prevent horizontal page scrolling */
 body {
@@ -242,11 +241,11 @@ body {
 
 /* Sales table */
 .sales-table {
-  width: 100%;
+  width: ${totalTableWidth}px;
   min-width: ${totalTableWidth}px;
+  max-width: ${totalTableWidth}px;
   table-layout: fixed;
   border-collapse: collapse;
-  overflow-x: hidden;
 }
 
 /* Table header */
@@ -261,10 +260,10 @@ body {
 
 /* Table header cells */
 .sales-table th {
-  padding: 10px 15px;
+  padding: 10px 8px;
   height: 50px;
-  line-height: 30px;
-  font-size: 0.95rem;
+  line-height: 1.2;
+  font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -288,9 +287,10 @@ body {
 
 /* Table body cells */
 .sales-table td {
-  padding: 10px 15px;
+  padding: 10px 8px;
   height: 50px;
-  line-height: 30px;
+  line-height: 1.2;
+  font-size: 0.9rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -303,7 +303,7 @@ body {
   font-weight: normal;
   text-align: center;
   list-style-type: none;
-  padding-left: 15px;
+  padding-left: 8px;
   position: relative;
 }
 .sales-table td.contact-person-name::before,
@@ -313,8 +313,8 @@ body {
 
 /* Badge styling */
 .sales-table .badge {
-  padding: 6px 12px;
-  font-size: 0.9rem;
+  padding: 6px 8px;
+  font-size: 0.85rem;
   display: inline-block;
   width: 100%;
   text-align: center;
@@ -328,7 +328,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 5px;
   height: 50px;
   overflow: visible;
@@ -337,9 +337,8 @@ body {
 
 /* Action buttons */
 .sales-table .actions-cell button {
-
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -350,11 +349,6 @@ body {
   z-index: 1;
 }
 
-// .sales-table .actions-cell button:hover {
-//   transform: scale(1.1);
-//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-// }
-
 /* Reserve space for scrollbar */
 .sales-table-container thead tr th:last-child {
   padding-right: 20px;
@@ -362,8 +356,9 @@ body {
 
 /* Virtualized list container */
 .list-container {
-  width: 100%;
+  width: ${totalTableWidth}px;
   min-width: ${totalTableWidth}px;
+  max-width: ${totalTableWidth}px;
 }
 `;
 
