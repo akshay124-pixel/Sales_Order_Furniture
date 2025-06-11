@@ -155,62 +155,15 @@ const DatePickerWrapper = styled.div`
   }
 `;
 const columnWidths = [
-  60, // Seq No
-  120, // Order ID
-  180, // SO Date
-  140, // Customer Name
-  180, // Contact Person Name
-  130, // Contact No
-  180, // Customer Email
-  140, // SO Status
-  180, // Actions
-  130, // Alternate No
-  120, // City
-  120, // State
-  90, // Pin Code
-  140, // GST No
-  280, // Shipping Address
-  280, // Billing Address
-  240, // Product Details
-  140, // Product Type
-  90, // Size
-  90, // Spec
-  70, // Qty
-  120, // Unit Price
-  90, // GST
-  120, // Total
-  140, // Payment Collected
-  140, // Payment Method
-  120, // Payment Due
-  140, // Payment Terms
-  90, // Credit Days
-  140, // Payment Received
-  120, // Freight Charges
-  140, // Freight Status
-  120, // Actual Freight
-  140, // Install Charges Status
-  120, // Installation
-  140, // Installation Status
-  140, // Transporter
-  180, // Transporter Details
-  140, // Dispatch From
-  120, // Dispatch Date
-  140, // Dispatch Status
-  120, // Order Type
-  120, // Report
-  120, // Stock Status
-  140, // Bill Status
-  140, // Production Status
-  120, // Bill Number
-  120, // PI Number
-  140, // Sales Person
-  140, // Company
-  140, // Created By
-  180, // Remarks
+  80, 130, 190, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
+  300, 150, 130, 130, 100, 150, 100, 130, 130, 150, 150, 150, 150, 150, 130,
+  150, 150, 150, 150, 150, 150, 150, 150, 200, 150, 130, 150, 130, 130, 150,
+  150, 150, 150, 150, 150, 150, 150, 200,
 ];
 
 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
 
+// Updated CSS for perfect table alignment
 const tableStyles = `
 /* Prevent horizontal page scrolling */
 body {
@@ -241,11 +194,11 @@ body {
 
 /* Sales table */
 .sales-table {
-  width: ${totalTableWidth}px;
+  width: 100%;
   min-width: ${totalTableWidth}px;
-  max-width: ${totalTableWidth}px;
   table-layout: fixed;
   border-collapse: collapse;
+  overflow-x: hidden;
 }
 
 /* Table header */
@@ -260,10 +213,10 @@ body {
 
 /* Table header cells */
 .sales-table th {
-  padding: 10px 8px;
+  padding: 10px 15px;
   height: 50px;
-  line-height: 1.2;
-  font-size: 0.9rem;
+  line-height: 30px;
+  font-size: 0.95rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -287,10 +240,9 @@ body {
 
 /* Table body cells */
 .sales-table td {
-  padding: 10px 8px;
+  padding: 10px 15px;
   height: 50px;
-  line-height: 1.2;
-  font-size: 0.9rem;
+  line-height: 30px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -303,7 +255,7 @@ body {
   font-weight: normal;
   text-align: center;
   list-style-type: none;
-  padding-left: 8px;
+  padding-left: 15px;
   position: relative;
 }
 .sales-table td.contact-person-name::before,
@@ -313,8 +265,8 @@ body {
 
 /* Badge styling */
 .sales-table .badge {
-  padding: 6px 8px;
-  font-size: 0.85rem;
+  padding: 6px 12px;
+  font-size: 0.9rem;
   display: inline-block;
   width: 100%;
   text-align: center;
@@ -328,7 +280,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 5px;
   height: 50px;
   overflow: visible;
@@ -337,8 +289,9 @@ body {
 
 /* Action buttons */
 .sales-table .actions-cell button {
-  width: 36px;
-  height: 36px;
+
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -349,6 +302,11 @@ body {
   z-index: 1;
 }
 
+// .sales-table .actions-cell button:hover {
+//   transform: scale(1.1);
+//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+// }
+
 /* Reserve space for scrollbar */
 .sales-table-container thead tr th:last-child {
   padding-right: 20px;
@@ -356,9 +314,8 @@ body {
 
 /* Virtualized list container */
 .list-container {
-  width: ${totalTableWidth}px;
+  width: 100%;
   min-width: ${totalTableWidth}px;
-  max-width: ${totalTableWidth}px;
 }
 `;
 
@@ -673,7 +630,16 @@ const Row = React.memo(({ index, style, data }) => {
           content: `${gstValues}%`,
           title: gstValues,
         },
-
+        {
+          width: columnWidths[23],
+          content: firstProduct.brand || "-",
+          title: firstProduct.brand || "-",
+        },
+        {
+          width: columnWidths[24],
+          content: firstProduct.warranty || "-",
+          title: firstProduct.warranty || "-",
+        },
         {
           width: columnWidths[25],
           content: `₹${order.total?.toFixed(2) || "0.00"}`,
@@ -1942,7 +1908,8 @@ const Sales = () => {
     "Qty",
     "Unit Price",
     "GST",
-
+    "Brand",
+    "Warranty",
     "Total",
     "Payment Collected",
     "Payment Method",
