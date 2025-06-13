@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Form, Button } from "react-bootstrap";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -19,7 +19,6 @@ const EditProductionApproval = ({
 
   useEffect(() => {
     if (entryToEdit) {
-      console.log("Editing order with ID:", entryToEdit._id); // Debug log
       setFormData({
         sostatus: entryToEdit.sostatus || "",
         remarksByProduction: entryToEdit.remarksByProduction || "",
@@ -39,9 +38,9 @@ const EditProductionApproval = ({
         ...prev,
         [name]: type === "checkbox" ? checked : value,
       };
-      // If stockStatus is "Not in Stock", only clear deliveryDate, keep sostatus unchanged
+
       if (name === "stockStatus" && value === "Not in Stock") {
-        newFormData.deliveryDate = ""; // Clear deliveryDate for "Not in Stock"
+        newFormData.deliveryDate = "";
       }
       return newFormData;
     });
@@ -77,41 +76,13 @@ const EditProductionApproval = ({
       return;
     }
 
-    // Validate entryToEdit._id
-    if (!entryToEdit?._id) {
-      console.error("Invalid order ID:", entryToEdit);
-      toast.error("Invalid order ID! Please try again.", {
-        position: "top-right",
-        autoClose: 5000,
-      });
-      return;
-    }
-
     try {
       const token = localStorage.getItem("token");
-      let response;
-      const baseUrl = "https://sales-order-furniture-server.onrender.com/api";
-      const endpoints = [
-        `/orders/${entryToEdit._id}`, // Primary endpoint
-        `/edit/${entryToEdit._id}`, // Fallback endpoint
-      ];
-
-      for (let i = 0; i < endpoints.length; i++) {
-        try {
-          console.log(`Trying endpoint: ${baseUrl}${endpoints[i]}`); // Debug log
-          response = await axios.patch(`${baseUrl}${endpoints[i]}`, formData, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          break; // Exit loop if successful
-        } catch (error) {
-          if (error.response?.status === 404 && i < endpoints.length - 1) {
-            console.warn(`Endpoint ${endpoints[i]} failed, trying next...`);
-            continue; // Try next endpoint
-          }
-          throw error; // Rethrow if last endpoint fails or other error
-        }
-      }
-
+      const response = await axios.put(
+        `https://sales-order-furniture-server.onrender.com/api/edit/${entryToEdit._id}`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       console.log("Updated order:", response.data.data);
       onEntryUpdated(response.data.data); // Pass updated order to parent
       toast.success("Verification order updated successfully!", {
@@ -121,11 +92,7 @@ const EditProductionApproval = ({
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
-      const errorMessage =
-        error.response?.status === 404
-          ? `Order not found for ID ${entryToEdit._id}! Please check if the order exists in the database.`
-          : error.response?.data?.message || "Failed to update order!";
-      toast.error(errorMessage, {
+      toast.error(error.response?.data?.message || "Failed to update order!", {
         position: "top-right",
         autoClose: 5000,
       });
