@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button, Form, Badge } from "react-bootstrap";
 import { FaEye } from "react-icons/fa";
+import { io } from "socket.io-client"; // Socket.IO client import
 import ViewEntry from "./ViewEntry";
 import EditProductionApproval from "./EditProductionApproval";
 import axios from "axios";
@@ -15,6 +16,36 @@ const ProductionApproval = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [productMatchCount, setProductMatchCount] = useState(0);
+
+  // Socket.IO integration for real-time updates
+  useEffect(() => {
+    const socket = io("https://sales-order-furniture-server.onrender.com", {
+      auth: { token: localStorage.getItem("token") },
+    });
+
+    socket.on("connect", () => {
+      console.log("Socket.IO se connect ho gaya!");
+    });
+
+    socket.on("updateOrder", ({ _id, customername, orderId, notification }) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === _id
+            ? { ...order, ...notification, customername, orderId }
+            : order
+        )
+      );
+      toast.info(`Order ${orderId} updated: ${notification.message}`);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Socket.IO se disconnect ho gaya!");
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -44,7 +75,6 @@ const ProductionApproval = () => {
 
     if (searchLower) {
       filtered = filtered.filter((order) => {
-        // Combine order fields for searching
         const orderFields = [
           order.orderId,
           order.customername,
@@ -52,6 +82,7 @@ const ProductionApproval = () => {
           order.creditDays,
           order.remarksByProduction,
           order.sostatus,
+          order.stockStatus, // Added stockStatus for search
           order.deliveryDate
             ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
             : "",
@@ -59,7 +90,6 @@ const ProductionApproval = () => {
           .filter(Boolean)
           .map((field) => String(field).toLowerCase());
 
-        // Combine product fields
         const productFields = (order.products || []).map((p) =>
           [
             p.productType,
@@ -78,10 +108,8 @@ const ProductionApproval = () => {
 
         const allFields = [...orderFields, ...productFields].join(" ");
 
-        // Check if search term matches any field
         const matchesFields = allFields.includes(searchLower);
 
-        // Check for matching products to count quantity
         const matchingProducts = (order.products || []).filter((p) =>
           p.productType?.toLowerCase().includes(searchLower)
         );
@@ -104,7 +132,6 @@ const ProductionApproval = () => {
       );
     }
 
-    // Sort in descending order by soDate to show newest orders first
     filtered.sort((a, b) => {
       const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
       const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
@@ -131,12 +158,9 @@ const ProductionApproval = () => {
 
   const handleEntryUpdated = (updatedOrder) => {
     setOrders((prevOrders) =>
-      prevOrders
-        .map((order) => (order._id === updatedOrder._id ? updatedOrder : order))
-        .filter(
-          (order) =>
-            order.paymentTerms === "Credit" && order.sostatus !== "Approved"
-        )
+      prevOrders.map((order) =>
+        order._id === updatedOrder._id ? updatedOrder : order
+      )
     );
     setIsEditModalOpen(false);
     toast.success("Order updated successfully!");
@@ -156,6 +180,7 @@ const ProductionApproval = () => {
         ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
         : "-",
       Remarks: order.remarksByProduction || "-",
+      "Stock Status": order.stockStatus || "-", // Added stockStatus to export
     }));
 
     const ws = XLSX.utils.json_to_sheet(tableData);
@@ -402,7 +427,7 @@ const ProductionApproval = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="8"
+                    colSpan="9"
                     style={{
                       padding: "20px",
                       textAlign: "center",
