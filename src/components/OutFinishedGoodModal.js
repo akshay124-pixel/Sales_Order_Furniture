@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Input, Select } from "antd";
+import { Modal, Button, Input, Select, Collapse } from "antd";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const { Option } = Select;
+const { Panel } = Collapse;
 
 const OutFinishedGoodModal = ({
   visible,
@@ -21,10 +22,12 @@ const OutFinishedGoodModal = ({
     docketNo: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
+    products: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+
   useEffect(() => {
     console.log("entryToEdit:", JSON.stringify(entryToEdit, null, 2));
     console.log("billStatus:", entryToEdit?.billStatus);
@@ -41,9 +44,16 @@ const OutFinishedGoodModal = ({
         ? "Not Dispatched"
         : dispatchStatus;
 
-      console.log("isBillingComplete:", isBillingComplete);
-      console.log("dispatchStatus:", dispatchStatus);
-      console.log("validDispatchStatus:", validDispatchStatus);
+      // Initialize products with all fields
+      const products =
+        entryToEdit.products?.map((product) => ({
+          productType: product.productType || "",
+          serialNos: product.serialNos || [],
+          modelNos: product.modelNos || [],
+          unitPrice: product.unitPrice || "",
+          size: product.size || "N/A",
+          spec: product.spec || "N/A",
+        })) || [];
 
       setFormData({
         dispatchFrom: initialData.dispatchFrom || "",
@@ -56,6 +66,7 @@ const OutFinishedGoodModal = ({
         docketNo: initialData.docketNo || "",
         actualFreight: initialData.actualFreight || "",
         dispatchStatus: validDispatchStatus,
+        products,
       });
     }
   }, [initialData, entryToEdit]);
@@ -71,6 +82,27 @@ const OutFinishedGoodModal = ({
     }
   };
 
+  const handleProductChange = (index, field, value) => {
+    setFormData((prev) => {
+      const updatedProducts = [...prev.products];
+      if (["serialNos", "modelNos"].includes(field)) {
+        updatedProducts[index] = {
+          ...updatedProducts[index],
+          [field]: value
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+        };
+      } else {
+        updatedProducts[index] = {
+          ...updatedProducts[index],
+          [field]: value,
+        };
+      }
+      return { ...prev, products: updatedProducts };
+    });
+  };
+
   const handleDispatchFromChange = (value) => {
     setFormData((prev) => ({ ...prev, dispatchFrom: value }));
   };
@@ -81,6 +113,24 @@ const OutFinishedGoodModal = ({
 
   const handleDispatchStatusChange = (value) => {
     setFormData((prev) => ({ ...prev, dispatchStatus: value }));
+  };
+
+  const handleAddProduct = () => {
+    setFormData((prev) => ({
+      ...prev,
+      products: [
+        ...prev.products,
+        {
+          productType: "",
+          serialNos: [],
+          modelNos: [],
+          unitPrice: "",
+
+          size: "N/A", // Default size
+          spec: "N/A", // Default spec
+        },
+      ],
+    }));
   };
 
   const handleSubmit = async () => {
@@ -95,6 +145,23 @@ const OutFinishedGoodModal = ({
         );
         toast.error("Billing Status must be Billing Complete!");
         return;
+      }
+      // Validate product fields when dispatchFrom is not Morinda
+      if (formData.dispatchFrom !== "Morinda") {
+        for (const product of formData.products) {
+          if (
+            !product.productType ||
+            !product.serialNos.length ||
+            !product.modelNos.length ||
+            !product.unitPrice ||
+            !product.size ||
+            !product.spec
+          ) {
+            setError("All product fields are required!");
+            toast.error("Please fill all product details!");
+            return;
+          }
+        }
       }
       setShowConfirm(true);
       return;
@@ -116,6 +183,16 @@ const OutFinishedGoodModal = ({
             ? Number(formData.actualFreight)
             : undefined,
         dispatchStatus: formData.dispatchStatus,
+        products: formData.products.map((product) => ({
+          productType: product.productType,
+          serialNos: product.serialNos,
+          modelNos: product.modelNos,
+          unitPrice: Number(product.unitPrice) || undefined,
+          amount: Number(product.amount) || undefined,
+
+          size: product.size, // Include size
+          spec: product.spec, // Include spec
+        })),
       };
 
       const response = await axios.put(
@@ -158,6 +235,8 @@ const OutFinishedGoodModal = ({
   };
 
   const isBillingComplete = entryToEdit?.billStatus === "Billing Complete";
+  const showProductFields =
+    formData.dispatchFrom && formData.dispatchFrom !== "Morinda";
 
   return (
     <Modal
@@ -333,6 +412,218 @@ const OutFinishedGoodModal = ({
             )}
           </Select>
         </div>
+        {showProductFields && (
+          <div>
+            <Button
+              style={{
+                width: "100%",
+                borderRadius: "8px",
+                padding: "10px",
+                fontSize: "1rem",
+                fontWeight: "600",
+                color: "black",
+                border: "none",
+                marginBottom: "15px",
+              }}
+              onClick={handleAddProduct}
+            >
+              Add Product
+            </Button>
+            <Collapse
+              accordion
+              style={{ background: "#f9f9f9", borderRadius: "8px" }}
+            >
+              <Panel
+                header="Product Details"
+                key="1"
+                style={{ fontWeight: "600", fontSize: "1rem" }}
+              >
+                {formData.products.map((product, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      border: "1px solid #e8e8e8",
+                      padding: "15px",
+                      borderRadius: "8px",
+                      marginBottom: "15px",
+                    }}
+                  >
+                    <div>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Product Type
+                      </label>
+                      <Input
+                        placeholder="Enter product type"
+                        value={product.productType}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "productType",
+                            e.target.value
+                          )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Serial Numbers
+                      </label>
+                      <Input
+                        placeholder="Enter serial numbers (comma-separated)"
+                        value={product.serialNos.join(", ")}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "serialNos",
+                            e.target.value
+                          )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Model Numbers
+                      </label>
+                      <Input
+                        placeholder="Enter model numbers (comma-separated)"
+                        value={product.modelNos.join(", ")}
+                        onChange={(e) =>
+                          handleProductChange(index, "modelNos", e.target.value)
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Unit Price
+                      </label>
+                      <Input
+                        placeholder="Enter unit price"
+                        type="number"
+                        value={product.unitPrice}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "unitPrice",
+                            e.target.value
+                          )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Size
+                      </label>
+                      <Input
+                        placeholder="Enter size"
+                        value={product.size}
+                        onChange={(e) =>
+                          handleProductChange(index, "size", e.target.value)
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Specification
+                      </label>
+                      <Input
+                        placeholder="Enter specification"
+                        value={product.spec}
+                        onChange={(e) =>
+                          handleProductChange(index, "spec", e.target.value)
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </Panel>
+            </Collapse>
+          </div>
+        )}
         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
           <Button
             onClick={onClose}
