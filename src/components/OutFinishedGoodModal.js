@@ -48,7 +48,6 @@ const OutFinishedGoodModal = ({
       const products =
         entryToEdit.products?.map((product) => ({
           productType: product.productType || "",
-
           modelNos: product.modelNos || [],
           unitPrice: product.unitPrice || "",
           size: product.size || "N/A",
@@ -85,7 +84,7 @@ const OutFinishedGoodModal = ({
   const handleProductChange = (index, field, value) => {
     setFormData((prev) => {
       const updatedProducts = [...prev.products];
-      if (["serialNos", "modelNos"].includes(field)) {
+      if (field === "modelNos") {
         updatedProducts[index] = {
           ...updatedProducts[index],
           [field]: value
@@ -122,12 +121,10 @@ const OutFinishedGoodModal = ({
         ...prev.products,
         {
           productType: "",
-
           modelNos: [],
           unitPrice: "",
-
-          size: "N/A", // Default size
-          spec: "N/A", // Default spec
+          size: "N/A",
+          spec: "N/A",
         },
       ],
     }));
@@ -151,7 +148,6 @@ const OutFinishedGoodModal = ({
         for (const product of formData.products) {
           if (
             !product.productType ||
-            !product.serialNos.length ||
             !product.modelNos.length ||
             !product.unitPrice ||
             !product.size ||
@@ -185,13 +181,10 @@ const OutFinishedGoodModal = ({
         dispatchStatus: formData.dispatchStatus,
         products: formData.products.map((product) => ({
           productType: product.productType,
-
           modelNos: product.modelNos,
           unitPrice: Number(product.unitPrice) || undefined,
-          amount: Number(product.amount) || undefined,
-
-          size: product.size, // Include size
-          spec: product.spec, // Include spec
+          size: product.size,
+          spec: product.spec,
         })),
       };
 
@@ -478,7 +471,6 @@ const OutFinishedGoodModal = ({
                         disabled={loading}
                       />
                     </div>
-
                     <div style={{ marginTop: "10px" }}>
                       <label
                         style={{
@@ -536,7 +528,6 @@ const OutFinishedGoodModal = ({
                         disabled={loading}
                       />
                     </div>
-
                     <div style={{ marginTop: "10px" }}>
                       <label
                         style={{
