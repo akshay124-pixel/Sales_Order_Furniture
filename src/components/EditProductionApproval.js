@@ -19,6 +19,7 @@ const EditProductionApproval = ({
 
   useEffect(() => {
     if (entryToEdit) {
+      console.log("Editing order with ID:", entryToEdit._id); // Debug log
       setFormData({
         sostatus: entryToEdit.sostatus || "",
         remarksByProduction: entryToEdit.remarksByProduction || "",
@@ -78,7 +79,8 @@ const EditProductionApproval = ({
 
     // Validate entryToEdit._id
     if (!entryToEdit?._id) {
-      toast.error("Invalid order ID!", {
+      console.error("Invalid order ID:", entryToEdit);
+      toast.error("Invalid order ID! Please try again.", {
         position: "top-right",
         autoClose: 5000,
       });
@@ -88,24 +90,25 @@ const EditProductionApproval = ({
     try {
       const token = localStorage.getItem("token");
       let response;
-      try {
-        // First try /api/orders/:id
-        response = await axios.patch(
-          `https://sales-order-furniture-server.onrender.com/api/orders/${entryToEdit._id}`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } catch (error) {
-        if (error.response?.status === 404) {
-          // Fallback to /api/edit/:id
-          console.warn("Trying fallback URL /api/edit/:id");
-          response = await axios.patch(
-            `https://sales-order-furniture-server.onrender.com/api/edit/${entryToEdit._id}`,
-            formData,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-        } else {
-          throw error;
+      const baseUrl = "https://sales-order-furniture-server.onrender.com/api";
+      const endpoints = [
+        `/orders/${entryToEdit._id}`, // Primary endpoint
+        `/edit/${entryToEdit._id}`, // Fallback endpoint
+      ];
+
+      for (let i = 0; i < endpoints.length; i++) {
+        try {
+          console.log(`Trying endpoint: ${baseUrl}${endpoints[i]}`); // Debug log
+          response = await axios.patch(`${baseUrl}${endpoints[i]}`, formData, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          break; // Exit loop if successful
+        } catch (error) {
+          if (error.response?.status === 404 && i < endpoints.length - 1) {
+            console.warn(`Endpoint ${endpoints[i]} failed, trying next...`);
+            continue; // Try next endpoint
+          }
+          throw error; // Rethrow if last endpoint fails or other error
         }
       }
 
@@ -120,7 +123,7 @@ const EditProductionApproval = ({
       console.error("Error updating verification order:", error);
       const errorMessage =
         error.response?.status === 404
-          ? "Order not found! Please check if the order exists."
+          ? `Order not found for ID ${entryToEdit._id}! Please check if the order exists in the database.`
           : error.response?.data?.message || "Failed to update order!";
       toast.error(errorMessage, {
         position: "top-right",
