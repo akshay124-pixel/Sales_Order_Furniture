@@ -76,13 +76,39 @@ const EditProductionApproval = ({
       return;
     }
 
+    // Validate entryToEdit._id
+    if (!entryToEdit?._id) {
+      toast.error("Invalid order ID!", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.patch(
-        `https://sales-order-furniture-server.onrender.com/api/orders/${entryToEdit._id}`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      let response;
+      try {
+        // First try /api/orders/:id
+        response = await axios.patch(
+          `https://sales-order-furniture-server.onrender.com/api/orders/${entryToEdit._id}`,
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (error) {
+        if (error.response?.status === 404) {
+          // Fallback to /api/edit/:id
+          console.warn("Trying fallback URL /api/edit/:id");
+          response = await axios.patch(
+            `https://sales-order-furniture-server.onrender.com/api/edit/${entryToEdit._id}`,
+            formData,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } else {
+          throw error;
+        }
+      }
+
       console.log("Updated order:", response.data.data);
       onEntryUpdated(response.data.data); // Pass updated order to parent
       toast.success("Verification order updated successfully!", {
@@ -92,7 +118,11 @@ const EditProductionApproval = ({
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
-      toast.error(error.response?.data?.message || "Failed to update order!", {
+      const errorMessage =
+        error.response?.status === 404
+          ? "Order not found! Please check if the order exists."
+          : error.response?.data?.message || "Failed to update order!";
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 5000,
       });
