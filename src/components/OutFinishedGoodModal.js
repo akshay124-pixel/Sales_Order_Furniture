@@ -48,7 +48,7 @@ const OutFinishedGoodModal = ({
       const products =
         entryToEdit.products?.map((product) => ({
           productType: product.productType || "",
-          serialNos: product.serialNos || [],
+
           modelNos: product.modelNos || [],
           unitPrice: product.unitPrice || "",
           size: product.size || "N/A",
@@ -122,7 +122,7 @@ const OutFinishedGoodModal = ({
         ...prev.products,
         {
           productType: "",
-          serialNos: [],
+
           modelNos: [],
           unitPrice: "",
 
@@ -185,7 +185,7 @@ const OutFinishedGoodModal = ({
         dispatchStatus: formData.dispatchStatus,
         products: formData.products.map((product) => ({
           productType: product.productType,
-          serialNos: product.serialNos,
+
           modelNos: product.modelNos,
           unitPrice: Number(product.unitPrice) || undefined,
           amount: Number(product.amount) || undefined,
@@ -478,36 +478,7 @@ const OutFinishedGoodModal = ({
                         disabled={loading}
                       />
                     </div>
-                    <div style={{ marginTop: "10px" }}>
-                      <label
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: "600",
-                          color: "#333",
-                          marginBottom: "5px",
-                          display: "block",
-                        }}
-                      >
-                        Serial Numbers
-                      </label>
-                      <Input
-                        placeholder="Enter serial numbers (comma-separated)"
-                        value={product.serialNos.join(", ")}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "serialNos",
-                            e.target.value
-                          )
-                        }
-                        style={{
-                          borderRadius: "8px",
-                          padding: "10px",
-                          fontSize: "1rem",
-                        }}
-                        disabled={loading}
-                      />
-                    </div>
+
                     <div style={{ marginTop: "10px" }}>
                       <label
                         style={{
