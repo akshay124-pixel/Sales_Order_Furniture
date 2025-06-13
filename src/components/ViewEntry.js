@@ -565,12 +565,7 @@ Created By: ${
                         <div>
                           <strong>Warranty:</strong> {product.warranty || "N/A"}
                         </div>
-                        <div>
-                          <strong>Serial Nos:</strong>{" "}
-                          {product.serialNos?.length > 0
-                            ? product.serialNos.join(", ")
-                            : "N/A"}
-                        </div>
+
                         <div>
                           <strong>Model Nos:</strong>{" "}
                           {product.modelNos?.length > 0
