@@ -114,21 +114,21 @@ const OutFinishedGoodModal = ({
     setFormData((prev) => ({ ...prev, dispatchStatus: value }));
   };
 
-  const handleAddProduct = () => {
-    setFormData((prev) => ({
-      ...prev,
-      products: [
-        ...prev.products,
-        {
-          productType: "",
-          modelNos: [],
-          unitPrice: "",
-          size: "N/A",
-          spec: "N/A",
-        },
-      ],
-    }));
-  };
+  // const handleAddProduct = () => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     products: [
+  //       ...prev.products,
+  //       {
+  //         productType: "",
+  //         modelNos: [],
+  //         unitPrice: "",
+  //         size: "N/A",
+  //         spec: "N/A",
+  //       },
+  //     ],
+  //   }));
+  // };
 
   const handleSubmit = async () => {
     if (!showConfirm) {
@@ -407,21 +407,6 @@ const OutFinishedGoodModal = ({
         </div>
         {showProductFields && (
           <div>
-            <Button
-              style={{
-                width: "100%",
-                borderRadius: "8px",
-                padding: "10px",
-                fontSize: "1rem",
-                fontWeight: "600",
-                color: "black",
-                border: "none",
-                marginBottom: "15px",
-              }}
-              onClick={handleAddProduct}
-            >
-              Add Product
-            </Button>
             <Collapse
               accordion
               style={{ background: "#f9f9f9", borderRadius: "8px" }}
