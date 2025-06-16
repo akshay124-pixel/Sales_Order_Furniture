@@ -313,7 +313,7 @@ const OutFinishedGoodModal = ({
           },
           {
             key: "remarksByDispatch",
-            label: "Remarks by Dispatch",
+            label: "Dispatch Remarks",
             type: "text",
           },
         ].map((field) => (
