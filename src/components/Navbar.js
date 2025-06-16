@@ -237,7 +237,7 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
               />
             </svg>
           </button>{" "}
-          <h3 style={{ fontWeight: "bold" }}>( Furniture )</h3>
+          <h4 style={{ fontWeight: "bold" }}>( Furniture )</h4>
         </div>
 
         <div
