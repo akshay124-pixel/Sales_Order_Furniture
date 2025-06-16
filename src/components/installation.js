@@ -1061,12 +1061,12 @@ function Installation() {
                     </Badge>
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Remarks By Installation:</strong>{" "}
+                    <strong>Remarks By Dispatch team:</strong>{" "}
                     {viewOrder.remarksByInstallation || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Dispatch Status:</strong>{" "}
-                    {viewOrder.dispatchStatus || "N/A"}
+                    {viewOrder.remarksBydispatch || "N/A"}
                   </span>
                 </div>
               </div>

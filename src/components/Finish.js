@@ -355,6 +355,7 @@ function Finish() {
         ? new Date(order.receiptDate).toISOString().split("T")[0]
         : "",
       dispatchStatus: order.dispatchStatus || "Not Dispatched",
+      remarksBydispatch: order.remarksBydispatch || "",
       _id: order._id,
     });
     setIsModalOpen(true);
@@ -485,6 +486,7 @@ function Finish() {
       "Freight Status": order.freightstatus || "To Pay",
       "Product Status": order.fulfillingStatus || "N/A",
       "Dispatch Status": order.dispatchStatus || "Not Dispatched",
+      "Dispatch Remarks": order.remarksBydispatch || "Dispatch Remarks",
     }));
 
     const ws = XLSX.utils.json_to_sheet(tableData);
