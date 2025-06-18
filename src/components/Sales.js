@@ -154,12 +154,11 @@ const DatePickerWrapper = styled.div`
     z-index: 1000 !important;
   }
 `;
-
 const columnWidths = [
   80, 130, 190, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
-  300, 150, 130, 130, 100, 150, 100, 130, 150, 150, 150, 150, 150, 130, 150,
-  150, 150, 150, 150, 150, 150, 150, 200, 150, 130, 150, 130, 130, 150, 150,
-  150, 150, 150, 150, 150, 150, 200,
+  300, 150, 130, 130, 100, 150, 100, 130, 130, 150, 150, 150, 150, 150, 130,
+  150, 150, 150, 150, 150, 150, 150, 150, 200, 150, 130, 150, 130, 130, 150,
+  150, 150, 150, 150, 150, 150, 150, 200,
 ];
 
 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
@@ -631,7 +630,11 @@ const Row = React.memo(({ index, style, data }) => {
           content: `${gstValues}%`,
           title: gstValues,
         },
-
+        {
+          width: columnWidths[23],
+          content: firstProduct.brand || "-",
+          title: firstProduct.brand || "-",
+        },
         {
           width: columnWidths[24],
           content: firstProduct.warranty || "-",
@@ -1735,11 +1738,11 @@ const Sales = () => {
       "contactNo",
       "customerEmail",
       "sostatus",
-      "alterno",
+
       "city",
       "state",
       "pinCode",
-      "gstno",
+
       "shippingAddress",
       "billingAddress",
       "products", // We'll check products separately
@@ -1748,7 +1751,6 @@ const Sales = () => {
       "paymentMethod",
       "paymentDue",
       "paymentTerms",
-      "creditDays",
       "paymentReceived",
       "freightcs",
       "freightstatus",
@@ -1757,7 +1759,6 @@ const Sales = () => {
       "installation",
       "installationStatus",
       "transporter",
-      "transporterDetails",
       "dispatchFrom",
       "dispatchDate",
       "dispatchStatus",
@@ -1794,11 +1795,7 @@ const Sales = () => {
               product.spec &&
               product.spec.trim() !== "" &&
               product.gst !== undefined &&
-              product.gst.trim() !== "" &&
-              product.brand &&
-              product.brand.trim() !== "" &&
-              product.warranty &&
-              product.warranty.trim() !== ""
+              product.gst.trim() !== ""
           )
         );
       }
@@ -1911,7 +1908,7 @@ const Sales = () => {
     "Qty",
     "Unit Price",
     "GST",
-
+    "Brand",
     "Warranty",
     "Total",
     "Payment Collected",
