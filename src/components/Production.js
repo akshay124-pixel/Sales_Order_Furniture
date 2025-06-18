@@ -232,9 +232,6 @@ const Production = () => {
           productDetails.toLowerCase().includes(query) ||
           (firstProduct.size || "").toLowerCase().includes(query) ||
           (firstProduct.spec || "").toLowerCase().includes(query) ||
-          (firstProduct.serialNos?.join(", ") || "")
-            .toLowerCase()
-            .includes(query) ||
           (firstProduct.modelNos?.join(", ") || "")
             .toLowerCase()
             .includes(query) ||
@@ -291,9 +288,7 @@ const Production = () => {
     const products = Array.isArray(order.products) ? order.products : [];
     const productUnits = products.flatMap((product, productIndex) => {
       const qty = product.qty || 1;
-      const serialNos = Array.isArray(product.serialNos)
-        ? product.serialNos
-        : [];
+
       const modelNos = Array.isArray(product.modelNos) ? product.modelNos : [];
       return Array.from({ length: qty }, (_, unitIndex) => ({
         productIndex,
@@ -301,7 +296,7 @@ const Production = () => {
         size: product.size || "N/A",
         spec: product.spec || "N/A",
         unitPrice: product.unitPrice || 0,
-        serialNo: serialNos[unitIndex] || "",
+
         modelNo: modelNos[unitIndex] || "",
       }));
     });
@@ -330,7 +325,7 @@ const Production = () => {
         size,
         spec,
         unitPrice,
-        serialNo,
+
         modelNo,
       } = unit;
       if (!acc[productIndex]) {
@@ -340,12 +335,12 @@ const Production = () => {
           spec,
           unitPrice,
           qty: 0,
-          serialNos: [],
+
           modelNos: [],
         };
       }
       acc[productIndex].qty += 1;
-      acc[productIndex].serialNos.push(serialNo || null);
+
       acc[productIndex].modelNos.push(modelNo || null);
       return acc;
     }, {});
@@ -415,8 +410,6 @@ const Production = () => {
                 p.qty || "N/A"
               }, Size: ${p.size || "N/A"}, Spec: ${
                 p.spec || "N/A"
-              }, Serial Nos: ${
-                p.serialNos.length > 0 ? p.serialNos.join(", ") : "N/A"
               }, Model Nos: ${
                 p.modelNos.length > 0 ? p.modelNos.join(", ") : "N/A"
               })`
@@ -470,10 +463,7 @@ const Production = () => {
         "Product Details": productDetails,
         Size: firstProduct.size || "N/A",
         Spec: firstProduct.spec || "N/A",
-        "Serial Nos":
-          firstProduct.serialNos?.length > 0
-            ? firstProduct.serialNos.join(", ")
-            : "N/A",
+
         "Model Nos":
           firstProduct.modelNos?.length > 0
             ? firstProduct.modelNos.join(", ")
@@ -981,7 +971,7 @@ const Production = () => {
                         "Product Details",
                         "Size",
                         "Spec",
-                        "Serial Nos",
+
                         "Model Nos",
                         "Remarks",
                         "Production Status",
@@ -1240,30 +1230,7 @@ const Production = () => {
                           >
                             {firstProduct.spec || "N/A"}
                           </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={
-                              firstProduct.serialNos?.length > 0
-                                ? firstProduct.serialNos.join(", ")
-                                : "N/A"
-                            }
-                          >
-                            {firstProduct.serialNos?.length > 0
-                              ? firstProduct.serialNos.join(", ")
-                              : "N/A"}
-                          </td>
+
                           <td
                             style={{
                               padding: "15px",
