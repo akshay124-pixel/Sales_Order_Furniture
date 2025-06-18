@@ -1214,9 +1214,25 @@ const Sales = () => {
         });
       }
 
-      filtered = filtered.sort(
-        (a, b) => new Date(b.soDate) - new Date(a.soDate)
-      );
+      iltered = filtered.sort((a, b) => {
+        // Get timestamps for sorting
+        const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+        const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+        const aCreatedAt = a.createdAt ? Date.parse(a.createdAt) : 0;
+        const bCreatedAt = b.createdAt ? Date.parse(b.createdAt) : 0;
+        const aSoDate = a.soDate ? Date.parse(a.soDate) : 0;
+        const bSoDate = b.soDate ? Date.parse(b.soDate) : 0;
+
+        if (aUpdatedAt !== bUpdatedAt) {
+          return bUpdatedAt - aUpdatedAt;
+        }
+
+        if (aCreatedAt !== bCreatedAt) {
+          return bCreatedAt - aCreatedAt;
+        }
+
+        return bSoDate - aSoDate;
+      });
 
       setFilteredOrders(filtered);
     },
