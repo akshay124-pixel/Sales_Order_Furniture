@@ -154,6 +154,7 @@ const DatePickerWrapper = styled.div`
     z-index: 1000 !important;
   }
 `;
+
 const columnWidths = [
   80, 130, 190, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
   300, 150, 130, 130, 100, 150, 100, 130, 150, 150, 150, 150, 150, 130, 150,
@@ -1165,7 +1166,7 @@ const Sales = () => {
               p.size,
               p.spec,
               p.gst,
-
+              p.serialNos?.join(", "),
               p.modelNos?.join(", "),
               String(p.qty),
               String(p.unitPrice),
@@ -1450,7 +1451,12 @@ const Sales = () => {
                     spec: String(entry.spec || "N/A").trim(),
                     qty: Number(entry.qty) || 1,
                     unitPrice: Number(entry.unitprice) || 0,
-
+                    serialNos: entry.serialnos
+                      ? String(entry.serialnos)
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      : [],
                     modelNos: entry.modelnos
                       ? String(entry.modelnos)
                           .split(",")
@@ -1469,7 +1475,12 @@ const Sales = () => {
                   spec: String(entry.spec || "N/A").trim(),
                   qty: Number(entry.qty) || 1,
                   unitPrice: Number(entry.unitprice) || 0,
-
+                  serialNos: entry.serialnos
+                    ? String(entry.serialnos)
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                    : [],
                   modelNos: entry.modelnos
                     ? String(entry.modelnos)
                         .split(",")
@@ -1647,7 +1658,7 @@ const Sales = () => {
         "Customer Email": order.customerEmail || "-",
         "Order Type": order.orderType || "-",
         "Model Nos": order.products?.[0]?.modelNos?.join(", ") || "-",
-
+        "Serial Nos": order.products?.[0]?.serialNos?.join(", ") || "-",
         "Product Type": order.products?.[0]?.productType || "-",
         Size: order.products?.[0]?.size || "-",
         Spec: order.products?.[0]?.spec || "-",
@@ -1724,11 +1735,11 @@ const Sales = () => {
       "contactNo",
       "customerEmail",
       "sostatus",
-
+      "alterno",
       "city",
       "state",
       "pinCode",
-
+      "gstno",
       "shippingAddress",
       "billingAddress",
       "products", // We'll check products separately
@@ -1737,6 +1748,7 @@ const Sales = () => {
       "paymentMethod",
       "paymentDue",
       "paymentTerms",
+      "creditDays",
       "paymentReceived",
       "freightcs",
       "freightstatus",
@@ -1745,6 +1757,7 @@ const Sales = () => {
       "installation",
       "installationStatus",
       "transporter",
+      "transporterDetails",
       "dispatchFrom",
       "dispatchDate",
       "dispatchStatus",
@@ -1781,7 +1794,11 @@ const Sales = () => {
               product.spec &&
               product.spec.trim() !== "" &&
               product.gst !== undefined &&
-              product.gst.trim() !== ""
+              product.gst.trim() !== "" &&
+              product.brand &&
+              product.brand.trim() !== "" &&
+              product.warranty &&
+              product.warranty.trim() !== ""
           )
         );
       }
