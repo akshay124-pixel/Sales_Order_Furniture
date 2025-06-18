@@ -632,8 +632,8 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[23],
-          content: firstProduct.brand || "-",
-          title: firstProduct.brand || "-",
+          content: firstProduct.brand || "Promark",
+          title: firstProduct.brand || "Promark",
         },
         {
           width: columnWidths[24],
