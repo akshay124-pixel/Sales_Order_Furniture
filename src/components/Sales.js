@@ -1729,56 +1729,33 @@ const Sales = () => {
   }, [filteredOrders, formatCurrency]);
 
   const isOrderComplete = useCallback((order) => {
-    // List of fields corresponding to table headers
+    // Essential fields required for an order to be complete
     const requiredFields = [
       "orderId",
       "soDate",
       "customername",
-      "name",
       "contactNo",
-      "customerEmail",
       "sostatus",
-
-      "city",
-      "state",
-      "pinCode",
-
+      "total",
+      "products",
+      "createdBy",
       "shippingAddress",
       "billingAddress",
-      "products", // We'll check products separately
-      "total",
-      "paymentCollected",
-      "paymentMethod",
-      "paymentDue",
-      "paymentTerms",
-      "paymentReceived",
-      "freightcs",
-      "freightstatus",
-      "actualFreight",
-      "installchargesstatus",
-      "installation",
-      "installationStatus",
-      "transporter",
-      "dispatchFrom",
-      "dispatchDate",
-      "dispatchStatus",
-      "orderType",
-      "report",
-      "stockStatus",
       "billStatus",
-      "fulfillingStatus",
-      "billNumber",
-      "piNumber",
-      "salesPerson",
-      "company",
-      "createdBy",
-      "remarks",
+      "dispatchStatus",
     ];
 
-    // Check if all required fields are filled
+    // Check if all required fields are present and valid
     const areFieldsComplete = requiredFields.every((field) => {
       const value = order[field];
+
+      // Handle undefined or null fields
+      if (value === undefined || value === null) {
+        return false;
+      }
+
       if (field === "products") {
+        // Validate products: all products must have essential fields
         return (
           Array.isArray(value) &&
           value.length > 0 &&
@@ -1787,41 +1764,106 @@ const Sales = () => {
               product.productType &&
               product.productType.trim() !== "" &&
               product.qty !== undefined &&
-              product.qty > 0 &&
+              product.qty >= 0 &&
               product.unitPrice !== undefined &&
               product.unitPrice >= 0 &&
+              product.gst !== undefined &&
+              product.gst.trim() !== "" &&
               product.size &&
               product.size.trim() !== "" &&
               product.spec &&
-              product.spec.trim() !== "" &&
-              product.gst !== undefined &&
-              product.gst.trim() !== ""
+              product.spec.trim() !== ""
           )
         );
       }
+
       if (field === "createdBy") {
+        // Handle createdBy as string or object
         return (
-          value &&
-          (typeof value === "string"
-            ? value.trim() !== ""
-            : value.username && value.username.trim() !== "")
+          (typeof value === "string" && value.trim() !== "") ||
+          (typeof value === "object" &&
+            value !== null &&
+            value.username &&
+            value.username.trim() !== "")
         );
       }
+
+      if (field === "total") {
+        // Allow total to be 0
+        return typeof value === "number" && value >= 0;
+      }
+
+      if (field === "sostatus") {
+        // Require specific status values
+        return ["Approved", "Accounts Approved"].includes(value);
+      }
+
+      if (field === "billStatus") {
+        // Require billing to be complete
+        return value === "Billing Complete";
+      }
+
+      if (field === "dispatchStatus") {
+        // Require dispatch to be delivered
+        return value === "Delivered";
+      }
+
+      // For other fields, ensure they are non-empty strings
+      return typeof value === "string" ? value.trim() !== "" : true;
+    });
+
+    // Optional fields that can be empty or undefined
+    const optionalFields = [
+      "name",
+      "customerEmail",
+      "city",
+      "state",
+      "pinCode",
+      "actualFreight",
+      "installchargesstatus",
+      "installation",
+      "installationStatus",
+      "transporter",
+      "transporterDetails",
+      "dispatchFrom",
+      "dispatchDate",
+      "orderType",
+      "report",
+      "stockStatus",
+      "fulfillingStatus",
+      "salesPerson",
+      "company",
+      "remarks",
+      "paymentCollected",
+      "paymentMethod",
+      "paymentDue",
+      "paymentTerms",
+      "creditDays",
+      "paymentReceived",
+      "freightcs",
+      "freightstatus",
+      "billNumber",
+      "piNumber",
+      "docketNo",
+      "invoiceNo",
+      "invoiceDate",
+    ];
+
+    // Ensure optional fields, if present, are valid
+    const areOptionalFieldsValid = optionalFields.every((field) => {
+      const value = order[field];
+      // Allow undefined, null, empty strings, or valid values
       return (
-        value !== undefined &&
-        value !== null &&
-        (value !== "" || value === 0 || value === "N/A" || value === false)
+        value === undefined ||
+        value === null ||
+        value === "" ||
+        value === "N/A" ||
+        (typeof value === "string" && value.trim() !== "") ||
+        (typeof value === "number" && value >= 0)
       );
     });
 
-    return areFieldsComplete;
-  }, []);
-
-  const isBillingComplete = useCallback((order) => {
-    return (
-      order.billStatus === "Completed" ||
-      (order.invoiceNo && order.invoiceDate && order.billNumber)
-    );
+    return areFieldsComplete && areOptionalFieldsValid;
   }, []);
 
   const formatTimestamp = useCallback((timestamp) => {
