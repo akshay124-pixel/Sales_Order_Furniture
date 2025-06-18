@@ -1165,7 +1165,7 @@ const Sales = () => {
               p.size,
               p.spec,
               p.gst,
-              p.serialNos?.join(", "),
+
               p.modelNos?.join(", "),
               String(p.qty),
               String(p.unitPrice),
@@ -1450,12 +1450,7 @@ const Sales = () => {
                     spec: String(entry.spec || "N/A").trim(),
                     qty: Number(entry.qty) || 1,
                     unitPrice: Number(entry.unitprice) || 0,
-                    serialNos: entry.serialnos
-                      ? String(entry.serialnos)
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter(Boolean)
-                      : [],
+
                     modelNos: entry.modelnos
                       ? String(entry.modelnos)
                           .split(",")
@@ -1474,12 +1469,7 @@ const Sales = () => {
                   spec: String(entry.spec || "N/A").trim(),
                   qty: Number(entry.qty) || 1,
                   unitPrice: Number(entry.unitprice) || 0,
-                  serialNos: entry.serialnos
-                    ? String(entry.serialnos)
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean)
-                    : [],
+
                   modelNos: entry.modelnos
                     ? String(entry.modelnos)
                         .split(",")
@@ -1657,7 +1647,7 @@ const Sales = () => {
         "Customer Email": order.customerEmail || "-",
         "Order Type": order.orderType || "-",
         "Model Nos": order.products?.[0]?.modelNos?.join(", ") || "-",
-        "Serial Nos": order.products?.[0]?.serialNos?.join(", ") || "-",
+
         "Product Type": order.products?.[0]?.productType || "-",
         Size: order.products?.[0]?.size || "-",
         Spec: order.products?.[0]?.spec || "-",
