@@ -909,6 +909,7 @@ export const orderTypeOptions = [
   "Replacement",
   "Stock Out",
 ];
+
 export const companyOptions = [
   "Promark",
   "Foxmate",
