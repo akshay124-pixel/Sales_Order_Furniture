@@ -1214,7 +1214,7 @@ const Sales = () => {
         });
       }
 
-      iltered = filtered.sort((a, b) => {
+      filtered = filtered.sort((a, b) => {
         // Get timestamps for sorting
         const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
         const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
