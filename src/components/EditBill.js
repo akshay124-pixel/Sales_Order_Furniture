@@ -29,16 +29,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
     setErrors((prev) => ({ ...prev, invoiceDate: "" }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.billNumber || formData.billNumber.trim() === "") {
-      newErrors.billNumber = "Bill Number is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
