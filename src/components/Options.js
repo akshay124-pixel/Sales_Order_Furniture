@@ -909,7 +909,13 @@ export const orderTypeOptions = [
   "Replacement",
   "Stock Out",
 ];
-export const companyOptions = ["Promark", "Foxmate", "Promine", "Primus"];
+export const companyOptions = [
+  "Promark",
+  "Foxmate",
+  "Promine",
+  "Primus",
+  "Lead Systems Incorporatio",
+];
 
 export const paymentMethodOptions = ["Cash", "NEFT", "RTGS", "Cheque"];
 export const paymentTermsOptions = [

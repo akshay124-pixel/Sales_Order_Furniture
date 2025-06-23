@@ -363,6 +363,12 @@ const OutFinishedGoodModal = ({
             disabled={loading}
           >
             <Option value="">Select Transporter</Option>
+            <Option value="Jai Shiv Shakti">Jai Shiv Shakti</Option>
+            <Option value="G S Transport">G S Transport</Option>
+            <Option value="New Chandigarh Rajdhani">
+              New Chandigarh Rajdhani
+            </Option>
+            <Option value="Kurali LCV">Kurali LCV</Option>
             <Option value="BlueDart">BlueDart</Option>
             <Option value="Om Logistics">Om Logistics</Option>
             <Option value="Rivigo">Rivigo</Option>
