@@ -31,7 +31,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
 
     try {
       const token = localStorage.getItem("token");
