@@ -429,7 +429,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       };
 
       const response = await axios.put(
-        `https://sales-order-furniture-server.onrender.com/api/edit/${entryToEdit._id}`,
+        `https://sales-order-furniture-server-4ucn.onrender.com/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
@@ -473,7 +473,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       };
 
       const response = await axios.put(
-        `https://sales-order-furniture-server.onrender.com/api/edit/${entryToEdit._id}`,
+        `https://sales-order-furniture-server-4ucn.onrender.com/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
