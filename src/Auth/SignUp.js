@@ -38,7 +38,7 @@ function Signup() {
 
     try {
       const response = await axios.post(
-        "https://sales-order-furniture-server.onrender.com/user/signup",
+        "https://sales-order-furniture-server-4ucn.onrender.com/user/signup",
         form
       );
 
