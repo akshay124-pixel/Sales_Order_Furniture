@@ -195,14 +195,14 @@ function Signup() {
               required
             >
               <option value="Sales">Sales</option>
-              <option value="Production">Production</option>
+              {/* <option value="Production">Production</option>
               <option value="Finish">Finish</option>
               <option value="Installation">Installation</option>
               <option value="Accounts">Accounts</option>
               <option value="Admin">Admin</option>
               <option value="Verification">Verification</option>
               <option value="Bill">Bill</option>
-              <option value="ProductionApproval">Production Approval</option>
+              <option value="ProductionApproval">Production Approval</option> */}
             </select>
           </div>
           <button
