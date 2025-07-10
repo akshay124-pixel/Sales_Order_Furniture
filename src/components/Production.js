@@ -296,7 +296,7 @@ const Production = () => {
         size: product.size || "N/A",
         spec: product.spec || "N/A",
         unitPrice: product.unitPrice || 0,
-
+        gst: product.gst || "0", // Add gst
         modelNo: modelNos[unitIndex] || "",
       }));
     });
@@ -325,7 +325,7 @@ const Production = () => {
         size,
         spec,
         unitPrice,
-
+        gst, // Add gst
         modelNo,
       } = unit;
       if (!acc[productIndex]) {
@@ -335,12 +335,11 @@ const Production = () => {
           spec,
           unitPrice,
           qty: 0,
-
+          gst, // Add gst
           modelNos: [],
         };
       }
       acc[productIndex].qty += 1;
-
       acc[productIndex].modelNos.push(modelNo || null);
       return acc;
     }, {});
@@ -358,7 +357,6 @@ const Production = () => {
       if (response.data.success) {
         setOrders((prevOrders) => {
           if (response.data.data.fulfillingStatus === "Fulfilled") {
-            // Remove the order if its status is Fulfilled
             const updatedOrders = prevOrders.filter(
               (order) => order._id !== editOrder._id
             );
@@ -368,7 +366,6 @@ const Production = () => {
               return dateB - dateA;
             });
           } else {
-            // Update the order in place if not Fulfilled
             const updatedOrders = prevOrders.map((order) =>
               order._id === editOrder._id ? response.data.data : order
             );

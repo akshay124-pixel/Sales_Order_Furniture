@@ -45,12 +45,13 @@ const OutFinishedGoodModal = ({
         ? "Not Dispatched"
         : dispatchStatus;
 
-      // Initialize products with all fields
       const products =
         entryToEdit.products?.map((product) => ({
           productType: product.productType || "",
           modelNos: product.modelNos || [],
           unitPrice: product.unitPrice || "",
+          qty: product.qty || 0,
+          gst: product.gst || "0",
           size: product.size || "N/A",
           spec: product.spec || "N/A",
         })) || [];
@@ -94,6 +95,16 @@ const OutFinishedGoodModal = ({
             .map((item) => item.trim())
             .filter(Boolean),
         };
+      } else if (field === "qty" || field === "unitPrice") {
+        updatedProducts[index] = {
+          ...updatedProducts[index],
+          [field]:
+            value === ""
+              ? ""
+              : Number(value) >= 0
+              ? value
+              : updatedProducts[index][field],
+        };
       } else {
         updatedProducts[index] = {
           ...updatedProducts[index],
@@ -103,7 +114,6 @@ const OutFinishedGoodModal = ({
       return { ...prev, products: updatedProducts };
     });
   };
-
   const handleDispatchFromChange = (value) => {
     setFormData((prev) => ({ ...prev, dispatchFrom: value }));
   };
@@ -145,18 +155,34 @@ const OutFinishedGoodModal = ({
         toast.error("Billing Status must be Billing Complete!");
         return;
       }
-      // Validate product fields when dispatchFrom is not Morinda
       if (formData.dispatchFrom !== "Morinda") {
         for (const product of formData.products) {
           if (
             !product.productType ||
             !product.modelNos.length ||
             !product.unitPrice ||
+            !product.qty ||
+            !product.gst ||
             !product.size ||
             !product.spec
           ) {
             setError("All product fields are required!");
             toast.error("Please fill all product details!");
+            return;
+          }
+          if (Number(product.qty) <= 0 || Number(product.unitPrice) < 0) {
+            setError(
+              "Quantity must be positive and Unit Price must be non-negative!"
+            );
+            toast.error("Invalid quantity or unit price!");
+            return;
+          }
+          if (
+            product.gst !== "including" &&
+            (isNaN(Number(product.gst)) || Number(product.gst) < 0)
+          ) {
+            setError("GST must be 'including' or a non-negative number!");
+            toast.error("Invalid GST value!");
             return;
           }
         }
@@ -186,6 +212,8 @@ const OutFinishedGoodModal = ({
           productType: product.productType,
           modelNos: product.modelNos,
           unitPrice: Number(product.unitPrice) || undefined,
+          qty: Number(product.qty) || undefined,
+          gst: product.gst || undefined,
           size: product.size,
           spec: product.spec,
         })),
@@ -506,6 +534,33 @@ const OutFinishedGoodModal = ({
                           display: "block",
                         }}
                       >
+                        Quantity
+                      </label>
+                      <Input
+                        placeholder="Enter quantity"
+                        type="number"
+                        value={product.qty}
+                        onChange={(e) =>
+                          handleProductChange(index, "qty", e.target.value)
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
                         Unit Price
                       </label>
                       <Input
@@ -518,6 +573,32 @@ const OutFinishedGoodModal = ({
                             "unitPrice",
                             e.target.value
                           )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        GST
+                      </label>
+                      <Input
+                        placeholder="Enter GST (e.g., 18 or 'including')"
+                        value={product.gst}
+                        onChange={(e) =>
+                          handleProductChange(index, "gst", e.target.value)
                         }
                         style={{
                           borderRadius: "8px",

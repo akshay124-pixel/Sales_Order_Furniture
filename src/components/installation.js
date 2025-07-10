@@ -1062,11 +1062,11 @@ function Installation() {
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Remarks By Dispatch team:</strong>{" "}
-                    {viewOrder.remarksByInstallation || "N/A"}
+                    {viewOrder.remarksBydispatch || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Dispatch Status:</strong>{" "}
-                    {viewOrder.remarksBydispatch || "N/A"}
+                    {viewOrder.dispatchStatus || "N/A"}
                   </span>
                 </div>
               </div>
@@ -1121,20 +1121,7 @@ function Installation() {
                       <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Spec:</strong> {product.spec || "N/A"}
                       </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Serial Nos:</strong>
-                        <div className="serial-nos-container">
-                          {product.serialNos && product.serialNos.length > 0 ? (
-                            <ul>
-                              {product.serialNos.map((serial, idx) => (
-                                <li key={idx}>{serial}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            "N/A"
-                          )}
-                        </div>
-                      </span>
+
                       <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Model Nos:</strong>{" "}
                         {product.modelNos?.[0] || "N/A"}
