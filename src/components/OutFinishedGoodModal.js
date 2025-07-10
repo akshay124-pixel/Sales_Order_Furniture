@@ -22,7 +22,7 @@ const OutFinishedGoodModal = ({
     docketNo: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
-    remarksByDispatch: "",
+    remarksBydispatch: "",
     products: [],
   });
   const [loading, setLoading] = useState(false);
@@ -67,7 +67,7 @@ const OutFinishedGoodModal = ({
         docketNo: initialData.docketNo || "",
         actualFreight: initialData.actualFreight || "",
         dispatchStatus: validDispatchStatus,
-        remarksByDispatch: initialData.remarksByDispatch || "",
+        remarksBydispatch: initialData.remarksBydispatch || "",
         products,
       });
     }
@@ -207,7 +207,7 @@ const OutFinishedGoodModal = ({
             ? Number(formData.actualFreight)
             : undefined,
         dispatchStatus: formData.dispatchStatus,
-        remarksByDispatch: formData.remarksByDispatch || undefined,
+        remarksBydispatch: formData.remarksBydispatch || undefined,
         products: formData.products.map((product) => ({
           productType: product.productType,
           modelNos: product.modelNos,
@@ -340,7 +340,7 @@ const OutFinishedGoodModal = ({
             type: "text",
           },
           {
-            key: "remarksByDispatch",
+            key: "remarksBydispatch",
             label: "Dispatch Remarks",
             type: "text",
           },

@@ -888,6 +888,10 @@ Created By: ${
                   {entry.remarksByInstallation || "N/A"}
                 </div>
                 <div>
+                  <strong>Remarks (Dispatch):</strong>{" "}
+                  {entry.remarksBydispatch || "N/A"}
+                </div>
+                <div>
                   <strong>Company:</strong>{" "}
                   <Badge
                     bg={
