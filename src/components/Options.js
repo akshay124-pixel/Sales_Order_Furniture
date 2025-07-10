@@ -241,6 +241,7 @@ export const statesAndCities = {
   ],
   Jharkhand: [
     "Ranchi",
+    "Koderma",
     "Jamshedpur",
     "Dhanbad",
     "Bokaro",
