@@ -656,6 +656,7 @@ export const statesAndCities = {
     "Agra",
     "Aligarh",
     "Ambedkar Nagar",
+    "Aurangabad",
     "Amethi",
     "Amroha",
     "Auraiya",
