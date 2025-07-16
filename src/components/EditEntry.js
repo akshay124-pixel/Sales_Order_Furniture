@@ -1747,15 +1747,36 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         </Form.Group>
         {/* Products Section */}
         <div>
-          <Form.Label>📦 Products *</Form.Label>
+          <h3
+            style={{
+              fontSize: "1.5rem",
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              fontWeight: "700",
+              marginBottom: "1.5rem",
+              letterSpacing: "1px",
+              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
+            }}
+          >
+            ✨ Products
+          </h3>
           {products.map((product, index) => {
             const selectedProductType = watch(`products.${index}.productType`);
-            const availableSizes = selectedProductType
-              ? productOptions[selectedProductType]?.sizes || ["N/A"]
-              : ["N/A"];
-            const availableSpecs = selectedProductType
-              ? productOptions[selectedProductType]?.specs || ["N/A"]
-              : ["N/A"];
+            const isOthers =
+              selectedProductType === "Others" ||
+              (selectedProductType &&
+                !Object.keys(productOptions).includes(selectedProductType));
+            const availableSizes = isOthers
+              ? []
+              : selectedProductType
+              ? productOptions[selectedProductType]?.sizes || []
+              : [];
+            const availableSpecs = isOthers
+              ? []
+              : selectedProductType
+              ? productOptions[selectedProductType]?.specs || []
+              : [];
 
             return (
               <ProductContainer key={index}>
@@ -1771,238 +1792,577 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                     </StyledButton>
                   )}
                 </ProductHeader>
-                <Form.Group controlId={`products.${index}.productType`}>
-                  <Form.Label>📦 Product Type *</Form.Label>
-                  <Controller
-                    name={`products.${index}.productType`}
-                    control={control}
-                    rules={{ required: "Product Type is required" }}
-                    render={({ field }) => (
-                      <Form.Select
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
+                <div
+                  className="product-grid"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "1.5rem",
+                    marginBottom: "1.5rem",
+                  }}
+                >
+                  <div style={{ gridColumn: "1 / 2" }}>
+                    <Form.Group controlId={`products.${index}.productType`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
+                      >
+                        Product Type <span style={{ color: "#f43f5e" }}>*</span>
+                      </Form.Label>
+                      <Controller
+                        name={`products.${index}.productType`}
+                        control={control}
+                        rules={{ required: "Product Type is required" }}
+                        render={({ field }) => (
+                          <Form.Select
+                            {...field}
+                            value={
+                              field.value &&
+                              !Object.keys(productOptions).includes(field.value)
+                                ? "Others"
+                                : field.value
+                            }
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              debouncedHandleInputChange(
+                                `products.${index}.productType`,
+                                e.target.value,
+                                index
+                              );
+                              setValue(`products.${index}.size`, "");
+                              setValue(`products.${index}.spec`, "");
+                              setValue(`products.${index}.brand`, "");
+                              setValue(`products.${index}.warranty`, "");
+                              setValue(`products.${index}.modelNos`, "");
+                            }}
+                            isInvalid={!!errors.products?.[index]?.productType}
+                            style={{
+                              width: "100%",
+                              padding: "0.75rem",
+                              border: "1px solid #e2e8f0",
+                              borderRadius: "0.75rem",
+                              backgroundColor: "#f8fafc",
+                              fontSize: "1rem",
+                              color: "#1e293b",
+                            }}
+                          >
+                            <option value="">Select Product Type</option>
+                            {[...Object.keys(productOptions), "Others"].map(
+                              (type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              )
+                            )}
+                          </Form.Select>
+                        )}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.productType?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    {isOthers && (
+                      <Form.Group
+                        controlId={`products.${index}.customProductType`}
+                        style={{ marginTop: "1rem" }}
+                      >
+                        <Form.Label
+                          style={{
+                            fontSize: "1rem",
+                            fontWeight: "600",
+                            color: "#475569",
+                            marginBottom: "0.5rem",
+                            display: "block",
+                          }}
+                        >
+                          Custom Product
+                        </Form.Label>
+                        <Form.Control
+                          {...register(`products.${index}.productType`, {
+                            required: isOthers
+                              ? "Custom Product Type is required"
+                              : false,
+                          })}
+                          value={
+                            isOthers &&
+                            !Object.keys(productOptions).includes(
+                              watch(`products.${index}.productType`)
+                            )
+                              ? watch(`products.${index}.productType`)
+                              : ""
+                          }
+                          onChange={(e) => {
+                            setValue(
+                              `products.${index}.productType`,
+                              e.target.value
+                            );
+                            debouncedHandleInputChange(
+                              `products.${index}.productType`,
+                              e.target.value,
+                              index
+                            );
+                          }}
+                          isInvalid={!!errors.products?.[index]?.productType}
+                          placeholder="Enter Custom Product Type"
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "0.75rem",
+                            backgroundColor: "#f8fafc",
+                            fontSize: "1rem",
+                            color: "#1e293b",
+                          }}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.products?.[index]?.productType?.message}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    )}
+                  </div>
+                  <div style={{ gridColumn: "2 / 3" }}>
+                    <Form.Group controlId={`products.${index}.size`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
+                      >
+                        Size
+                      </Form.Label>
+                      {isOthers ? (
+                        <Form.Control
+                          {...register(`products.${index}.size`)}
+                          onChange={(e) =>
+                            debouncedHandleInputChange(
+                              `products.${index}.size`,
+                              e.target.value,
+                              index
+                            )
+                          }
+                          isInvalid={!!errors.products?.[index]?.size}
+                          placeholder="Enter Size"
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "0.75rem",
+                            backgroundColor: "#f8fafc",
+                            fontSize: "1rem",
+                            color: "#1e293b",
+                          }}
+                        />
+                      ) : (
+                        <Controller
+                          name={`products.${index}.size`}
+                          control={control}
+                          render={({ field }) => (
+                            <Form.Select
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                debouncedHandleInputChange(
+                                  `products.${index}.size`,
+                                  e.target.value,
+                                  index
+                                );
+                              }}
+                              isInvalid={!!errors.products?.[index]?.size}
+                              disabled={!selectedProductType}
+                              style={{
+                                width: "100%",
+                                padding: "0.75rem",
+                                border: "1px solid #e2e8f0",
+                                borderRadius: "0.75rem",
+                                backgroundColor: !selectedProductType
+                                  ? "#e5e7eb"
+                                  : "#f8fafc",
+                                fontSize: "1rem",
+                                color: "#1e293b",
+                              }}
+                            >
+                              <option value="">Select Size</option>
+                              {availableSizes.map((size) => (
+                                <option key={size} value={size}>
+                                  {size}
+                                </option>
+                              ))}
+                            </Form.Select>
+                          )}
+                        />
+                      )}
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.size?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div style={{ gridColumn: "3 / 4" }}>
+                    <Form.Group controlId={`products.${index}.spec`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
+                      >
+                        Specification
+                      </Form.Label>
+                      {isOthers ? (
+                        <Form.Control
+                          {...register(`products.${index}.spec`)}
+                          onChange={(e) =>
+                            debouncedHandleInputChange(
+                              `products.${index}.spec`,
+                              e.target.value,
+                              index
+                            )
+                          }
+                          isInvalid={!!errors.products?.[index]?.spec}
+                          placeholder="Enter Specification"
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "0.75rem",
+                            backgroundColor: "#f8fafc",
+                            fontSize: "1rem",
+                            color: "#1e293b",
+                          }}
+                        />
+                      ) : (
+                        <Controller
+                          name={`products.${index}.spec`}
+                          control={control}
+                          render={({ field }) => (
+                            <Form.Select
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                debouncedHandleInputChange(
+                                  `products.${index}.spec`,
+                                  e.target.value,
+                                  index
+                                );
+                              }}
+                              isInvalid={!!errors.products?.[index]?.spec}
+                              disabled={!selectedProductType}
+                              style={{
+                                width: "100%",
+                                padding: "0.75rem",
+                                border: "1px solid #e2e8f0",
+                                borderRadius: "0.75rem",
+                                backgroundColor: !selectedProductType
+                                  ? "#e5e7eb"
+                                  : "#f8fafc",
+                                fontSize: "1rem",
+                                color: "#1e293b",
+                              }}
+                            >
+                              <option value="">Select Specification</option>
+                              {availableSpecs.map((spec) => (
+                                <option key={spec} value={spec}>
+                                  {spec}
+                                </option>
+                              ))}
+                            </Form.Select>
+                          )}
+                        />
+                      )}
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.spec?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div style={{ gridColumn: "1 / 2" }}>
+                    <Form.Group controlId={`products.${index}.qty`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
+                      >
+                        Quantity * <span style={{ color: "#f43f5e" }}>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="number"
+                        {...register(`products.${index}.qty`, {
+                          required: "Quantity is required",
+                          min: {
+                            value: 1,
+                            message: "Quantity must be at least 1",
+                          },
+                        })}
+                        onChange={(e) =>
                           debouncedHandleInputChange(
-                            `products.${index}.productType`,
+                            `products.${index}.qty`,
                             e.target.value,
                             index
-                          );
-                          // Reset size and spec when product type changes
-                          setValue(`products.${index}.size`, "N/A");
-                          setValue(`products.${index}.spec`, "N/A");
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.qty}
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "0.75rem",
+                          backgroundColor: "#f8fafc",
+                          fontSize: "1rem",
+                          color: "#1e293b",
                         }}
-                        isInvalid={!!errors.products?.[index]?.productType}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.qty?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div style={{ gridColumn: "2 / 3" }}>
+                    <Form.Group controlId={`products.${index}.unitPrice`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
                       >
-                        <option value="">-- Select Product Type --</option>
-                        {Object.keys(productOptions).map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    )}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.products?.[index]?.productType?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.size`}>
-                  <Form.Label>📏 Size</Form.Label>
-                  <Controller
-                    name={`products.${index}.size`}
-                    control={control}
-                    render={({ field }) => (
-                      <Form.Select
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
+                        Unit Price * <span style={{ color: "#f43f5e" }}>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="number"
+                        step="0.01"
+                        {...register(`products.${index}.unitPrice`, {
+                          required: "Unit Price is required",
+                          min: {
+                            value: 0,
+                            message: "Unit Price cannot be negative",
+                          },
+                        })}
+                        onChange={(e) =>
                           debouncedHandleInputChange(
-                            `products.${index}.size`,
+                            `products.${index}.unitPrice`,
                             e.target.value,
                             index
-                          );
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.unitPrice}
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "0.75rem",
+                          backgroundColor: "#f8fafc",
+                          fontSize: "1rem",
+                          color: "#1e293b",
                         }}
-                        isInvalid={!!errors.products?.[index]?.size}
-                        disabled={!selectedProductType}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.unitPrice?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div style={{ gridColumn: "3 / 4" }}>
+                    <Form.Group controlId={`products.${index}.gst`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
                       >
-                        <option value="N/A">N/A</option>
-                        {availableSizes.map((size) => (
-                          <option key={size} value={size}>
-                            {size}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    )}
-                  />
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.spec`}>
-                  <Form.Label>📋 Specification</Form.Label>
-                  <Controller
-                    name={`products.${index}.spec`}
-                    control={control}
-                    render={({ field }) => (
+                        GST * <span style={{ color: "#f43f5e" }}>*</span>
+                      </Form.Label>
                       <Form.Select
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
+                        {...register(`products.${index}.gst`, {
+                          required: "GST is required",
+                        })}
+                        onChange={(e) =>
                           debouncedHandleInputChange(
-                            `products.${index}.spec`,
+                            `products.${index}.gst`,
                             e.target.value,
                             index
-                          );
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.gst}
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "0.75rem",
+                          backgroundColor: "#f8fafc",
+                          fontSize: "1rem",
+                          color: "#1e293b",
                         }}
-                        isInvalid={!!errors.products?.[index]?.spec}
-                        disabled={!selectedProductType}
                       >
-                        <option value="N/A">N/A</option>
-                        {availableSpecs.map((spec) => (
-                          <option key={spec} value={spec}>
-                            {spec}
-                          </option>
-                        ))}
+                        <option value="18">18%</option>
+                        <option value="28">28%</option>
+                        <option value="including">Including</option>
                       </Form.Select>
-                    )}
-                  />
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.qty`}>
-                  <Form.Label>🔢 Quantity *</Form.Label>
-                  <Form.Control
-                    type="number"
-                    {...register(`products.${index}.qty`, {
-                      required: "Quantity is required",
-                      min: {
-                        value: 1,
-                        message: "Quantity must be at least 1",
-                      },
-                    })}
-                    onChange={(e) =>
-                      debouncedHandleInputChange(
-                        `products.${index}.qty`,
-                        e.target.value,
-                        index
-                      )
-                    }
-                    isInvalid={!!errors.products?.[index]?.qty}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.products?.[index]?.qty?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.unitPrice`}>
-                  <Form.Label>💰 Unit Price *</Form.Label>
-                  <Form.Control
-                    type="number"
-                    step="0.01"
-                    {...register(`products.${index}.unitPrice`, {
-                      required: "Unit Price is required",
-                      min: {
-                        value: 0,
-                        message: "Unit Price cannot be negative",
-                      },
-                    })}
-                    onChange={(e) =>
-                      debouncedHandleInputChange(
-                        `products.${index}.unitPrice`,
-                        e.target.value,
-                        index
-                      )
-                    }
-                    isInvalid={!!errors.products?.[index]?.unitPrice}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.products?.[index]?.unitPrice?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.gst`}>
-                  <Form.Label>📊 GST</Form.Label>
-                  <Form.Select
-                    {...register(`products.${index}.gst`)}
-                    onChange={(e) =>
-                      debouncedHandleInputChange(
-                        `products.${index}.gst`,
-                        e.target.value,
-                        index
-                      )
-                    }
-                    isInvalid={!!errors.products?.[index]?.gst}
-                  >
-                    <option value="18">18%</option>
-                    <option value="28">28%</option>
-                    <option value="including">Including</option>
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.products?.[index]?.gst?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.brand`}>
-                  <Form.Label>🏷️ Brand</Form.Label>
-                  <Form.Control
-                    {...register(`products.${index}.brand`)}
-                    onChange={(e) =>
-                      debouncedHandleInputChange(
-                        `products.${index}.brand`,
-                        e.target.value,
-                        index
-                      )
-                    }
-                    isInvalid={!!errors.products?.[index]?.brand}
-                    placeholder="e.g., Samsung, Dell"
-                  />
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.warranty`}>
-                  <Form.Label>🛡️ Warranty</Form.Label>
-                  <Form.Control
-                    {...register(`products.${index}.warranty`)}
-                    onChange={(e) =>
-                      debouncedHandleInputChange(
-                        `products.${index}.warranty`,
-                        e.target.value,
-                        index
-                      )
-                    }
-                    isInvalid={!!errors.products?.[index]?.warranty}
-                    placeholder="e.g., 1 Year, 2 Years"
-                  />
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.serialNos`}>
-                  <Form.Label>🔢 Serial Nos (comma-separated)</Form.Label>
-                  <Form.Control
-                    {...register(`products.${index}.serialNos`)}
-                    onChange={(e) =>
-                      debouncedHandleInputChange(
-                        `products.${index}.serialNos`,
-                        e.target.value,
-                        index
-                      )
-                    }
-                    isInvalid={!!errors.products?.[index]?.serialNos}
-                    placeholder="e.g., SN1, SN2, SN3"
-                  />
-                </Form.Group>
-                <Form.Group controlId={`products.${index}.modelNos`}>
-                  <Form.Label>🔢 Model Nos (comma-separated)</Form.Label>
-                  <Form.Control
-                    {...register(`products.${index}.modelNos`)}
-                    onChange={(e) =>
-                      debouncedHandleInputChange(
-                        `products.${index}.modelNos`,
-                        e.target.value,
-                        index
-                      )
-                    }
-                    isInvalid={!!errors.products?.[index]?.modelNos}
-                    placeholder="e.g., MN1, MN2, MN3"
-                  />
-                </Form.Group>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.gst?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div style={{ gridColumn: "1 / 2" }}>
+                    <Form.Group controlId={`products.${index}.brand`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
+                      >
+                        Brand
+                      </Form.Label>
+                      <Form.Control
+                        {...register(`products.${index}.brand`)}
+                        onChange={(e) =>
+                          debouncedHandleInputChange(
+                            `products.${index}.brand`,
+                            e.target.value,
+                            index
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.brand}
+                        placeholder="Enter brand"
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "0.75rem",
+                          backgroundColor: "#f8fafc",
+                          fontSize: "1rem",
+                          color: "#1e293b",
+                        }}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.brand?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div style={{ gridColumn: "2 / 3" }}>
+                    <Form.Group controlId={`products.${index}.warranty`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
+                      >
+                        Warranty
+                      </Form.Label>
+                      <Form.Control
+                        {...register(`products.${index}.warranty`)}
+                        onChange={(e) =>
+                          debouncedHandleInputChange(
+                            `products.${index}.warranty`,
+                            e.target.value,
+                            index
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.warranty}
+                        placeholder="Enter warranty"
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "0.75rem",
+                          backgroundColor: "#f8fafc",
+                          fontSize: "1rem",
+                          color: "#1e293b",
+                        }}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.warranty?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div style={{ gridColumn: "3 / 4" }}>
+                    <Form.Group controlId={`products.${index}.modelNos`}>
+                      <Form.Label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                          display: "block",
+                        }}
+                      >
+                        Model Nos
+                      </Form.Label>
+                      <Form.Control
+                        {...register(`products.${index}.modelNos`)}
+                        onChange={(e) =>
+                          debouncedHandleInputChange(
+                            `products.${index}.modelNos`,
+                            e.target.value,
+                            index
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.modelNos}
+                        placeholder="Enter model numbers (e.g., MN1, MN2, MN3)"
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "0.75rem",
+                          backgroundColor: "#f8fafc",
+                          fontSize: "1rem",
+                          color: "#1e293b",
+                        }}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.modelNos?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                </div>
               </ProductContainer>
             );
           })}
           <StyledButton
             variant="primary"
             onClick={addProduct}
-            style={{ marginTop: "10px" }}
+            style={{
+              padding: "0.75rem 1.5rem",
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "0.75rem",
+              cursor: "pointer",
+              fontWeight: "600",
+              letterSpacing: "0.5px",
+              transition: "all 0.3s ease",
+            }}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 6px 16px rgba(101, 86, 231, 0.5)")
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 4px 12px rgba(101, 86, 231, 0.3)")
+            }
           >
-            Add Product
+            Add Product ➕
           </StyledButton>
         </div>
         <Form.Group controlId="total">
