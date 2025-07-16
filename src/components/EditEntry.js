@@ -1852,13 +1852,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             }}
                           >
                             <option value="">Select Product Type</option>
-                            {[...Object.keys(productOptions), "Others"].map(
-                              (type) => (
-                                <option key={type} value={type}>
-                                  {type}
-                                </option>
-                              )
-                            )}
+                            {[...Object.keys(productOptions)].map((type) => (
+                              <option key={type} value={type}>
+                                {type}
+                              </option>
+                            ))}
                           </Form.Select>
                         )}
                       />
@@ -2353,16 +2351,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               letterSpacing: "0.5px",
               transition: "all 0.3s ease",
             }}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.boxShadow =
-                "0 6px 16px rgba(101, 86, 231, 0.5)")
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.boxShadow =
-                "0 4px 12px rgba(101, 86, 231, 0.3)")
-            }
           >
-            Add Product ➕
+            Add ➕
           </StyledButton>
         </div>
         <Form.Group controlId="total">
