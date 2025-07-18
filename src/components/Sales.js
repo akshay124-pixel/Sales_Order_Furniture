@@ -1012,11 +1012,14 @@ const Sales = () => {
   }, []);
 
   useEffect(() => {
-    const socket = io("https://sales-order-furniture-server-4ucn.onrender.com", {
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
+    const socket = io(
+      "https://sales-order-furniture-server-4ucn.onrender.com",
+      {
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      }
+    );
 
     socket.on("connect", () => {
       console.log("Socket.IO connected:", socket.id);
@@ -1541,7 +1544,7 @@ const Sales = () => {
               orderType: String(entry.ordertype || "B2C").trim(),
               gemOrderNumber: String(entry.gemordernumber || "").trim(),
               deliveryDate: parseExcelDate(entry.deliverydate) || "",
-              installation: String(entry.installation || "N/A").trim(),
+              installation: String(entry.installation || "0").trim(),
               installationStatus: String(
                 entry.installationstatus || "Pending"
               ).trim(),
