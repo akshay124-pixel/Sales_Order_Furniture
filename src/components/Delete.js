@@ -29,7 +29,7 @@ function DeleteModal({ isOpen, onClose, onDelete, itemId }) {
 
       // Single delete request
       const response = await axios.delete(
-        `https://sales-order-furniture-server-4ucn.onrender.com/api/delete/${itemId}`,
+        `https://sales-order-furniture-server-1169.onrender.com/api/delete/${itemId}`,
         config
       );
 
