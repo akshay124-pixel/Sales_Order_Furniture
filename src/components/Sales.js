@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { FaEye, FaBell } from "react-icons/fa";
-import { Button, Badge, OverlayTrigger, Popover } from "react-bootstrap";
-import DatePicker from "react-datepicker";
+import { Button, Badge, Popover } from "react-bootstrap";
+
 import FilterSection from "./FilterSection";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
@@ -154,13 +154,59 @@ const DatePickerWrapper = styled.div`
     z-index: 1000 !important;
   }
 `;
+// Updated columnWidths array (removed Credit Days width: 100)
 const columnWidths = [
-  80, 130, 190, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
-  300, 150, 130, 130, 100, 150, 100, 130, 130, 150, 150, 150, 150, 150, 130,
-  150, 150, 150, 150, 150, 150, 150, 150, 200, 150, 130, 150, 130, 130, 150,
-  150, 150, 150, 150, 150, 150, 150, 200,
+  60, // Seq No
+  120, // Order ID
+  160, // SO Date
+  180, // Customer Name
+  180, // Contact Person Name
+  140, // Contact No
+  200, // Customer Email
+  140, // SO Status
+  150, // Actions
+  120, // Alternate No
+  120, // City
+  120, // State
+  100, // Pin Code
+  140, // GST No
+  250, // Shipping Address
+  250, // Billing Address
+  250, // Description of Goods
+  150, // Product Category
+  100, // Size
+  100, // Spec
+  80, // Qty
+  120, // Unit Price
+  100, // GST
+  120, // Total
+  140, // Payment Collected
+  140, // Payment Method
+  140, // Payment Due
+  140, // Payment Terms
+  140, // Payment Received
+  120, // Freight Charges
+  120, // Actual Freight
+  140, // Install Charges Status
+  120, // Installation
+  140, // Installation Report
+  200, // Transporter Details
+  140, // Dispatch From
+  140, // Dispatch Status
+  140, // Signed Stamp Receiving
+  120, // Order Type
+  120, // Report
+  120, // Bill Status
+  140, // Production Status
+  120, // Bill Number
+  120, // PI Number
+  140, // Sales Person
+  140, // Company
+  140, // Created By
+  200, // Remarks
 ];
 
+// Recalculate totalTableWidth
 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
 
 // Updated CSS for perfect table alignment
@@ -326,7 +372,6 @@ const Row = React.memo(({ index, style, data }) => {
     handleEditClick,
     handleDeleteClick,
     userRole,
-    userId,
     isOrderComplete,
     columnWidths,
   } = data;
@@ -354,10 +399,10 @@ const Row = React.memo(({ index, style, data }) => {
     : "-";
 
   const getRowBackground = () => {
-    if (isOrderComplete(order)) return "#ffffff"; // White for complete orders
-    if (order.sostatus === "Approved") return "#e6ffed"; // Light green for Approved
-    if (order.sostatus === "Accounts Approved") return "#e6f0ff"; // Light blue for Accounts Approved
-    return "#f3e8ff"; // Light purple for incomplete/others
+    if (isOrderComplete(order)) return "#ffffff";
+    if (order.sostatus === "Approved") return "#e6ffed";
+    if (order.sostatus === "Accounts Approved") return "#e6f0ff";
+    return "#f3e8ff";
   };
 
   const getHoverBackground = () => {
@@ -427,9 +472,8 @@ const Row = React.memo(({ index, style, data }) => {
           content: order.contactNo || "-",
           title: order.contactNo || "-",
         },
-
         {
-          width: columnWidths[9],
+          width: columnWidths[6],
           content: order.customerEmail || "-",
           title: order.customerEmail || "-",
         },
@@ -560,11 +604,10 @@ const Row = React.memo(({ index, style, data }) => {
           title: "",
         },
         {
-          width: columnWidths[6],
+          width: columnWidths[9],
           content: order.alterno || "-",
           title: order.alterno || "-",
         },
-
         {
           width: columnWidths[10],
           content: order.city || "-",
@@ -632,46 +675,31 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[23],
-          content: firstProduct.brand || "Promark",
-          title: firstProduct.brand || "Promark",
-        },
-        {
-          width: columnWidths[24],
-          content: firstProduct.warranty || "-",
-          title: firstProduct.warranty || "-",
-        },
-        {
-          width: columnWidths[25],
           content: `₹${order.total?.toFixed(2) || "0.00"}`,
           title: `₹${order.total?.toFixed(2) || "0.00"}`,
         },
         {
-          width: columnWidths[26],
+          width: columnWidths[24],
           content: order.paymentCollected ? `₹${order.paymentCollected}` : "-",
           title: order.paymentCollected ? `₹${order.paymentCollected}` : "-",
         },
         {
-          width: columnWidths[27],
+          width: columnWidths[25],
           content: order.paymentMethod || "-",
           title: order.paymentMethod || "-",
         },
         {
-          width: columnWidths[28],
+          width: columnWidths[26],
           content: order.paymentDue ? `₹${order.paymentDue}` : "-",
           title: order.paymentDue ? `₹${order.paymentDue}` : "-",
         },
         {
-          width: columnWidths[29],
+          width: columnWidths[27],
           content: order.paymentTerms || "-",
           title: order.paymentTerms || "-",
         },
         {
-          width: columnWidths[30],
-          content: order.creditDays || "-",
-          title: order.creditDays || "-",
-        },
-        {
-          width: columnWidths[31],
+          width: columnWidths[28],
           content: (
             <Badge
               bg={order.paymentReceived === "Received" ? "success" : "warning"}
@@ -682,17 +710,12 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.paymentReceived || "-",
         },
         {
-          width: columnWidths[32],
+          width: columnWidths[29],
           content: order.freightcs ? `₹${order.freightcs}` : "-",
           title: order.freightcs ? `₹${order.freightcs}` : "-",
         },
         {
-          width: columnWidths[33],
-          content: order.freightstatus || "-",
-          title: order.freightstatus || "-",
-        },
-        {
-          width: columnWidths[34],
+          width: columnWidths[30],
           content: order.actualFreight
             ? `₹${order.actualFreight.toFixed(2)}`
             : "-",
@@ -701,86 +724,56 @@ const Row = React.memo(({ index, style, data }) => {
             : "-",
         },
         {
-          width: columnWidths[35],
+          width: columnWidths[31],
           content: order.installchargesstatus || "-",
           title: order.installchargesstatus || "-",
         },
         {
-          width: columnWidths[36],
+          width: columnWidths[32],
           content: order.installation ? `₹${order.installation}` : "-",
           title: order.installation ? `₹${order.installation}` : "-",
         },
         {
-          width: columnWidths[37],
+          width: columnWidths[33],
           content: (
             <Badge
-              bg={
-                order.installationStatus === "Pending"
-                  ? "warning" // Yellow for Pending
-                  : order.installationStatus === "In Progress"
-                  ? "info" // Light blue for In Progress
-                  : order.installationStatus === "Completed"
-                  ? "success" // Green for Completed
-                  : order.installationStatus === "Failed"
-                  ? "danger" // Red for Failed
-                  : order.installationStatus === "Hold by Salesperson"
-                  ? "primary" // Blue for Hold by Salesperson
-                  : order.installationStatus === "Hold by Customer"
-                  ? "dark" // Dark gray for Hold by Customer
-                  : order.installationStatus === "Site Not Ready"
-                  ? "light" // Light gray for Site Not Ready
-                  : "secondary" // Default gray
-              }
+              bg={order.installationReport === "Yes" ? "success" : "warning"}
             >
-              {order.installationStatus || "-"}
+              {order.installationReport || "-"}
             </Badge>
           ),
-          title: order.installationStatus || "-",
+          title: order.installationReport || "-",
         },
         {
-          width: columnWidths[38],
-          content: order.transporter || "-",
-          title: order.transporter || "-",
-        },
-        {
-          width: columnWidths[39],
+          width: columnWidths[34],
           content: order.transporterDetails || "-",
           title: order.transporterDetails || "-",
         },
         {
-          width: columnWidths[40],
+          width: columnWidths[35],
           content: order.dispatchFrom || "-",
           title: order.dispatchFrom || "-",
         },
         {
-          width: columnWidths[41],
-          content: order.dispatchDate
-            ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
-            : "-",
-          title: order.dispatchDate
-            ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
-            : "-",
-        },
-        {
-          width: columnWidths[42],
+          width: columnWidths[36],
           content: (
             <Badge
               bg={
                 order.dispatchStatus === "Not Dispatched"
-                  ? "warning" // Yellow for Not Dispatched
+                  ? "warning"
                   : order.dispatchStatus === "Docket Awaited Dispatched"
-                  ? "info" // Light blue for Docket Awaited Dispatched
+                  ? "info"
                   : order.dispatchStatus === "Dispatched"
-                  ? "primary" // Blue for Dispatched
+                  ? "primary"
                   : order.dispatchStatus === "Delivered"
-                  ? "success" // Green for Delivered
+                  ? "success"
                   : order.dispatchStatus === "Hold by Salesperson"
-                  ? "dark" // Dark gray for Hold by Salesperson
+                  ? "dark"
                   : order.dispatchStatus === "Hold by Customer"
-                  ? "light" // Light gray for Hold by Customer
+                  ? "light"
                   : order.dispatchStatus === "Order Cancelled"
-                  ? "danger" // Red for Order Cancelled
-                  : "secondary" // Default gray
+                  ? "danger"
+                  : "secondary"
               }
             >
               {order.dispatchStatus || "-"}
@@ -789,34 +782,26 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.dispatchStatus || "-",
         },
         {
-          width: columnWidths[43],
+          width: columnWidths[37],
+          content: (
+            <Badge bg={order.stamp === "Received" ? "success" : "warning"}>
+              {order.stamp || "-"}
+            </Badge>
+          ),
+          title: order.stamp || "-",
+        },
+        {
+          width: columnWidths[38],
           content: order.orderType || "-",
           title: order.orderType || "-",
         },
         {
-          width: columnWidths[44],
+          width: columnWidths[39],
           content: order.report || "-",
           title: order.report || "-",
         },
         {
-          width: columnWidths[45],
-          content: (
-            <Badge
-              bg={
-                order.stockStatus === "In Stock"
-                  ? "success"
-                  : order.stockStatus === "Not in Stock"
-                  ? "danger"
-                  : "secondary"
-              }
-            >
-              {order.stockStatus || "-"}
-            </Badge>
-          ),
-          title: order.stockStatus || "-",
-        },
-        {
-          width: columnWidths[46],
+          width: columnWidths[40],
           content: (
             <Badge
               bg={
@@ -835,7 +820,7 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.billStatus || "-",
         },
         {
-          width: columnWidths[47],
+          width: columnWidths[41],
           content: (
             <Badge
               style={{
@@ -857,27 +842,27 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.fulfillingStatus || "Pending",
         },
         {
-          width: columnWidths[48],
+          width: columnWidths[42],
           content: order.billNumber || "-",
           title: order.billNumber || "-",
         },
         {
-          width: columnWidths[49],
+          width: columnWidths[43],
           content: order.piNumber || "-",
           title: order.piNumber || "-",
         },
         {
-          width: columnWidths[50],
+          width: columnWidths[44],
           content: order.salesPerson || "-",
           title: order.salesPerson || "-",
         },
         {
-          width: columnWidths[51],
+          width: columnWidths[45],
           content: order.company || "-",
           title: order.company || "-",
         },
         {
-          width: columnWidths[52],
+          width: columnWidths[46],
           content:
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
@@ -892,7 +877,7 @@ const Row = React.memo(({ index, style, data }) => {
               : "-",
         },
         {
-          width: columnWidths[53],
+          width: columnWidths[47],
           content: order.remarks || "-",
           title: order.remarks || "-",
         },
@@ -923,8 +908,9 @@ const Sales = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [approvalFilter, setApprovalFilter] = useState("All");
-  const [orderTypeFilter, setOrderTypeFilter] = useState("All");
+  const [productionStatusFilter, setProductionStatusFilter] = useState("All");
+  const [installStatusFilter, setInstallStatusFilter] = useState("All");
+  const [accountsStatusFilter, setAccountsStatusFilter] = useState("All");
   const [dispatchFilter, setDispatchFilter] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -1090,8 +1076,18 @@ const Sales = () => {
   }, [filteredOrders]);
 
   // Filter orders
+  // Filter orders
   const filterOrders = useCallback(
-    (ordersToFilter, search, approval, orderType, dispatch, start, end) => {
+    (
+      ordersToFilter,
+      search,
+      productionStatus,
+      installStatus,
+      accountsStatus,
+      dispatch,
+      start,
+      end
+    ) => {
       let filtered = [...ordersToFilter].filter(
         (order) => order._id && order.orderId
       ); // Only include orders with _id and orderId
@@ -1126,7 +1122,6 @@ const Sales = () => {
             order.paymentMethod,
             order.paymentDue,
             order.paymentTerms,
-            order.creditDays,
             order.gemOrderNumber,
             order.installation,
             order.dispatchFrom,
@@ -1187,12 +1182,22 @@ const Sales = () => {
         });
       }
 
-      if (approval !== "All") {
-        filtered = filtered.filter((order) => order.sostatus === approval);
+      if (productionStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.fulfillingStatus === productionStatus
+        );
       }
 
-      if (orderType !== "All") {
-        filtered = filtered.filter((order) => order.orderType === orderType);
+      if (installStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.installationStatus === installStatus
+        );
+      }
+
+      if (accountsStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.paymentReceived === accountsStatus
+        );
       }
 
       if (dispatch !== "All") {
@@ -1241,13 +1246,15 @@ const Sales = () => {
     },
     []
   );
+
   // Apply filters
   useEffect(() => {
     filterOrders(
       orders,
       searchTerm,
-      approvalFilter,
-      orderTypeFilter,
+      productionStatusFilter,
+      installStatusFilter,
+      accountsStatusFilter,
       dispatchFilter,
       startDate,
       endDate
@@ -1255,23 +1262,25 @@ const Sales = () => {
   }, [
     orders,
     searchTerm,
-    approvalFilter,
-    orderTypeFilter,
+    productionStatusFilter,
+    installStatusFilter,
+    accountsStatusFilter,
     dispatchFilter,
     startDate,
     endDate,
     filterOrders,
   ]);
-
+  // Event handlers
   // Event handlers
   const handleReset = useCallback(() => {
-    setApprovalFilter("All");
-    setOrderTypeFilter("All");
+    setProductionStatusFilter("All");
+    setInstallStatusFilter("All");
+    setAccountsStatusFilter("All");
     setDispatchFilter("All");
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
-    filterOrders(orders, "", "All", "All", "All", null, null);
+    filterOrders(orders, "", "All", "All", "All", "All", null, null);
     toast.info("Filters reset!");
   }, [filterOrders, orders]);
 
@@ -1285,8 +1294,9 @@ const Sales = () => {
         filterOrders(
           updatedOrders,
           searchTerm,
-          approvalFilter,
-          orderTypeFilter,
+          productionStatusFilter,
+          installStatusFilter,
+          accountsStatusFilter,
           dispatchFilter,
           startDate,
           endDate
@@ -1297,10 +1307,12 @@ const Sales = () => {
       toast.success("New order added!");
     },
     [
+      fetchOrders,
       filterOrders,
       searchTerm,
-      approvalFilter,
-      orderTypeFilter,
+      productionStatusFilter,
+      installStatusFilter,
+      accountsStatusFilter,
       dispatchFilter,
       startDate,
       endDate,
@@ -1331,8 +1343,9 @@ const Sales = () => {
         filterOrders(
           updatedOrders,
           searchTerm,
-          approvalFilter,
-          orderTypeFilter,
+          productionStatusFilter,
+          installStatusFilter,
+          accountsStatusFilter,
           dispatchFilter,
           startDate,
           endDate
@@ -1345,8 +1358,9 @@ const Sales = () => {
     [
       filterOrders,
       searchTerm,
-      approvalFilter,
-      orderTypeFilter,
+      productionStatusFilter,
+      installStatusFilter,
+      accountsStatusFilter,
       dispatchFilter,
       startDate,
       endDate,
@@ -1370,8 +1384,9 @@ const Sales = () => {
           filterOrders(
             updatedOrders,
             searchTerm,
-            approvalFilter,
-            orderTypeFilter,
+            productionStatusFilter,
+            installStatusFilter,
+            accountsStatusFilter,
             dispatchFilter,
             startDate,
             endDate
@@ -1388,8 +1403,9 @@ const Sales = () => {
     [
       filterOrders,
       searchTerm,
-      approvalFilter,
-      orderTypeFilter,
+      productionStatusFilter,
+      installStatusFilter,
+      accountsStatusFilter,
       dispatchFilter,
       startDate,
       endDate,
@@ -1533,7 +1549,7 @@ const Sales = () => {
               paymentMethod: String(entry.paymentmethod || "").trim(),
               paymentDue: String(entry.paymentdue || "").trim(),
               paymentTerms: String(entry.paymentterms || "").trim(),
-              creditDays: String(entry.creditdays || "").trim(),
+
               neftTransactionId: String(entry.nefttransactionid || "").trim(),
               chequeId: String(entry.chequeid || "").trim(),
               freightcs: String(entry.freightcs || "").trim(),
@@ -1609,8 +1625,9 @@ const Sales = () => {
             filterOrders(
               updatedOrders,
               searchTerm,
-              approvalFilter,
-              orderTypeFilter,
+              productionStatusFilter,
+              installStatusFilter,
+              accountsStatusFilter,
               dispatchFilter,
               startDate,
               endDate
@@ -1635,8 +1652,9 @@ const Sales = () => {
       parseExcelDate,
       filterOrders,
       searchTerm,
-      approvalFilter,
-      orderTypeFilter,
+      productionStatusFilter,
+      installStatusFilter,
+      accountsStatusFilter,
       dispatchFilter,
       startDate,
       endDate,
@@ -1647,19 +1665,36 @@ const Sales = () => {
     try {
       const exportData = filteredOrders.map((order, index) => ({
         "Seq No": index + 1,
+        "Order ID": order.orderId || "-",
+        "SO Date": order.soDate
+          ? new Date(order.soDate).toLocaleDateString("en-GB")
+          : "-",
         "Customer Name": order.customername || "-",
-        "Product Details": order.products
+        "Contact Person Name": order.name || "-",
+        "Contact No": order.contactNo || "-",
+        "Customer Email": order.customerEmail || "-",
+        "SO Status": order.sostatus || "-",
+        "Alternate No": order.alterno || "-",
+        City: order.city || "-",
+        State: order.state || "-",
+        "Pin Code": order.pinCode || "-",
+        "GST No": order.gstno || "-",
+        "Shipping Address": order.shippingAddress || "-",
+        "Billing Address": order.billingAddress || "-",
+        "Description of Goods": order.products
           ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
+          : "-",
+        "Product Category": order.products?.[0]?.productType || "-",
+        Size: order.products?.[0]?.size || "-",
+        Spec: order.products?.[0]?.spec || "-",
+        Qty: order.products
+          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
           : "-",
         "Unit Price": order.products
           ? order.products
               .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
               .toFixed(2)
           : "0.00",
-        Qty: order.products
-          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
-          : "-",
-        "Freight Charges": order.freightcs || "-",
         GST: order.products
           ? order.products
               .map((p) => `${p.gst}`)
@@ -1667,59 +1702,37 @@ const Sales = () => {
               .join(", ")
           : "-",
         Total: order.total?.toFixed(2) || "0.00",
-        "Order ID": order.orderId || "-",
-        "SO Date": order.soDate
-          ? new Date(order.soDate).toLocaleDateString("en-GB")
-          : "-",
-        "Approval Status": order.sostatus || "-",
-        City: order.city || "-",
-        State: order.state || "-",
-        "Pin Code": order.pinCode || "-",
-        "Contact Person Name": order.name || "-",
-        "Contact No": order.contactNo || "-",
-        "Customer Email": order.customerEmail || "-",
-        "Order Type": order.orderType || "-",
-        "Model Nos": order.products?.[0]?.modelNos?.join(", ") || "-",
-        "Serial Nos": order.products?.[0]?.serialNos?.join(", ") || "-",
-        "Product Type": order.products?.[0]?.productType || "-",
-        Size: order.products?.[0]?.size || "-",
-        Spec: order.products?.[0]?.spec || "-",
         "Payment Collected": formatCurrency(order.paymentCollected) || "-",
         "Payment Method": order.paymentMethod || "-",
         "Payment Due": formatCurrency(order.paymentDue) || "-",
         "Payment Terms": order.paymentTerms || "-",
-        "Credit Days": order.creditDays || "-",
-        "GEM Order Number": order.gemOrderNumber || "-",
-        "Delivery Date": order.deliveryDate
-          ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
+        "Payment Received": order.paymentReceived || "-",
+        "Freight Charges": order.freightcs || "-",
+        "Actual Freight": order.actualFreight
+          ? `₹${order.actualFreight.toFixed(2)}`
           : "-",
-        Installation: order.installation || "-",
+        "Install Charges Status": order.installchargesstatus || "-",
+        Installation: order.installation ? `₹${order.installation}` : "-",
+        "Installation Report": order.installationReport || "-",
+        Transporter: order.transporter || "-",
+        "Transporter Details": order.transporterDetails || "-",
+        "Dispatch From": order.dispatchFrom || "-",
+        "Dispatch Status": order.dispatchStatus || "-",
+        "Signed Stamp Receiving": order.stamp || "-",
+        "Order Type": order.orderType || "-",
+        Report: order.report || "-",
+        "Bill Status": order.billStatus || "-",
+        "Production Status": order.fulfillingStatus || "Pending",
+        "Bill Number": order.billNumber || "-",
+        "PI Number": order.piNumber || "-",
         "Sales Person": order.salesPerson || "-",
+        Company: order.company || "-",
         "Created By":
           order.createdBy && typeof order.createdBy === "object"
             ? order.createdBy.username || "Unknown"
             : typeof order.createdBy === "string"
             ? order.createdBy
             : "-",
-        Company: order.company || "-",
-        Transporter: order.transporter || "-",
-        "Transporter Details": order.transporterDetails || "-",
-        "Shipping Address": order.shippingAddress || "-",
-        "Billing Address": order.billingAddress || "-",
-        "Docket No": order.docketNo || "-",
-        "Dispatch From": order.dispatchFrom || "-",
-        "Dispatch Date": order.dispatchDate
-          ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
-          : "-",
-        "Receipt Date": order.receiptDate
-          ? new Date(order.receiptDate).toLocaleDateString("en-GB")
-          : "-",
-        "Invoice No": order.invoiceNo || "-",
-        "Invoice Date": order.invoiceDate
-          ? new Date(order.invoiceDate).toLocaleDateString("en-GB")
-          : "-",
-        "PI Number": order.piNumber || "-",
-        "Bill Status": order.billStatus || "-",
         Remarks: order.remarks || "-",
       }));
 
@@ -1746,7 +1759,6 @@ const Sales = () => {
       toast.error("Failed to export orders!");
     }
   }, [filteredOrders, formatCurrency]);
-
   const isOrderComplete = useCallback((order) => {
     // Essential fields required for an order to be complete
     const requiredFields = [
@@ -1857,7 +1869,6 @@ const Sales = () => {
       "paymentMethod",
       "paymentDue",
       "paymentTerms",
-      "creditDays",
       "paymentReceived",
       "freightcs",
       "freightstatus",
@@ -1947,12 +1958,10 @@ const Sales = () => {
     "Seq No",
     "Order ID",
     "SO Date",
-
     "Customer Name",
     "Contact Person Name",
     "Contact No",
     "Customer Email",
-
     "SO Status",
     "Actions",
     "Alternate No",
@@ -1962,36 +1971,30 @@ const Sales = () => {
     "GST No",
     "Shipping Address",
     "Billing Address",
-    "Product Details",
-    "Product Type",
+    "Description of Goods",
+    "Product Category",
     "Size",
     "Spec",
     "Qty",
     "Unit Price",
     "GST",
-    "Brand",
-    "Warranty",
     "Total",
     "Payment Collected",
     "Payment Method",
     "Payment Due",
     "Payment Terms",
-    "Credit Days",
     "Payment Received",
     "Freight Charges",
-    "Freight Status",
     "Actual Freight",
     "Install Charges Status",
     "Installation",
-    "Installation Status",
-    "Transporter",
+    "Installation Report",
     "Transporter Details",
     "Dispatch From",
-    "Dispatch Date",
     "Dispatch Status",
+    "Signed Stamp Receiving",
     "Order Type",
     "Report",
-    "Stock Status",
     "Bill Status",
     "Production Status",
     "Bill Number",
@@ -2024,10 +2027,12 @@ const Sales = () => {
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
-          approvalFilter={approvalFilter}
-          setApprovalFilter={setApprovalFilter}
-          orderTypeFilter={orderTypeFilter}
-          setOrderTypeFilter={setOrderTypeFilter}
+          productionStatusFilter={productionStatusFilter}
+          setProductionStatusFilter={setProductionStatusFilter}
+          installStatusFilter={installStatusFilter}
+          setInstallStatusFilter={setInstallStatusFilter}
+          accountsStatusFilter={accountsStatusFilter}
+          setAccountsStatusFilter={setAccountsStatusFilter}
           dispatchFilter={dispatchFilter}
           setDispatchFilter={setDispatchFilter}
           handleReset={handleReset}

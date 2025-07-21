@@ -13,7 +13,6 @@ const EditProductionApproval = ({
     sostatus: "",
     remarksByProduction: "",
     deliveryDate: "",
-    stockStatus: "In Stock",
   });
   const [errors, setErrors] = useState({});
 
@@ -25,7 +24,6 @@ const EditProductionApproval = ({
         deliveryDate: entryToEdit.deliveryDate
           ? new Date(entryToEdit.deliveryDate).toISOString().slice(0, 10)
           : "",
-        stockStatus: entryToEdit.stockStatus || "In Stock",
       });
       setErrors({});
     }
@@ -39,9 +37,6 @@ const EditProductionApproval = ({
         [name]: type === "checkbox" ? checked : value,
       };
 
-      if (name === "stockStatus" && value === "Not in Stock") {
-        newFormData.deliveryDate = "";
-      }
       return newFormData;
     });
     // Clear error for the field being edited
@@ -58,13 +53,7 @@ const EditProductionApproval = ({
     if (!formData.sostatus || !validStatuses.includes(formData.sostatus)) {
       newErrors.sostatus = "Please select a valid approval status";
     }
-    if (
-      formData.stockStatus !== "Not in Stock" &&
-      formData.sostatus === "Pending for Approval"
-    ) {
-      newErrors.sostatus =
-        "Pending for Approval is only allowed when stock status is Not in Stock";
-    }
+
     return newErrors;
   };
 
@@ -98,8 +87,6 @@ const EditProductionApproval = ({
       });
     }
   };
-
-  const isNotInStock = formData.stockStatus === "Not in Stock";
 
   return (
     <Modal
@@ -158,14 +145,13 @@ const EditProductionApproval = ({
               value={formData.sostatus}
               onChange={handleChange}
               required
-              disabled={isNotInStock}
               style={{
                 padding: "12px",
                 borderRadius: "8px",
                 border: errors.sostatus
                   ? "2px solid #dc3545"
                   : "1px solid #d1d5db",
-                background: isNotInStock ? "#e9ecef" : "white",
+                background: "white",
                 fontSize: "1rem",
                 transition: "border-color 0.3s ease",
               }}
@@ -198,33 +184,6 @@ const EditProductionApproval = ({
               name="deliveryDate"
               value={formData.deliveryDate}
               onChange={handleChange}
-              disabled={isNotInStock}
-              style={{
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #d1d5db",
-                background: isNotInStock ? "#e9ecef" : "white",
-                fontSize: "1rem",
-                transition: "border-color 0.3s ease",
-              }}
-              aria-label="Planned delivery date"
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-4">
-            <Form.Label
-              style={{
-                fontWeight: "500",
-                color: "#1f2937",
-                fontSize: "1.1rem",
-              }}
-            >
-              Stock Status
-            </Form.Label>
-            <Form.Select
-              name="stockStatus"
-              value={formData.stockStatus}
-              onChange={handleChange}
               style={{
                 padding: "12px",
                 borderRadius: "8px",
@@ -233,12 +192,8 @@ const EditProductionApproval = ({
                 fontSize: "1rem",
                 transition: "border-color 0.3s ease",
               }}
-              aria-label="Select stock status"
-            >
-              <option value="In Stock">In Stock</option>
-              <option value="Not in Stock">Not in Stock</option>
-              <option value="Partial Stock">Partial Stock</option>
-            </Form.Select>
+              aria-label="Planned delivery date"
+            />
           </Form.Group>
 
           <div className="d-flex justify-content-end gap-3">

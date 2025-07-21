@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Input, Select, Collapse } from "antd";
 import axios from "axios";
 import { toast } from "react-toastify";
-
 const { Option } = Select;
 const { Panel } = Collapse;
 
@@ -15,14 +14,15 @@ const OutFinishedGoodModal = ({
 }) => {
   const [formData, setFormData] = useState({
     dispatchFrom: "",
-    transporter: "",
     transporterDetails: "",
     billNumber: "",
     dispatchDate: new Date().toISOString().split("T")[0],
     docketNo: "",
+    stamp: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
     remarksBydispatch: "",
+    installationReport: "No",
     products: [],
   });
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ const OutFinishedGoodModal = ({
 
       setFormData({
         dispatchFrom: initialData.dispatchFrom || "",
-        transporter: initialData.transporter || "",
+
         transporterDetails: initialData.transporterDetails || "",
         billNumber: initialData.billNumber || "",
         dispatchDate: initialData.dispatchDate
@@ -68,6 +68,8 @@ const OutFinishedGoodModal = ({
         actualFreight: initialData.actualFreight || "",
         dispatchStatus: validDispatchStatus,
         remarksBydispatch: initialData.remarksBydispatch || "",
+        installationReport: initialData.installationReport || "No",
+        stamp: initialData.stamp || "Not Received",
         products,
       });
     }
@@ -118,14 +120,13 @@ const OutFinishedGoodModal = ({
     setFormData((prev) => ({ ...prev, dispatchFrom: value }));
   };
 
-  const handleTransporterChange = (value) => {
-    setFormData((prev) => ({ ...prev, transporter: value }));
-  };
-
   const handleDispatchStatusChange = (value) => {
     setFormData((prev) => ({ ...prev, dispatchStatus: value }));
   };
 
+  // const handleInstallationReportChange = (value) => {
+  //   setFormData((prev) => ({ ...prev, installationReport: value }));
+  // };
   // const handleAddProduct = () => {
   //   setFormData((prev) => ({
   //     ...prev,
@@ -197,7 +198,7 @@ const OutFinishedGoodModal = ({
     try {
       const submissionData = {
         dispatchFrom: formData.dispatchFrom,
-        transporter: formData.transporter,
+
         transporterDetails: formData.transporterDetails || undefined,
         billNumber: formData.billNumber || undefined,
         dispatchDate: new Date(formData.dispatchDate).toISOString(),
@@ -208,6 +209,8 @@ const OutFinishedGoodModal = ({
             : undefined,
         dispatchStatus: formData.dispatchStatus,
         remarksBydispatch: formData.remarksBydispatch || undefined,
+        installationReport: formData.installationReport,
+        stamp: formData.stamp,
         products: formData.products.map((product) => ({
           productType: product.productType,
           modelNos: product.modelNos,
@@ -257,7 +260,6 @@ const OutFinishedGoodModal = ({
       setShowConfirm(false);
     }
   };
-
   const isBillingComplete = entryToEdit?.billStatus === "Billing Complete";
   const showProductFields =
     formData.dispatchFrom && formData.dispatchFrom !== "Morinda";
@@ -336,7 +338,8 @@ const OutFinishedGoodModal = ({
           { key: "actualFreight", label: "Actual Freight", type: "number" },
           {
             key: "transporterDetails",
-            label: "Transporter Remarks",
+            label: "Transporter Details",
+            placeholder: "Enter Driver Name, Vehicle No, and Mobile No",
             type: "text",
           },
           {
@@ -356,12 +359,12 @@ const OutFinishedGoodModal = ({
               }}
             >
               {field.label}
-              {["dispatchFrom", "transporter", "dispatchDate"].includes(
-                field.key
-              ) && " *"}
+              {["dispatchFrom", "dispatchDate"].includes(field.key) && " *"}
             </label>
             <Input
-              placeholder={`Enter ${field.label.toLowerCase()}`}
+              placeholder={
+                field.placeholder || `Enter ${field.label.toLowerCase()}`
+              }
               type={field.type}
               name={field.key}
               value={formData[field.key] || ""}
@@ -371,45 +374,7 @@ const OutFinishedGoodModal = ({
             />
           </div>
         ))}
-        <div>
-          <label
-            style={{
-              fontSize: "1rem",
-              fontWeight: "600",
-              color: "#333",
-              marginBottom: "5px",
-              display: "block",
-            }}
-          >
-            Transporter *
-          </label>
-          <Select
-            value={formData.transporter || undefined}
-            onChange={handleTransporterChange}
-            placeholder="Select transporter"
-            style={{ width: "100%", borderRadius: "8px" }}
-            disabled={loading}
-          >
-            <Option value="">Select Transporter</Option>
-            <Option value="Jai Shiv Shakti">Jai Shiv Shakti</Option>
-            <Option value="G S Transport">G S Transport</Option>
-            <Option value="New Chandigarh Rajdhani">
-              New Chandigarh Rajdhani
-            </Option>
-            <Option value="Kurali LCV">Kurali LCV</Option>
-            <Option value="BlueDart">BlueDart</Option>
-            <Option value="Om Logistics">Om Logistics</Option>
-            <Option value="Rivigo">Rivigo</Option>
-            <Option value="Safex">Safex</Option>
-            <Option value="Delhivery">Delhivery</Option>
-            <Option value="Maruti">Maruti</Option>
-            <Option value="Self-Pickup">Self-Pickup</Option>
-            <Option value="By-Dedicated-Transport">
-              By-Dedicated-Transport
-            </Option>
-            <Option value="Others">Others</Option>
-          </Select>
-        </div>
+
         <div>
           <label
             style={{
@@ -447,6 +412,30 @@ const OutFinishedGoodModal = ({
             )}
           </Select>
         </div>
+        <div>
+          <label
+            style={{
+              fontSize: "1rem",
+              fontWeight: "600",
+              color: "#333",
+              marginBottom: "5px",
+              display: "block",
+            }}
+          >
+            Signed Stamp Receiving
+          </label>
+          <Select
+            key={(entryToEdit?.stamp || "Not Received") + formData.stamp}
+            value={formData.stamp || "Not Received"}
+            onChange={(value) => setFormData({ ...formData, stamp: value })}
+            style={{ width: "100%", borderRadius: "8px" }}
+            disabled={loading}
+          >
+            <Option value="Not Received">Not Received</Option>
+            <Option value="Received">Received</Option>
+          </Select>
+        </div>
+
         {showProductFields && (
           <div>
             <Collapse

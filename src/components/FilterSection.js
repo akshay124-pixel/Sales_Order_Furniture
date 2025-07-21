@@ -269,10 +269,12 @@ const FilterSection = ({
   setStartDate,
   endDate,
   setEndDate,
-  approvalFilter,
-  setApprovalFilter,
-  orderTypeFilter,
-  setOrderTypeFilter,
+  productionStatusFilter,
+  setProductionStatusFilter,
+  installStatusFilter,
+  setInstallStatusFilter,
+  accountsStatusFilter,
+  setAccountsStatusFilter,
   dispatchFilter,
   setDispatchFilter,
   handleReset,
@@ -331,18 +333,21 @@ const FilterSection = ({
         </DatePickerWrapper>
         <Dropdown>
           <StyledDropdownToggle aria-controls={tableId}>
-            {approvalFilter === "All" ? "Approval Status" : approvalFilter}
+            {productionStatusFilter === "All"
+              ? "Production Status"
+              : productionStatusFilter}
           </StyledDropdownToggle>
           <StyledDropdownMenu>
             {[
               "All",
-              "Approved",
-              "Accounts Approved",
-              "Pending for Approval",
+              "Pending",
+              "Under Process",
+              "Partial Dispatch",
+              "Fulfilled",
             ].map((option) => (
               <StyledDropdownItem
                 key={option}
-                onClick={() => setApprovalFilter(option)}
+                onClick={() => setProductionStatusFilter(option)}
               >
                 {option}
               </StyledDropdownItem>
@@ -351,21 +356,23 @@ const FilterSection = ({
         </Dropdown>
         <Dropdown>
           <StyledDropdownToggle aria-controls={tableId}>
-            {orderTypeFilter === "All" ? "Order Type" : orderTypeFilter}
+            {installStatusFilter === "All"
+              ? "Installation Status"
+              : installStatusFilter}
           </StyledDropdownToggle>
           <StyledDropdownMenu>
-            {["All", "B2G", "B2C", "B2B", "Demo", "Replacement"].map(
+            {["All", "Pending", "In Progress", "Completed", "Failed"].map(
               (option) => (
                 <StyledDropdownItem
                   key={option}
-                  onClick={() => setOrderTypeFilter(option)}
+                  onClick={() => setInstallStatusFilter(option)}
                 >
                   {option}
                 </StyledDropdownItem>
               )
             )}
           </StyledDropdownMenu>
-        </Dropdown>
+        </Dropdown>{" "}
         <Dropdown>
           <StyledDropdownToggle aria-controls={tableId}>
             {dispatchFilter === "All" ? "Dispatch Status" : dispatchFilter}
@@ -381,6 +388,23 @@ const FilterSection = ({
               <StyledDropdownItem
                 key={option}
                 onClick={() => setDispatchFilter(option)}
+              >
+                {option}
+              </StyledDropdownItem>
+            ))}
+          </StyledDropdownMenu>
+        </Dropdown>
+        <Dropdown>
+          <StyledDropdownToggle aria-controls={tableId}>
+            {accountsStatusFilter === "All"
+              ? "Accounts Status"
+              : accountsStatusFilter}
+          </StyledDropdownToggle>
+          <StyledDropdownMenu>
+            {["All", "Not Received", "Received"].map((option) => (
+              <StyledDropdownItem
+                key={option}
+                onClick={() => setAccountsStatusFilter(option)}
               >
                 {option}
               </StyledDropdownItem>

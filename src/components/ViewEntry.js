@@ -74,11 +74,11 @@ Payment Due: ${entry.paymentDue || "N/A"}
 NEFT Transaction ID: ${entry.neftTransactionId || "N/A"}
 Cheque ID: ${entry.chequeId || "N/A"}
 Payment Terms: ${entry.paymentTerms || "N/A"}
-Credit Days: ${entry.creditDays || "N/A"}
+
 Order Type: ${entry.orderType || "N/A"}
 GEM Order Number: ${entry.gemOrderNumber || "N/A"}
 Reporting Person: ${entry.report || "N/A"}
-Transporter: ${entry.transporter || "N/A"}
+
 Transporter Details: ${entry.transporterDetails || "N/A"}
 Shipping Address: ${entry.shippingAddress || "N/A"}
 Billing Address: ${entry.billingAddress || "N/A"}
@@ -114,7 +114,7 @@ SO Status: ${entry.sostatus || "N/A"}
 Dispatch Status: ${entry.dispatchStatus || "N/A"}
 Installation Status: ${entry.installationStatus || "N/A"}
 Completion Status: ${entry.completionStatus || "N/A"}
-Stock Status: ${entry.stockStatus || "N/A"}
+
 Demo Date: ${
       entry.demoDate
         ? new Date(entry.demoDate).toLocaleDateString("en-GB")
@@ -305,9 +305,15 @@ Created By: ${
                     {entry.orderType || "N/A"}
                   </Badge>
                 </div>
+                {entry.gemOrderNumber && (
+                  <div>
+                    <strong>GEM Order Number:</strong>{" "}
+                    {entry.gemOrderNumber || "N/A"}
+                  </div>
+                )}
                 <div>
-                  <strong>GEM Order Number:</strong>{" "}
-                  {entry.gemOrderNumber || "N/A"}
+                  <strong>Signed Stamp Receiving:</strong>{" "}
+                  {entry.stamp || "Not Received"}
                 </div>
 
                 <div>
@@ -322,12 +328,14 @@ Created By: ${
                     ? new Date(entry.deliveryDate).toLocaleDateString("en-GB")
                     : "N/A"}
                 </div>
-                <div>
-                  <strong>Receipt Date:</strong>{" "}
-                  {entry.receiptDate
-                    ? new Date(entry.receiptDate).toLocaleDateString("en-GB")
-                    : "N/A"}
-                </div>
+                {entry.receiptDate && (
+                  <div>
+                    <strong>Receipt Date:</strong>{" "}
+                    {entry.receiptDate
+                      ? new Date(entry.receiptDate).toLocaleDateString("en-GB")
+                      : "N/A"}
+                  </div>
+                )}
                 <div>
                   <strong>Docket No:</strong> {entry.docketNo || "N/A"}
                 </div>
@@ -377,22 +385,17 @@ Created By: ${
                     {entry.completionStatus || "N/A"}
                   </Badge>
                 </div>
+
+                {entry.demoDate && (
+                  <div>
+                    <strong>Demo Date:</strong>{" "}
+                    {entry.demoDate
+                      ? new Date(entry.demoDate).toLocaleDateString("en-GB")
+                      : "N/A"}
+                  </div>
+                )}
                 <div>
-                  <strong>Stock Status:</strong>{" "}
-                  <Badge
-                    bg={entry.stockStatus === "In Stock" ? "success" : "danger"}
-                  >
-                    {entry.stockStatus || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Demo Date:</strong>{" "}
-                  {entry.demoDate
-                    ? new Date(entry.demoDate).toLocaleDateString("en-GB")
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Fulfillment Date:</strong>{" "}
+                  <strong>Production Date:</strong>{" "}
                   {entry.fulfillmentDate
                     ? new Date(entry.fulfillmentDate).toLocaleDateString(
                         "en-GB"
@@ -533,7 +536,8 @@ Created By: ${
                           color: "#1e293b",
                         }}
                       >
-                        Product {index + 1}: {product.productType || "N/A"}
+                        Product Category {index + 1}:{" "}
+                        {product.productType || "N/A"}
                       </Card.Title>
                       <div
                         style={{
@@ -559,13 +563,17 @@ Created By: ${
                         <div>
                           <strong>GST:</strong> {product.gst || "N/A"}
                         </div>
-                        <div>
-                          <strong>Brand:</strong> {product.brand || "N/A"}
-                        </div>
-                        <div>
-                          <strong>Warranty:</strong> {product.warranty || "N/A"}
-                        </div>
-
+                        {product.brand && (
+                          <div>
+                            <strong>Brand:</strong> {product.brand || "N/A"}
+                          </div>
+                        )}
+                        {product.warranty && (
+                          <div>
+                            <strong>Warranty:</strong>{" "}
+                            {product.warranty || "N/A"}
+                          </div>
+                        )}
                         <div>
                           <strong>Model Nos:</strong>{" "}
                           {product.modelNos?.length > 0
@@ -618,9 +626,11 @@ Created By: ${
                 <div>
                   <strong>GST:</strong> {gstText}
                 </div>
-                <div>
-                  <strong>Freight Charges:</strong> {entry.freightcs || "N/A"}
-                </div>
+                {entry.freightcs && (
+                  <div>
+                    <strong>Freight Charges:</strong> {entry.freightcs || "N/A"}
+                  </div>
+                )}
                 <div>
                   <strong>Freight Status:</strong>{" "}
                   <Badge
@@ -657,9 +667,11 @@ Created By: ${
                     {entry.installchargesstatus || "N/A"}
                   </Badge>
                 </div>
-                <div>
-                  <strong>Installation:</strong> {entry.installation || "N/A"}
-                </div>
+                {entry.installation && (
+                  <div>
+                    <strong>Installation:</strong> {entry.installation || "N/A"}
+                  </div>
+                )}
                 <div>
                   <strong>Total:</strong> ₹{entry.total?.toFixed(2) || "0.00"}
                 </div>
@@ -688,13 +700,17 @@ Created By: ${
                 <div>
                   <strong>Payment Due:</strong> {entry.paymentDue || "N/A"}
                 </div>
-                <div>
-                  <strong>NEFT Transaction ID:</strong>{" "}
-                  {entry.neftTransactionId || "N/A"}
-                </div>
-                <div>
-                  <strong>Cheque ID:</strong> {entry.chequeId || "N/A"}
-                </div>
+                {entry.neftTransactionId && (
+                  <div>
+                    <strong>NEFT Transaction ID:</strong>{" "}
+                    {entry.neftTransactionId || "N/A"}
+                  </div>
+                )}
+                {entry.chequeId && (
+                  <div>
+                    <strong>Cheque ID:</strong> {entry.chequeId || "N/A"}
+                  </div>
+                )}
                 <div>
                   <strong>Payment Terms:</strong>{" "}
                   <Badge
@@ -711,9 +727,7 @@ Created By: ${
                     {entry.paymentTerms || "N/A"}
                   </Badge>
                 </div>
-                <div>
-                  <strong>Credit Days:</strong> {entry.creditDays || "N/A"}
-                </div>
+
                 <div>
                   <strong>Payment Received:</strong>{" "}
                   <Badge
@@ -726,9 +740,7 @@ Created By: ${
                     {entry.paymentReceived || "N/A"}
                   </Badge>
                 </div>
-                <div>
-                  <strong>Invoice No:</strong> {entry.invoiceNo || "N/A"}
-                </div>
+
                 <div>
                   <strong>Invoice Date:</strong>{" "}
                   {entry.invoiceDate
@@ -765,10 +777,12 @@ Created By: ${
                   <strong>Remarks (Billing):</strong>{" "}
                   {entry.remarksByBilling || "N/A"}
                 </div>
-                <div>
-                  <strong>Verification Remarks:</strong>{" "}
-                  {entry.verificationRemarks || "N/A"}
-                </div>
+                {entry.verificationRemarks && (
+                  <div>
+                    <strong>Verification Remarks:</strong>{" "}
+                    {entry.verificationRemarks || "N/A"}
+                  </div>
+                )}
               </div>
             </Accordion.Body>
           </Accordion.Item>
@@ -884,6 +898,10 @@ Created By: ${
                   </Badge>
                 </div>
                 <div>
+                  <strong>Installation Report:</strong>{" "}
+                  {entry.installationReport || "No"}
+                </div>
+                <div>
                   <strong>Remarks (Installation):</strong>{" "}
                   {entry.remarksByInstallation || "N/A"}
                 </div>
@@ -909,9 +927,6 @@ Created By: ${
                 </div>
                 <div>
                   <strong>Dispatch From:</strong> {entry.dispatchFrom || "N/A"}
-                </div>
-                <div>
-                  <strong>Transporter:</strong> {entry.transporter || "N/A"}
                 </div>
                 <div>
                   <strong>Transporter Details:</strong>{" "}

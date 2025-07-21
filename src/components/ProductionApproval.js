@@ -19,9 +19,12 @@ const ProductionApproval = () => {
 
   // Socket.IO integration for real-time updates
   useEffect(() => {
-    const socket = io("https://sales-order-furniture-server-4ucn.onrender.com", {
-      auth: { token: localStorage.getItem("token") },
-    });
+    const socket = io(
+      "https://sales-order-furniture-server-4ucn.onrender.com",
+      {
+        auth: { token: localStorage.getItem("token") },
+      }
+    );
 
     socket.on("connect", () => {
       console.log("Socket.IO se connect ho gaya!");
@@ -79,10 +82,10 @@ const ProductionApproval = () => {
           order.orderId,
           order.customername,
           order.contactNo,
-          order.creditDays,
+
           order.remarksByProduction,
           order.sostatus,
-          order.stockStatus, // Added stockStatus for search
+
           order.deliveryDate
             ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
             : "",
@@ -175,12 +178,11 @@ const ProductionApproval = () => {
         ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
         : "-",
       "Approval Status": order.sostatus || "-",
-      "Date of Credits": order.creditDays || "-",
+
       "Delivery Date": order.deliveryDate
         ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
         : "-",
       Remarks: order.remarksByProduction || "-",
-      "Stock Status": order.stockStatus || "-", // Added stockStatus to export
     }));
 
     const ws = XLSX.utils.json_to_sheet(tableData);
@@ -294,9 +296,9 @@ const ProductionApproval = () => {
                   "Contact No",
                   "Product Details",
                   "Approval Status",
-                  "Days of Credits",
+
                   "Delivery Date",
-                  "Stock Status",
+
                   "Actions",
                 ].map((header) => (
                   <th
@@ -353,9 +355,7 @@ const ProductionApproval = () => {
                         {order.sostatus || "-"}
                       </Badge>
                     </td>
-                    <td style={{ padding: "15px" }}>
-                      {order.creditDays || "-"}
-                    </td>
+
                     <td style={{ padding: "15px" }}>
                       {order.deliveryDate
                         ? new Date(order.deliveryDate).toLocaleDateString(
@@ -363,22 +363,7 @@ const ProductionApproval = () => {
                           )
                         : "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>
-                      {order.stockStatus ? (
-                        <Badge
-                          bg={
-                            order.stockStatus === "In Stock"
-                              ? "success"
-                              : "danger"
-                          }
-                          style={{ fontSize: "0.9rem", padding: "6px 12px" }}
-                        >
-                          {order.stockStatus}
-                        </Badge>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
+
                     <td style={{ padding: "15px", textAlign: "center" }}>
                       <div style={{ display: "flex", gap: "10px" }}>
                         <Button

@@ -110,7 +110,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       paymentMethod: "",
       paymentDue: "",
       paymentTerms: "",
-      creditDays: "",
+
       neftTransactionId: "",
       chequeId: "",
       freightcs: "",
@@ -127,7 +127,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       salesPerson: "",
       report: "",
       company: "Promark",
-      transporter: "",
+      stamp: "",
+      installationReport: "No",
       transporterDetails: "",
       docketNo: "",
       receiptDate: "",
@@ -147,6 +148,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       completionStatus: "In Progress",
       fulfillmentDate: "",
       remarks: "",
+      stamp: "Not Received",
+      installationReport: "No",
       stockStatus: "In Stock",
       sostatus: "Pending for Approval",
       createdBy: "",
@@ -209,12 +212,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           entryToEdit.products && entryToEdit.products.length > 0
             ? entryToEdit.products.map((p) => ({
                 productType: p.productType || "",
-                size: p.size || "N/A",
-                spec: p.spec || "N/A",
+                size: p.size || "",
+                spec: p.spec || "",
                 qty: p.qty !== undefined ? String(p.qty) : "",
                 unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "",
-                serialNos:
-                  p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
                 modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
                 gst: p.gst || "18",
                 brand: p.brand || "",
@@ -223,11 +224,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             : [
                 {
                   productType: "",
-                  size: "N/A",
-                  spec: "N/A",
+                  size: "",
+                  spec: "",
                   qty: "",
                   unitPrice: "",
-                  serialNos: "",
                   modelNos: "",
                   gst: "18",
                   brand: "",
@@ -239,7 +239,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         paymentMethod: entryToEdit.paymentMethod || "",
         paymentDue: entryToEdit.paymentDue || "",
         paymentTerms: entryToEdit.paymentTerms || "",
-        creditDays: entryToEdit.creditDays || "",
+        stamp: entryToEdit.stamp || "Not Received",
+        installationReport: entryToEdit.installationReport || "No",
         neftTransactionId: entryToEdit.neftTransactionId || "",
         chequeId: entryToEdit.chequeId || "",
         freightcs: entryToEdit.freightcs || "",
@@ -261,7 +262,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         salesPerson: entryToEdit.salesPerson || "",
         report: entryToEdit.report || "",
         company: entryToEdit.company || "Promark",
-        transporter: entryToEdit.transporter || "",
         transporterDetails: entryToEdit.transporterDetails || "",
         docketNo: entryToEdit.docketNo || "",
         receiptDate: entryToEdit.receiptDate
@@ -283,7 +283,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         verificationRemarks: entryToEdit.verificationRemarks || "",
         billStatus: entryToEdit.billStatus || "Pending",
         stockStatus: entryToEdit.stockStatus || "In Stock",
-
         completionStatus: entryToEdit.completionStatus || "In Progress",
         fulfillmentDate: entryToEdit.fulfillmentDate
           ? new Date(entryToEdit.fulfillmentDate).toISOString().split("T")[0]
@@ -308,7 +307,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       setShowConfirm(false);
     }
   }, [isOpen, entryToEdit, reset]);
-
   const debouncedHandleInputChange = useCallback(
     debounce((name, value, index) => {
       if (name.startsWith("products.")) {
@@ -383,7 +381,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         paymentMethod: data.paymentMethod || null,
         paymentDue: data.paymentDue || null,
         paymentTerms: data.paymentTerms || null,
-        creditDays: data.creditDays || null,
+
         neftTransactionId: data.neftTransactionId || null,
         chequeId: data.chequeId || null,
         freightcs: data.freightcs || null,
@@ -402,7 +400,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         salesPerson: data.salesPerson || null,
         report: data.report || null,
         company: data.company || "Promark",
-        transporter: data.transporter || null,
+        stamp: data.stamp || null,
+        installationReport: data.installationReport || null,
+
         transporterDetails: data.transporterDetails || null,
         docketNo: data.docketNo || null,
         receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
@@ -657,7 +657,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       Bihar: [
         "Patna",
         "Mirzapur",
-        "Aurangabad",
         "Jehanabad",
         "Mithapur",
         "Gaya",
@@ -1812,7 +1811,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           display: "block",
                         }}
                       >
-                        Product Type <span style={{ color: "#f43f5e" }}>*</span>
+                        Product Category{" "}
+                        <span style={{ color: "#f43f5e" }}>*</span>
                       </Form.Label>
                       <Controller
                         name={`products.${index}.productType`}
@@ -1851,12 +1851,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                               color: "#1e293b",
                             }}
                           >
-                            <option value="">Select Product Type</option>
-                            {[...Object.keys(productOptions)].map((type) => (
-                              <option key={type} value={type}>
-                                {type}
-                              </option>
-                            ))}
+                            <option value="">Select Product Category</option>
+                            {[...Object.keys(productOptions), "Others"].map(
+                              (type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              )
+                            )}
                           </Form.Select>
                         )}
                       />
@@ -1878,7 +1880,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             display: "block",
                           }}
                         >
-                          Custom Product
+                          Custom Product Category
                         </Form.Label>
                         <Form.Control
                           {...register(`products.${index}.productType`, {
@@ -2351,8 +2353,16 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               letterSpacing: "0.5px",
               transition: "all 0.3s ease",
             }}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 6px 16px rgba(101, 86, 231, 0.5)")
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 4px 12px rgba(101, 86, 231, 0.3)")
+            }
           >
-            Add ➕
+            Add Product ➕
           </StyledButton>
         </div>
         <Form.Group controlId="total">
@@ -2385,6 +2395,49 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           />
           <Form.Control.Feedback type="invalid">
             {errors.paymentCollected?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="stamp">
+          <Form.Label>📦 Signed Stamp Receiving</Form.Label>
+          <Form.Select
+            {...register("stamp")}
+            onChange={(e) =>
+              debouncedHandleInputChange("stamp", e.target.value)
+            }
+            isInvalid={!!errors.stamp}
+            defaultValue="Not Received"
+          >
+            <option value="Received">Received</option>
+            <option value="Not Received">Not Received</option>
+          </Form.Select>
+          <Form.Control.Feedback type="invalid">
+            {errors.stamp?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="installationReport">
+          <Form.Label>📝 Installation Report</Form.Label>
+          <Controller
+            name="installationReport"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange(
+                    "installationReport",
+                    e.target.value
+                  );
+                }}
+                isInvalid={!!errors.installationReport}
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </Form.Select>
+            )}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.installationReport?.message}
           </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="paymentMethod">
@@ -2473,25 +2526,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               </Form.Select>
             )}
           />
-        </Form.Group>
-        <Form.Group controlId="creditDays">
-          <Form.Label>⏳ Credit Days</Form.Label>
-          <Form.Control
-            type="number"
-            {...register("creditDays", {
-              min: {
-                value: 0,
-                message: "Credit Days cannot be negative",
-              },
-            })}
-            onChange={(e) =>
-              debouncedHandleInputChange("creditDays", e.target.value)
-            }
-            isInvalid={!!errors.creditDays}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.creditDays?.message}
-          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
@@ -2707,16 +2741,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="Primus">Primus</option>
               </Form.Select>
             )}
-          />
-        </Form.Group>
-        <Form.Group controlId="transporter">
-          <Form.Label>🚛 Transporter</Form.Label>
-          <Form.Control
-            {...register("transporter")}
-            onChange={(e) =>
-              debouncedHandleInputChange("transporter", e.target.value)
-            }
-            isInvalid={!!errors.transporter}
           />
         </Form.Group>
         <Form.Group controlId="transporterDetails">

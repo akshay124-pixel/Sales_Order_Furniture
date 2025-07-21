@@ -595,6 +595,7 @@ function Installation() {
                       "Contact Person",
                       "Contact No",
                       "Shipping Address",
+                      "Installation Report",
                       "Installation Status",
                       "Installation",
                       "Actions",
@@ -767,7 +768,24 @@ function Installation() {
                           >
                             {order.shippingAddress || "N/A"}
                           </td>
-
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.installationReport || "N/A"}
+                          >
+                            {order.installationReport || "N/A"}
+                          </td>
                           <td
                             style={{
                               padding: "15px",
@@ -1031,34 +1049,8 @@ function Installation() {
                     {viewOrder.installation || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Installation Status:</strong>{" "}
-                    <Badge
-                      style={{
-                        background:
-                          viewOrder.installationStatus === "Pending"
-                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Pending
-                            : viewOrder.installationStatus === "In Progress"
-                            ? "linear-gradient(135deg, #f39c12, #f7c200)" // Orange/Yellow for In Progress
-                            : viewOrder.installationStatus === "Completed"
-                            ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Completed
-                            : viewOrder.installationStatus === "Failed"
-                            ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Failed
-                            : viewOrder.installationStatus ===
-                              "Hold by Salesperson"
-                            ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue for Hold by Salesperson
-                            : viewOrder.installationStatus ===
-                              "Hold by Customer"
-                            ? "linear-gradient(135deg, #8e44ad, #be94e6)" // Purple for Hold by Customer
-                            : viewOrder.installationStatus === "Site Not Ready"
-                            ? "linear-gradient(135deg, #e84393, #ff6b9b)" // Pink/Magenta for Site Not Ready
-                            : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
-                        color: "#fff",
-                        padding: "5px 10px",
-                        borderRadius: "12px",
-                      }}
-                    >
-                      {viewOrder.installationStatus || "Pending"}
-                    </Badge>
+                    <strong>Stamp Signed Received:</strong>{" "}
+                    {viewOrder.stamp || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Remarks By Dispatch team:</strong>{" "}
@@ -1239,7 +1231,43 @@ function Installation() {
                 </Form.Text>
               )}
             </Form.Group>
-
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Installation Report
+              </Form.Label>
+              <Form.Select
+                value={formData.installationReport}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    installationReport: e.target.value,
+                  })
+                }
+                style={{
+                  borderRadius: "10px",
+                  border: errors.installationReport
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                  transition: "all 0.3s ease",
+                }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
+              >
+                {" "}
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </Form.Select>
+              {errors.installationReport && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.installationReport}
+                </Form.Text>
+              )}
+            </Form.Group>
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                 Remarks by Installation <span style={{ color: "red" }}>*</span>

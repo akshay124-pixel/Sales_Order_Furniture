@@ -344,7 +344,7 @@ function Finish() {
     console.log("order.billStatus:", order.billStatus);
     setEditData({
       dispatchFrom: order.dispatchFrom || "",
-      transporter: order.transporter || "",
+
       billNumber: order.billNumber || "",
       transporterDetails: order.transporterDetails || "",
       dispatchDate: order.dispatchDate
@@ -1572,20 +1572,7 @@ function Finish() {
                       <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Spec:</strong> {product.spec || "N/A"}
                       </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Serial Nos:</strong>
-                        <div className="serial-nos-container">
-                          {product.serialNos && product.serialNos.length > 0 ? (
-                            <ul>
-                              {product.serialNos.map((serial, idx) => (
-                                <li key={idx}>{serial}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            "N/A"
-                          )}
-                        </div>
-                      </span>
+
                       <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Model Nos:</strong>{" "}
                         {product.modelNos?.[0] || "N/A"}
@@ -1657,10 +1644,7 @@ function Finish() {
                     <strong>Dispatch Status:</strong>{" "}
                     {viewOrder.dispatchStatus || "Not Dispatched"}
                   </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Transporter:</strong>{" "}
-                    {viewOrder.transporter || "N/A"}
-                  </span>
+
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}
                   </span>

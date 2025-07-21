@@ -292,7 +292,7 @@ function Accounts() {
         "Payment Due": order.paymentDue ? `₹${order.paymentDue}` : "N/A",
         "Payment Method": order.paymentMethod || "N/A",
         "Payment Terms": order.paymentTerms || "N/A",
-        "Credit Days": order.creditDays || "N/A",
+
         "Payment Received": order.paymentReceived || "Not Received",
         Products: productDetails,
       };
@@ -569,7 +569,7 @@ function Accounts() {
                     "Payment Due",
                     "Payment Method",
                     "Payment Terms",
-                    "Credit Days",
+
                     "Payment Received",
                     "Actions",
                   ].map((header, index) => (
@@ -846,23 +846,7 @@ function Accounts() {
                         >
                           {order.paymentTerms || "N/A"}
                         </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "80px",
-                          }}
-                          title={order.creditDays || "N/A"}
-                        >
-                          {order.creditDays || "N/A"}
-                        </td>
+
                         <td
                           style={{
                             padding: "15px",

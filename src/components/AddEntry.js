@@ -24,6 +24,7 @@ function AddEntry({ onSubmit, onClose }) {
     size: "",
     spec: "",
     qty: "",
+    modelNos: "",
     unitPrice: "",
     gst: "",
     warranty: "",
@@ -61,7 +62,7 @@ function AddEntry({ onSubmit, onClose }) {
     deliveryDate: "",
     demoDate: "",
     paymentTerms: "",
-    creditDays: "",
+
     dispatchFrom: "",
     fulfillingStatus: "Pending",
   });
@@ -164,11 +165,7 @@ function AddEntry({ onSubmit, onClose }) {
           ...(name === "orderType" && value !== "B2G"
             ? { gemOrderNumber: "", deliveryDate: "" }
             : {}),
-          ...(name === "paymentTerms" &&
-          value !== "Credit" &&
-          value !== "Partial Advance"
-            ? { creditDays: "" }
-            : {}),
+
           ...(name === "dispatchFrom"
             ? {
                 fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled",
@@ -195,6 +192,7 @@ function AddEntry({ onSubmit, onClose }) {
           size: "",
           spec: "",
           qty: "",
+          modelNos: "",
           unitPrice: "",
           gst: "",
           warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
@@ -258,6 +256,7 @@ function AddEntry({ onSubmit, onClose }) {
       qty,
       unitPrice,
       gst,
+      modelNos: currentProduct.modelNos || "",
       warranty: currentProduct.warranty,
     };
 
@@ -276,6 +275,7 @@ function AddEntry({ onSubmit, onClose }) {
       size: "",
       spec: "",
       qty: "",
+      modelNos: "",
       unitPrice: "",
       gst: "",
       warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
@@ -371,20 +371,17 @@ function AddEntry({ onSubmit, onClose }) {
       toast.error("Please provide Demo Date for Demo orders");
       return;
     }
+
+    if (formData.company === "Others" && formData.customCompany) {
+      formData.company = formData.customCompany;
+      delete formData.customCompany;
+    }
+
     if (formData.orderType !== "Demo" && !formData.paymentTerms) {
       toast.error("Please select payment terms");
       return;
     }
-    if (
-      (formData.paymentTerms === "Credit" ||
-        formData.paymentTerms === "Partial Advance") &&
-      !formData.creditDays
-    ) {
-      toast.error(
-        "Please select credit days for Credit or Partial Advance terms"
-      );
-      return;
-    }
+
     if (!formData.dispatchFrom) {
       toast.error("Please select a dispatch location");
       return;
@@ -419,6 +416,7 @@ function AddEntry({ onSubmit, onClose }) {
         qty: Number(p.qty),
         unitPrice: Number(p.unitPrice),
         gst: String(p.gst),
+        modelNos: p.modelNos ? p.modelNos.split(",").map((s) => s.trim()) : [], // Convert comma-separated string to array
         warranty: p.warranty,
       })),
       soDate: formData.soDate,
@@ -436,7 +434,6 @@ function AddEntry({ onSubmit, onClose }) {
       deliveryDate: formData.deliveryDate || "",
       demoDate: formData.demoDate || "",
       paymentTerms: formData.paymentTerms || "",
-      creditDays: String(formData.creditDays || ""),
       dispatchFrom: formData.dispatchFrom,
       fulfillingStatus: formData.fulfillingStatus,
     };
@@ -524,6 +521,17 @@ function AddEntry({ onSubmit, onClose }) {
       placeholder: "Select Company",
       ariaLabel: "Company",
     },
+    ...(formData.company === "Others"
+      ? [
+          {
+            label: "Custom Company",
+            name: "customCompany",
+            type: "text",
+            placeholder: "Enter Custom Company",
+            ariaLabel: "Custom Company",
+          },
+        ]
+      : []),
     {
       label: "Dispatch From *",
       name: "dispatchFrom",
@@ -1113,6 +1121,7 @@ function AddEntry({ onSubmit, onClose }) {
           </div>
 
           {/* Add Products Section */}
+          {/* Add Products Section */}
           <div>
             <h3
               style={{
@@ -1147,7 +1156,7 @@ function AddEntry({ onSubmit, onClose }) {
                     display: "block",
                   }}
                 >
-                  Product * <span style={{ color: "#f43f5e" }}>*</span>
+                  Product* <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
                 <select
                   name="productType"
@@ -1469,14 +1478,43 @@ function AddEntry({ onSubmit, onClose }) {
                     display: "block",
                   }}
                 >
+                  Model Nos
+                </label>
+                <input
+                  type="text"
+                  name="modelNos"
+                  value={currentProduct.modelNos}
+                  onChange={handleProductChange}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                  aria-label="Model Numbers"
+                />
+              </div>
+              <div style={{ gridColumn: "2 / 3" }}>
+                <label
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                    marginBottom: "0.5rem",
+                    display: "block",
+                  }}
+                >
                   Warranty * <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
                 <input
                   type="text"
+                  disabled
                   name="warranty"
                   value={currentProduct.warranty}
                   onChange={handleProductChange}
-                  placeholder="Enter Warranty (e.g., 1 Year)"
                   style={{
                     width: "100%",
                     padding: "0.75rem",
@@ -1490,64 +1528,28 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-required="true"
                 />
               </div>
-            </div>{" "}
-            <button
-              type="button"
-              onClick={addProduct}
-              style={{
-                padding: "0.75rem 1.5rem",
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                color: "#fff",
-                border: "none",
-                marginBottom: "20px",
-                borderRadius: "0.75rem",
-                cursor: "pointer",
-                fontWeight: "600",
-                letterSpacing: "0.5px",
-                transition: "all 0.3s ease",
-              }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.boxShadow =
-                  "0 6px 16px rgba(101, 86, 231, 0.5)")
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(101, 86, 231, 0.3)")
-              }
-              aria-label="Add Product"
-            >
-              Add ➕
-            </button>
-            <div>
-              <label
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: "600",
-                  color: "#475569",
-                  marginBottom: "0.5rem",
-                  display: "block",
-                }}
-              >
-                Remarks
-              </label>
-              <input
-                type="text"
-                name="remarks"
-                value={formData.remarks || ""}
-                onChange={handleChange}
-                placeholder="Enter product-related remarks"
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "0.75rem",
-                  backgroundColor: "#f8fafc",
-                  fontSize: "1rem",
-                  color: "#1e293b",
-                }}
-                aria-label="Remarks"
-              />
+              <div style={{ gridColumn: "3 / 4", alignSelf: "end" }}>
+                <button
+                  type="button"
+                  onClick={addProduct}
+                  style={{
+                    width: "40%",
+                    padding: "0.75rem",
+                    background: "linear-gradient(135deg, #7c3aed, #3b82f6)",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "0.75rem",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                  }}
+                  aria-label="Add Product"
+                >
+                  Add +
+                </button>
+              </div>
             </div>
+
             {products.length > 0 && (
               <div style={{ marginTop: "1.5rem" }}>
                 <h4
@@ -1573,7 +1575,8 @@ function AddEntry({ onSubmit, onClose }) {
                       key={index}
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr 0.5fr",
+                        gridTemplateColumns:
+                          "2fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr",
                         padding: "0.75rem",
                         background: "#f1f5f9",
                         borderRadius: "0.5rem",
@@ -1605,6 +1608,9 @@ function AddEntry({ onSubmit, onClose }) {
                       <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
                         GST: {product.gst}
                       </span>
+                      <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
+                        {product.modelNos || "N/A"}
+                      </span>
                       <button
                         type="button"
                         onClick={() => removeProduct(index)}
@@ -1626,7 +1632,6 @@ function AddEntry({ onSubmit, onClose }) {
               </div>
             )}
           </div>
-
           {/* Additional Charges Section */}
           <div>
             <h3
@@ -1998,49 +2003,6 @@ function AddEntry({ onSubmit, onClose }) {
                       }}
                       aria-label="Cheque ID"
                     />
-                  </div>
-                )}
-                {(formData.paymentTerms === "Credit" ||
-                  formData.paymentTerms === "Partial Advance") && (
-                  <div>
-                    <label
-                      style={{
-                        fontSize: "0.9rem",
-                        fontWeight: "600",
-                        color: "#475569",
-                        marginBottom: "0.5rem",
-                      }}
-                    >
-                      No. of Credit Days{" "}
-                      <span style={{ color: "#dc2626" }}>*</span>
-                    </label>
-                    <select
-                      name="creditDays"
-                      value={formData.creditDays}
-                      onChange={handleChange}
-                      disabled={formData.orderType === "Demo"}
-                      required
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "0.75rem",
-                        backgroundColor:
-                          formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
-                        fontSize: "1rem",
-                        color: "#1e293b",
-                        appearance: "auto",
-                      }}
-                      aria-label="Credit Days"
-                      aria-required="true"
-                    >
-                      <option value="" disabled>
-                        Select Credit Days
-                      </option>
-                      <option value="7">7 Days</option>
-                      <option value="15">15 Days</option>
-                      <option value="30">30 Days</option>
-                    </select>
                   </div>
                 )}
               </div>
