@@ -412,29 +412,32 @@ const OutFinishedGoodModal = ({
             )}
           </Select>
         </div>
-        <div>
-          <label
-            style={{
-              fontSize: "1rem",
-              fontWeight: "600",
-              color: "#333",
-              marginBottom: "5px",
-              display: "block",
-            }}
-          >
-            Signed Stamp Receiving
-          </label>
-          <Select
-            key={(entryToEdit?.stamp || "Not Received") + formData.stamp}
-            value={formData.stamp || "Not Received"}
-            onChange={(value) => setFormData({ ...formData, stamp: value })}
-            style={{ width: "100%", borderRadius: "8px" }}
-            disabled={loading}
-          >
-            <Option value="Not Received">Not Received</Option>
-            <Option value="Received">Received</Option>
-          </Select>
-        </div>
+
+        {formData.dispatchStatus === "Delivered" && (
+          <div>
+            <label
+              style={{
+                fontSize: "1rem",
+                fontWeight: "600",
+                color: "#333",
+                marginBottom: "5px",
+                display: "block",
+              }}
+            >
+              Signed Stamp Receiving
+            </label>
+            <Select
+              key={(entryToEdit?.stamp || "Not Received") + formData.stamp}
+              value={formData.stamp || "Not Received"}
+              onChange={(value) => setFormData({ ...formData, stamp: value })}
+              style={{ width: "100%", borderRadius: "8px" }}
+              disabled={loading}
+            >
+              <Option value="Not Received">Not Received</Option>
+              <Option value="Received">Received</Option>
+            </Select>
+          </div>
+        )}
 
         {showProductFields && (
           <div>

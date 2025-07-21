@@ -187,7 +187,6 @@ const columnWidths = [
   140, // Payment Received
   120, // Freight Charges
   120, // Actual Freight
-  140, // Install Charges Status
   120, // Installation
   140, // Installation Report
   200, // Transporter Details
@@ -205,7 +204,6 @@ const columnWidths = [
   140, // Created By
   200, // Remarks
 ];
-
 // Recalculate totalTableWidth
 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
 
@@ -725,16 +723,11 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[31],
-          content: order.installchargesstatus || "-",
-          title: order.installchargesstatus || "-",
-        },
-        {
-          width: columnWidths[32],
           content: order.installation ? `₹${order.installation}` : "-",
           title: order.installation ? `₹${order.installation}` : "-",
         },
         {
-          width: columnWidths[33],
+          width: columnWidths[32],
           content: (
             <Badge
               bg={order.installationReport === "Yes" ? "success" : "warning"}
@@ -745,17 +738,17 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.installationReport || "-",
         },
         {
-          width: columnWidths[34],
+          width: columnWidths[33],
           content: order.transporterDetails || "-",
           title: order.transporterDetails || "-",
         },
         {
-          width: columnWidths[35],
+          width: columnWidths[34],
           content: order.dispatchFrom || "-",
           title: order.dispatchFrom || "-",
         },
         {
-          width: columnWidths[36],
+          width: columnWidths[35],
           content: (
             <Badge
               bg={
@@ -782,7 +775,7 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.dispatchStatus || "-",
         },
         {
-          width: columnWidths[37],
+          width: columnWidths[36],
           content: (
             <Badge bg={order.stamp === "Received" ? "success" : "warning"}>
               {order.stamp || "-"}
@@ -791,17 +784,17 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.stamp || "-",
         },
         {
-          width: columnWidths[38],
+          width: columnWidths[37],
           content: order.orderType || "-",
           title: order.orderType || "-",
         },
         {
-          width: columnWidths[39],
+          width: columnWidths[38],
           content: order.report || "-",
           title: order.report || "-",
         },
         {
-          width: columnWidths[40],
+          width: columnWidths[39],
           content: (
             <Badge
               bg={
@@ -820,7 +813,7 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.billStatus || "-",
         },
         {
-          width: columnWidths[41],
+          width: columnWidths[40],
           content: (
             <Badge
               style={{
@@ -842,27 +835,27 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.fulfillingStatus || "Pending",
         },
         {
-          width: columnWidths[42],
+          width: columnWidths[41],
           content: order.billNumber || "-",
           title: order.billNumber || "-",
         },
         {
-          width: columnWidths[43],
+          width: columnWidths[42],
           content: order.piNumber || "-",
           title: order.piNumber || "-",
         },
         {
-          width: columnWidths[44],
+          width: columnWidths[43],
           content: order.salesPerson || "-",
           title: order.salesPerson || "-",
         },
         {
-          width: columnWidths[45],
+          width: columnWidths[44],
           content: order.company || "-",
           title: order.company || "-",
         },
         {
-          width: columnWidths[46],
+          width: columnWidths[45],
           content:
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
@@ -877,7 +870,7 @@ const Row = React.memo(({ index, style, data }) => {
               : "-",
         },
         {
-          width: columnWidths[47],
+          width: columnWidths[46],
           content: order.remarks || "-",
           title: order.remarks || "-",
         },
@@ -1660,7 +1653,6 @@ const Sales = () => {
       endDate,
     ]
   );
-
   const handleExport = useCallback(() => {
     try {
       const exportData = filteredOrders.map((order, index) => ({
@@ -1711,10 +1703,8 @@ const Sales = () => {
         "Actual Freight": order.actualFreight
           ? `₹${order.actualFreight.toFixed(2)}`
           : "-",
-        "Install Charges Status": order.installchargesstatus || "-",
         Installation: order.installation ? `₹${order.installation}` : "-",
         "Installation Report": order.installationReport || "-",
-        Transporter: order.transporter || "-",
         "Transporter Details": order.transporterDetails || "-",
         "Dispatch From": order.dispatchFrom || "-",
         "Dispatch Status": order.dispatchStatus || "-",
@@ -1953,7 +1943,6 @@ const Sales = () => {
       </Popover.Body>
     </NotificationPopover>
   );
-
   const tableHeaders = [
     "Seq No",
     "Order ID",
@@ -1986,7 +1975,6 @@ const Sales = () => {
     "Payment Received",
     "Freight Charges",
     "Actual Freight",
-    "Install Charges Status",
     "Installation",
     "Installation Report",
     "Transporter Details",
@@ -2004,6 +1992,7 @@ const Sales = () => {
     "Created By",
     "Remarks",
   ];
+
   return (
     <>
       <style>{tableStyles}</style>

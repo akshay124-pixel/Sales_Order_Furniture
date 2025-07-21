@@ -27,7 +27,6 @@ function AddEntry({ onSubmit, onClose }) {
     modelNos: "",
     unitPrice: "",
     gst: "",
-    warranty: "",
   });
 
   const [formData, setFormData] = useState({
@@ -195,7 +194,6 @@ function AddEntry({ onSubmit, onClose }) {
           modelNos: "",
           unitPrice: "",
           gst: "",
-          warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
         };
       }
       return {
@@ -220,7 +218,6 @@ function AddEntry({ onSubmit, onClose }) {
         label: "Unit Price",
       },
       { name: "gst", value: currentProduct.gst, label: "GST" },
-      { name: "warranty", value: currentProduct.warranty, label: "Warranty" },
     ];
 
     const missingField = requiredFields.find(
@@ -257,7 +254,6 @@ function AddEntry({ onSubmit, onClose }) {
       unitPrice,
       gst,
       modelNos: currentProduct.modelNos || "",
-      warranty: currentProduct.warranty,
     };
 
     setProducts((prevProducts) => {
@@ -278,7 +274,6 @@ function AddEntry({ onSubmit, onClose }) {
       modelNos: "",
       unitPrice: "",
       gst: "",
-      warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
     });
   };
 
@@ -392,8 +387,7 @@ function AddEntry({ onSubmit, onClose }) {
         !product.productType ||
         !product.qty ||
         !product.unitPrice ||
-        !product.gst ||
-        !product.warranty
+        !product.gst
       ) {
         toast.error(
           "All added products must have product type, quantity, unit price, GST, and warranty"
@@ -416,8 +410,7 @@ function AddEntry({ onSubmit, onClose }) {
         qty: Number(p.qty),
         unitPrice: Number(p.unitPrice),
         gst: String(p.gst),
-        modelNos: p.modelNos ? p.modelNos.split(",").map((s) => s.trim()) : [], // Convert comma-separated string to array
-        warranty: p.warranty,
+        modelNos: p.modelNos ? p.modelNos.split(",").map((s) => s.trim()) : [], // Convert
       })),
       soDate: formData.soDate,
       total,
@@ -1121,7 +1114,7 @@ function AddEntry({ onSubmit, onClose }) {
           </div>
 
           {/* Add Products Section */}
-          {/* Add Products Section */}
+
           <div>
             <h3
               style={{
@@ -1497,38 +1490,8 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-label="Model Numbers"
                 />
               </div>
-              <div style={{ gridColumn: "2 / 3" }}>
-                <label
-                  style={{
-                    fontSize: "1rem",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "0.5rem",
-                    display: "block",
-                  }}
-                >
-                  Warranty * <span style={{ color: "#f43f5e" }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  name="warranty"
-                  value={currentProduct.warranty}
-                  onChange={handleProductChange}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
-                    color: "#1e293b",
-                  }}
-                  aria-label="Warranty"
-                  aria-required="true"
-                />
-              </div>
-              <div style={{ gridColumn: "3 / 4", alignSelf: "end" }}>
+
+              <div style={{ gridColumn: "2 / 4", alignSelf: "end" }}>
                 <button
                   type="button"
                   onClick={addProduct}
@@ -1572,7 +1535,6 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   {products.map((product, index) => (
                     <div
-                      key={index}
                       style={{
                         display: "grid",
                         gridTemplateColumns:
@@ -1594,7 +1556,7 @@ function AddEntry({ onSubmit, onClose }) {
                         {product.productType}
                       </span>
                       <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
-                        {product.size || "N/A"}
+                        Size: {product.size || "N/A"}
                       </span>
                       <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
                         {product.spec || "N/A"}
@@ -1609,7 +1571,7 @@ function AddEntry({ onSubmit, onClose }) {
                         GST: {product.gst}
                       </span>
                       <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
-                        {product.modelNos || "N/A"}
+                        Model: {product.modelNos || "N/A"}
                       </span>
                       <button
                         type="button"

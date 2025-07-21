@@ -1231,43 +1231,45 @@ function Installation() {
                 </Form.Text>
               )}
             </Form.Group>
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Installation Report
-              </Form.Label>
-              <Form.Select
-                value={formData.installationReport}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    installationReport: e.target.value,
-                  })
-                }
-                style={{
-                  borderRadius: "10px",
-                  border: errors.installationReport
-                    ? "1px solid red"
-                    : "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                  transition: "all 0.3s ease",
-                }}
-                onFocus={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 0 10px rgba(37, 117, 252, 0.5)")
-                }
-                onBlur={(e) => (e.target.style.boxShadow = "none")}
-              >
-                {" "}
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </Form.Select>
-              {errors.installationReport && (
-                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                  {errors.installationReport}
-                </Form.Text>
-              )}
-            </Form.Group>
+            {formData.installationStatus === "Completed" && (
+              <Form.Group style={{ marginBottom: "20px" }}>
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                  Installation Report
+                </Form.Label>
+                <Form.Select
+                  value={formData.installationReport}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      installationReport: e.target.value,
+                    })
+                  }
+                  style={{
+                    borderRadius: "10px",
+                    border: errors.installationReport
+                      ? "1px solid red"
+                      : "1px solid #ced4da",
+                    padding: "12px",
+                    fontSize: "1rem",
+                    transition: "all 0.3s ease",
+                  }}
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
+                >
+                  {" "}
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </Form.Select>
+                {errors.installationReport && (
+                  <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                    {errors.installationReport}
+                  </Form.Text>
+                )}
+              </Form.Group>
+            )}
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                 Remarks by Installation <span style={{ color: "red" }}>*</span>
