@@ -622,7 +622,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
-                  placeholderText="Select Start Date"
+                  placeholderText="Start Date"
                   dateFormat="dd/MM/yyyy"
                   isClearable
                   aria-label="Select start date"
@@ -639,7 +639,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                   startDate={startDate}
                   endDate={endDate}
                   minDate={startDate}
-                  placeholderText="Select End Date"
+                  placeholderText="End Date"
                   dateFormat="dd/MM/yyyy"
                   isClearable
                   aria-label="Select end date"
