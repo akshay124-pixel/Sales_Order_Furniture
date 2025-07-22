@@ -361,16 +361,14 @@ const FilterSection = ({
               : installStatusFilter}
           </StyledDropdownToggle>
           <StyledDropdownMenu>
-            {["All", "Pending", "In Progress", "Completed", "Failed"].map(
-              (option) => (
-                <StyledDropdownItem
-                  key={option}
-                  onClick={() => setInstallStatusFilter(option)}
-                >
-                  {option}
-                </StyledDropdownItem>
-              )
-            )}
+            {["All", "Pending", "In Progress", "Completed"].map((option) => (
+              <StyledDropdownItem
+                key={option}
+                onClick={() => setInstallStatusFilter(option)}
+              >
+                {option}
+              </StyledDropdownItem>
+            ))}
           </StyledDropdownMenu>
         </Dropdown>{" "}
         <Dropdown>
@@ -378,20 +376,16 @@ const FilterSection = ({
             {dispatchFilter === "All" ? "Dispatch Status" : dispatchFilter}
           </StyledDropdownToggle>
           <StyledDropdownMenu>
-            {[
-              "All",
-              "Not Dispatched",
-              "Docket Awaited Dispatched",
-              "Dispatched",
-              "Delivered",
-            ].map((option) => (
-              <StyledDropdownItem
-                key={option}
-                onClick={() => setDispatchFilter(option)}
-              >
-                {option}
-              </StyledDropdownItem>
-            ))}
+            {["All", "Not Dispatched", "Dispatched", "Delivered"].map(
+              (option) => (
+                <StyledDropdownItem
+                  key={option}
+                  onClick={() => setDispatchFilter(option)}
+                >
+                  {option}
+                </StyledDropdownItem>
+              )
+            )}
           </StyledDropdownMenu>
         </Dropdown>
         <Dropdown>

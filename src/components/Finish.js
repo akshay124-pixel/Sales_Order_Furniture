@@ -727,9 +727,6 @@ function Finish() {
                 <option value="">All</option>
                 <option value="Not Dispatched">Not Dispatched</option>
                 <option value="Dispatched">Dispatched</option>
-                <option value="Docket Awaited Dispatched">
-                  Docket Awaited Dispatched
-                </option>
               </select>
             </div>
             <div>
@@ -887,6 +884,7 @@ function Finish() {
                       "Freight Status",
                       "Production Status",
                       "Dispatch Status",
+                      "Stamp Signed",
                       "Actions",
                     ].map((header, index) => (
                       <th
@@ -1346,7 +1344,7 @@ function Finish() {
                                   ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Not Dispatched
                                   : order.dispatchStatus ===
                                     "Docket Awaited Dispatched"
-                                  ? "linear-gradient(135deg, #f39c12, #f7c200)" // Orange/Yellow for Docket Awaited Dispatched
+                                  ? "linear-gradient(135deg, #f39c12, #f7c200)"
                                   : order.dispatchStatus === "Dispatched"
                                   ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue for Dispatched
                                   : order.dispatchStatus === "Delivered"
@@ -1372,6 +1370,42 @@ function Finish() {
                             {order.dispatchStatus || "Not Dispatched"}
                           </Badge>
                         </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={order.stamp || "Not Received"}
+                        >
+                          <Badge
+                            style={{
+                              background:
+                                order.stamp === "Received"
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Received
+                                  : "linear-gradient(135deg, #ff6b6b, #ff8787)", // Red for Not Received
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {order.stamp || "Not Received"}
+                          </Badge>
+                        </td>
+
                         <td
                           style={{
                             padding: "12px",

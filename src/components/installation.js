@@ -141,13 +141,12 @@ function Installation() {
     "Pending",
     "In Progress",
     "Completed",
-    "Failed",
+
     ...new Set(
       orders
         .map((order) => order.installationStatus || "Pending")
         .filter(
-          (status) =>
-            !["Pending", "In Progress", "Completed", "Failed"].includes(status)
+          (status) => !["Pending", "In Progress", "Completed"].includes(status)
         )
     ),
   ];
@@ -1220,7 +1219,7 @@ function Installation() {
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
-                <option value="Failed">Failed</option>
+
                 <option value="Hold by Salesperson">Hold by Salesperson</option>
                 <option value="Hold by Customer">Hold by Customer</option>
                 <option value="Site Not Ready">Site Not Ready</option>

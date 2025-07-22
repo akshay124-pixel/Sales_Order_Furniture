@@ -2631,7 +2631,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
-                <option value="Failed">Failed</option>
               </Form.Select>
             )}
           />
@@ -2668,9 +2667,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="Not Dispatched">Not Dispatched</option>
                 <option value="Dispatched">Dispatched</option>
                 <option value="Delivered">Delivered</option>
-                <option value="Docket Awaited Dispatched">
-                  Docket Awaited Dispatched
-                </option>
               </Form.Select>
             )}
           />
