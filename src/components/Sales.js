@@ -12,6 +12,7 @@ import io from "socket.io-client";
 import styled from "styled-components";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import debounce from "lodash/debounce";
 import SalesDashboardDrawer from "./Dashbords/SalesDashboardDrawer";
 // Lazy load modals
@@ -270,6 +271,20 @@ body {
   box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* Tooltip styling for headers and cells */
+.sales-table th .tooltip-inner,
+.sales-table td .tooltip-inner {
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  padding: 8px 12px;
+  max-width: 300px;
+  text-align: center;
 }
 
 /* Table body rows */
@@ -292,6 +307,7 @@ body {
   white-space: nowrap;
   box-sizing: border-box;
   text-align: center;
+  cursor: pointer;
 }
 
 /* Contact Person Name specific styling */
@@ -329,11 +345,11 @@ body {
   height: 50px;
   overflow: visible;
   flex-wrap: nowrap;
+  cursor: default;
 }
 
 /* Action buttons */
 .sales-table .actions-cell button {
-
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -345,11 +361,6 @@ body {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   z-index: 1;
 }
-
-// .sales-table .actions-cell button:hover {
-//   transform: scale(1.1);
-//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-// }
 
 /* Reserve space for scrollbar */
 .sales-table-container thead tr th:last-child {
@@ -372,7 +383,10 @@ const Row = React.memo(({ index, style, data }) => {
     userRole,
     isOrderComplete,
     columnWidths,
+    openTooltipId, // Destructure openTooltipId
+    setOpenTooltipId, // Destructure setOpenTooltipId
   } = data;
+
   const order = orders[index];
   const complete = isOrderComplete(order);
   const firstProduct =
@@ -875,18 +889,43 @@ const Row = React.memo(({ index, style, data }) => {
           title: order.remarks || "-",
         },
       ].map((cell, idx) => (
-        <td
+        <OverlayTrigger
           key={idx}
-          className={cell.className || ""}
-          style={{
-            width: `${cell.width}px`,
-            minWidth: `${cell.width}px`,
-            maxWidth: `${cell.width}px`,
+          trigger="click"
+          placement="top"
+          show={openTooltipId === `cell-${index}-${idx}`}
+          onToggle={(show) => {
+            if (show && cell.title) {
+              setOpenTooltipId(`cell-${index}-${idx}`);
+            } else {
+              setOpenTooltipId(null);
+            }
           }}
-          title={cell.title}
+          overlay={
+            cell.title ? (
+              <Tooltip id={`cell-tooltip-${index}-${idx}`}>
+                {cell.title}
+              </Tooltip>
+            ) : (
+              <Tooltip
+                id={`cell-tooltip-${index}-${idx}`}
+                style={{ display: "none" }}
+              />
+            )
+          }
         >
-          {cell.content}
-        </td>
+          <td
+            className={cell.className || ""}
+            style={{
+              width: `${cell.width}px`,
+              minWidth: `${cell.width}px`,
+              maxWidth: `${cell.width}px`,
+            }}
+            title={cell.title}
+          >
+            {cell.content}
+          </td>
+        </OverlayTrigger>
       ))}
     </tr>
   );
@@ -910,7 +949,21 @@ const Sales = () => {
   const [notifications, setNotifications] = useState([]);
   const userRole = localStorage.getItem("role");
   const userId = localStorage.getItem("userId");
+  const [openTooltipId, setOpenTooltipId] = useState(null);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const tableContainer = document.querySelector(".sales-table-container");
+      if (tableContainer && !tableContainer.contains(event.target)) {
+        setOpenTooltipId(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
   // Debounced search handler
   const debouncedSetSearchTerm = useMemo(
     () => debounce((value) => setSearchTerm(value), 300),
@@ -2254,16 +2307,32 @@ const Sales = () => {
             <thead>
               <tr>
                 {tableHeaders.map((header, index) => (
-                  <th
+                  <OverlayTrigger
                     key={index}
-                    style={{
-                      width: `${columnWidths[index]}px`,
-                      minWidth: `${columnWidths[index]}px`,
-                      maxWidth: `${columnWidths[index]}px`,
+                    trigger="click"
+                    placement="top"
+                    show={openTooltipId === `header-${index}`}
+                    onToggle={(show) => {
+                      if (show) {
+                        setOpenTooltipId(`header-${index}`);
+                      } else {
+                        setOpenTooltipId(null);
+                      }
                     }}
+                    overlay={
+                      <Tooltip id={`tooltip-${index}`}>{header}</Tooltip>
+                    }
                   >
-                    {header}
-                  </th>
+                    <th
+                      style={{
+                        width: `${columnWidths[index]}px`,
+                        minWidth: `${columnWidths[index]}px`,
+                        maxWidth: `${columnWidths[index]}px`,
+                      }}
+                    >
+                      {header}
+                    </th>
+                  </OverlayTrigger>
                 ))}
               </tr>
             </thead>
@@ -2290,6 +2359,8 @@ const Sales = () => {
                           userId,
                           isOrderComplete,
                           columnWidths,
+                          openTooltipId, // Add openTooltipId to itemData
+                          setOpenTooltipId, // Add setOpenTooltipId to itemData
                         }}
                       >
                         {Row}

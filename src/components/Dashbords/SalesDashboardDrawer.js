@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { Button } from "react-bootstrap";
-import { X, Download } from "lucide-react";
+import { X, Download, Calendar } from "lucide-react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-// Styled Components (unchanged)
+// Styled Components
 const DrawerOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -48,6 +50,8 @@ const DrawerHeader = styled.div`
   background: linear-gradient(135deg, #2575fc, #6a11cb);
   border-radius: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
 `;
 
 const DrawerTitle = styled.h3`
@@ -55,6 +59,13 @@ const DrawerTitle = styled.h3`
   font-weight: 700;
   font-size: 1.2rem;
   margin: 0;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 `;
 
 const CloseButton = styled(Button)`
@@ -65,6 +76,7 @@ const CloseButton = styled(Button)`
   display: flex;
   align-items: center;
   gap: 5px;
+  font-size: 0.9rem;
   &:hover {
     background: #b02a37;
   }
@@ -78,17 +90,115 @@ const ExportButton = styled(Button)`
   display: flex;
   align-items: center;
   gap: 5px;
+  font-size: 0.9rem;
   &:hover {
     background: #218838;
   }
 `;
+
+const ResetButton = styled(Button)`
+  background: #6b7280;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  &:hover {
+    background: #4b5563;
+  }
+`;
+
+const DatePickerContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 2000;
+`;
+
+const DatePickerLabel = styled.label`
+  font-size: 0.85rem;
+  color: white;
+  font-weight: 500;
+  text-transform: uppercase;
+`;
+
+const StyledDatePicker = styled(DatePicker)`
+  padding: 8px 30px 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 140px;
+  background: white;
+  color: #1e3a8a;
+  font-family: "Poppins", sans-serif;
+  &:focus {
+    outline: none;
+    border-color: #2575fc;
+    box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.3);
+  }
+  &::placeholder {
+    color: #6b7280;
+  }
+`;
+
+const DatePickerIcon = styled(Calendar)`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+`;
+
+const DatePickerPopup = styled.div`
+  .react-datepicker {
+    z-index: 2000 !important;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-family: "Poppins", sans-serif;
+  }
+  .react-datepicker__triangle {
+    display: none;
+  }
+  .react-datepicker__header {
+    background: linear-gradient(135deg, #2575fc, #6a11cb);
+    color: white;
+    border-bottom: none;
+  }
+  .react-datepicker__current-month,
+  .react-datepicker__day-name {
+    color: white;
+    font-weight: 500;
+  }
+  .react-datepicker__day {
+    color: #1e3a8a;
+    &:hover {
+      background: #f0f7ff;
+    }
+  }
+  .react-datepicker__day--selected,
+  .react-datepicker__day--keyboard-selected {
+    background: #2575fc;
+    color: white;
+  }
+  .react-datepicker__day--outside-month {
+    color: #6b7280;
+  }
+`;
+
 const TableContainer = styled.div`
   flex: 1;
   overflow-y: auto;
   border-radius: 12px;
   background: white;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  max-height: calc(80vh - 100px); /* Adjust to account for DrawerHeader */
+  max-height: calc(80vh - 100px);
 `;
 
 const DashboardTable = styled.table`
@@ -107,9 +217,10 @@ const TotalHeaderRow = styled.tr`
 const TableHeaderRow = styled.tr`
   background: linear-gradient(135deg, #2575fc, #6a11cb);
   position: sticky;
-  top: 44px; /* Height of TotalHeaderRow to stack below it */
+  top: 44px;
   z-index: 10;
 `;
+
 const TableHeader = styled.th`
   padding: 12px 15px;
   color: white;
@@ -210,6 +321,29 @@ const TableRow = styled.tr`
 const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  // Filter orders by date range
+  const filterOrders = useCallback((ordersToFilter, start, end) => {
+    let filtered = [...ordersToFilter];
+    if (start || end) {
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.soDate);
+        const startDateAdjusted = start
+          ? new Date(start.setHours(0, 0, 0, 0))
+          : null;
+        const endDateAdjusted = end
+          ? new Date(end.setHours(23, 59, 59, 999))
+          : null;
+        return (
+          (!startDateAdjusted || orderDate >= startDateAdjusted) &&
+          (!endDateAdjusted || orderDate <= endDateAdjusted)
+        );
+      });
+    }
+    return filtered;
+  }, []);
 
   // Fetch orders from API
   const fetchOrders = async () => {
@@ -227,8 +361,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           },
         }
       );
-      console.log("Fetched orders:", response.data); // Debug: Log raw orders
-      setOrders(response.data);
+      console.log("Fetched orders:", response.data);
+      setOrders(response.data || []);
     } catch (error) {
       console.error("Error fetching orders:", {
         message: error.message,
@@ -240,6 +374,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           error.response?.data?.error || error.message
         }`
       );
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -248,10 +383,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   // Initialize Socket.IO connection
   useEffect(() => {
     if (isOpen) {
-      // Initial fetch when drawer opens
       fetchOrders();
-
-      // Connect to Socket.IO server
       const socket = io(
         "https://sales-order-furniture-server-1169.onrender.com",
         {
@@ -264,13 +396,13 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
 
       socket.on("connect", () => {
         console.log("Connected to Socket.IO server, ID:", socket.id);
-        socket.emit("join", "global"); // Join global room
+        socket.emit("join", "global");
         toast.success("Connected to real-time updates!");
       });
 
       socket.on("orderUpdate", (data) => {
         console.log("Order update received:", data);
-        fetchOrders(); // Refetch orders on any change
+        fetchOrders();
       });
 
       socket.on("connect_error", (error) => {
@@ -288,10 +420,9 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       socket.on("reconnect", (attempt) => {
         console.log("Socket.IO reconnected after attempt:", attempt);
         toast.success("Reconnected to server!");
-        fetchOrders(); // Refetch orders on reconnect
+        fetchOrders();
       });
 
-      // Cleanup on unmount or when drawer closes
       return () => {
         socket.disconnect();
         console.log("Socket.IO disconnected");
@@ -299,15 +430,20 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Memoize sales analytics computation based on createdBy
-  const salesAnalytics = useMemo(() => {
-    console.log("Computing sales analytics for orders:", orders); // Debug: Log orders being processed
-    return orders.reduce((acc, order) => {
-      // Use createdBy.username for grouping
-      const createdBy = order.createdBy?.username?.trim() || "Sales Order Team";
-      console.log(`Order ID: ${order.orderId}, CreatedBy: ${createdBy}`); // Debug: Log assignment
+  // Memoize filtered orders
+  const filteredOrders = useMemo(() => {
+    return filterOrders(orders, startDate, endDate);
+  }, [orders, startDate, endDate, filterOrders]);
 
-      // Initialize createdBy data
+  // Memoize sales analytics computation
+  const salesAnalytics = useMemo(() => {
+    console.log("Computing sales analytics for orders:", filteredOrders);
+    return filteredOrders.reduce((acc, order) => {
+      const createdBy = order.createdBy?.username?.trim() || "Sales Order Team";
+      console.log(
+        `Order ID: ${order.orderId || "N/A"}, CreatedBy: ${createdBy}`
+      );
+
       if (!acc[createdBy]) {
         acc[createdBy] = {
           totalOrders: 0,
@@ -319,20 +455,18 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         };
       }
 
-      // Parse and validate values
       const total = Number(order.total) || 0;
       const paymentCollected = parseFloat(order.paymentCollected) || 0;
       const paymentDue = parseFloat(order.paymentDue) || 0;
 
-      // Calculate total unit price from products
-      const unitPriceTotal =
-        order.products?.reduce((sum, product) => {
-          const unitPrice = Number(product.unitPrice) || 0;
-          const qty = Number(product.qty) || 0;
-          return sum + unitPrice * qty;
-        }, 0) || 0;
+      const unitPriceTotal = Array.isArray(order.products)
+        ? order.products.reduce((sum, product) => {
+            const unitPrice = Number(product.unitPrice) || 0;
+            const qty = Number(product.qty) || 0;
+            return sum + unitPrice * qty;
+          }, 0)
+        : 0;
 
-      // Increment totals
       if (isFinite(total)) {
         acc[createdBy].totalOrders += 1;
         acc[createdBy].totalAmount += total;
@@ -347,7 +481,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         acc[createdBy].totalUnitPrice += unitPriceTotal;
       }
 
-      // Calculate due amount over 30 days
       const soDate = order.soDate ? new Date(order.soDate) : null;
       const currentDate = new Date();
       if (
@@ -366,7 +499,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
 
       return acc;
     }, {});
-  }, [orders]);
+  }, [filteredOrders]);
 
   // Calculate overall totals
   const overallTotals = Object.values(salesAnalytics).reduce(
@@ -405,9 +538,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   // Handle Excel export
   const handleExportToExcel = () => {
     try {
-      // Prepare data for export
       const exportData = [
-        // Add overall totals as the first row
         {
           "Created By": "Overall Totals",
           "Total Orders": overallTotals.totalOrders,
@@ -418,9 +549,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           "Due Over 30 Days (₹)": overallTotals.dueOver30Days.toFixed(2),
           "Total Unit Price (₹)": overallTotals.totalUnitPrice.toFixed(2),
         },
-        // Add a blank row for separation
         {},
-
         ...analyticsData.map((data) => ({
           "Created By": data.createdBy,
           "Total Orders": data.totalOrders,
@@ -432,31 +561,25 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         })),
       ];
 
-      // Create worksheet
       const worksheet = XLSX.utils.json_to_sheet(exportData);
-
-      // Customize column widths
       worksheet["!cols"] = [
-        { wch: 20 }, // Created By
-        { wch: 12 }, // Total Orders
-        { wch: 16 }, // Total Amount
-        { wch: 16 }, // Payment Collected
-        { wch: 16 }, // Payment Due
-        { wch: 16 }, // Due Over 30 Days
-        { wch: 16 }, // Total Unit Price
+        { wch: 20 },
+        { wch: 12 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 16 },
       ];
 
-      // Create workbook
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Analytics");
 
-      // Generate file buffer
       const fileBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
 
-      // Create Blob and trigger download
       const blob = new Blob([fileBuffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -478,13 +601,56 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     }
   };
 
+  // Handle date reset
+  const handleReset = useCallback(() => {
+    setStartDate(null);
+    setEndDate(null);
+  }, []);
+
   return (
     <>
       <DrawerOverlay isOpen={isOpen} onClick={onClose} />
       <DrawerContainer isOpen={isOpen}>
         <DrawerHeader>
           <DrawerTitle>Sales Orders Analytics</DrawerTitle>
-          <div style={{ display: "flex", gap: "10px" }}>
+          <ButtonContainer>
+            <DatePickerPopup>
+              <DatePickerContainer>
+                <StyledDatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  placeholderText="Select Start Date"
+                  dateFormat="dd/MM/yyyy"
+                  isClearable
+                  aria-label="Select start date"
+                />
+                <DatePickerIcon size={18} />
+              </DatePickerContainer>
+            </DatePickerPopup>
+            <DatePickerPopup>
+              <DatePickerContainer>
+                <StyledDatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  placeholderText="Select End Date"
+                  dateFormat="dd/MM/yyyy"
+                  isClearable
+                  aria-label="Select end date"
+                />
+                <DatePickerIcon size={18} />
+              </DatePickerContainer>
+            </DatePickerPopup>
+            <ResetButton onClick={handleReset}>
+              <X size={16} />
+              Reset
+            </ResetButton>
             <ExportButton onClick={handleExportToExcel}>
               <Download size={18} />
               Export Excel
@@ -493,7 +659,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
               <X size={18} />
               Close
             </CloseButton>
-          </div>
+          </ButtonContainer>
         </DrawerHeader>
         <TableContainer>
           {loading ? (
@@ -501,7 +667,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
               Loading...
             </div>
           ) : (
-            <DashboardTable>
+            <DashboardTable aria-label="Sales analytics table">
               <thead>
                 <TotalHeaderRow>
                   <TotalHeader>Overall Totals</TotalHeader>
