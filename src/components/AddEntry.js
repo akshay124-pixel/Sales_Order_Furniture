@@ -66,12 +66,7 @@ function AddEntry({ onSubmit, onClose }) {
     fulfillingStatus: "Pending",
   });
 
-  // Memoize gstOptions to avoid recalculation
-  const gstOptions = useMemo(
-    () =>
-      formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"],
-    [formData.orderType]
-  );
+  const gstOptions = ["18", "28", "including"];
 
   // Calculate total amount
   const calculateTotal = useCallback(() => {
