@@ -34,7 +34,7 @@ function Login({ onLogin }) {
 
     try {
       const response = await axios.post(
-        "https://sales-order-furniture-server-1169.onrender.com/auth/login",
+        `${process.env.REACT_APP_URL}/auth/login`,
         formData
       );
 

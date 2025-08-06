@@ -977,7 +977,7 @@ const Sales = () => {
         throw new Error("No token found in localStorage");
       }
       const response = await axios.get(
-        "https://sales-order-furniture-server-1169.onrender.com/api/notifications",
+        `${process.env.REACT_APP_URL}/api/notifications`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -994,7 +994,7 @@ const Sales = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "https://sales-order-furniture-server-1169.onrender.com/api/mark-read",
+        `${process.env.REACT_APP_URL}/api/mark-read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -1012,12 +1012,9 @@ const Sales = () => {
   const clearNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(
-        "https://sales-order-furniture-server-1169.onrender.com/api/clear",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axios.delete(`${process.env.REACT_APP_URL}/api/clear`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setNotifications([]);
       toast.success("All notifications cleared!");
     } catch (error) {
@@ -1031,7 +1028,7 @@ const Sales = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://sales-order-furniture-server-1169.onrender.com/api/get-orders",
+        `${process.env.REACT_APP_URL}/api/get-orders`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -1044,14 +1041,11 @@ const Sales = () => {
   }, []);
 
   useEffect(() => {
-    const socket = io(
-      "https://sales-order-furniture-server-1169.onrender.com",
-      {
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-      }
-    );
+    const socket = io(`${process.env.REACT_APP_URL}`, {
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
 
     socket.on("connect", () => {
       console.log("Socket.IO connected:", socket.id);
@@ -1418,7 +1412,7 @@ const Sales = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.put(
-          `https://sales-order-furniture-server-1169.onrender.com/api/edit/${updatedEntry._id}`,
+          `${process.env.REACT_APP_URL}/api/edit/${updatedEntry._id}`,
           updatedEntry,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -1656,7 +1650,7 @@ const Sales = () => {
 
           const token = localStorage.getItem("token");
           const response = await axios.post(
-            "https://sales-order-furniture-server-1169.onrender.com/api/bulk-orders",
+            `${process.env.REACT_APP_URL}/api/bulk-orders`,
             newEntries,
             {
               headers: {

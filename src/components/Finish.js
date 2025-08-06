@@ -72,7 +72,7 @@ function Finish() {
   const fetchFinishedGoods = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-furniture-server-1169.onrender.com/api/finished-goods",
+        `${process.env.REACT_APP_URL}/api/finished-goods`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

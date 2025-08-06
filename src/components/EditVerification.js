@@ -36,7 +36,7 @@ const EditVerification = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `https://sales-order-furniture-server-1169.onrender.com/api/edit/${entryToEdit._id}`,
+        `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

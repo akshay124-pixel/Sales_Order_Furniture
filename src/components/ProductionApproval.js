@@ -19,12 +19,9 @@ const ProductionApproval = () => {
 
   // Socket.IO integration for real-time updates
   useEffect(() => {
-    const socket = io(
-      "https://sales-order-furniture-server-1169.onrender.com",
-      {
-        auth: { token: localStorage.getItem("token") },
-      }
-    );
+    const socket = io(`${process.env.REACT_APP_URL}`, {
+      auth: { token: localStorage.getItem("token") },
+    });
 
     socket.on("connect", () => {
       console.log("Socket.IO se connect ho gaya!");
@@ -54,7 +51,7 @@ const ProductionApproval = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://sales-order-furniture-server-1169.onrender.com/api/production-approval-orders",
+        `${process.env.REACT_APP_URL}/api/production-approval-orders`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

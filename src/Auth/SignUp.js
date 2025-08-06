@@ -38,7 +38,7 @@ function Signup() {
 
     try {
       const response = await axios.post(
-        "https://sales-order-furniture-server-1169.onrender.com/user/signup",
+        `${process.env.REACT_APP_URL}/user/signup`,
         form
       );
 

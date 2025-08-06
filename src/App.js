@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Sales from "./components/Sales";
+import ChangePassword from "./Auth/ChangePassword";
 import Production from "./components/Production";
 import Finish from "./components/Finish";
 import Login from "./Auth/Login";
@@ -22,7 +23,9 @@ import ProductionApproval from "./components/ProductionApproval";
 const ConditionalNavbar = ({ isAuthenticated, onLogout, userRole }) => {
   const location = useLocation();
   const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/signup";
+    location.pathname === "/login" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/change-password";
 
   return !isAuthPage && isAuthenticated ? (
     <Navbar
@@ -35,12 +38,16 @@ const ConditionalNavbar = ({ isAuthenticated, onLogout, userRole }) => {
 
 const PrivateRoute = ({ element, isAuthenticated, allowedRoles }) => {
   const userRole = localStorage.getItem("role");
-  return isAuthenticated &&
-    (!allowedRoles || allowedRoles.includes(userRole)) ? (
-    element
-  ) : (
-    <Navigate to="/login" replace />
-  );
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    if (userRole === "Sales" || userRole === "Admin") {
+      return <Navigate to="/sales" replace />;
+    }
+    return <Navigate to="/login" replace />;
+  }
+  return element;
 };
 
 const AppContent = () => {
@@ -48,13 +55,14 @@ const AppContent = () => {
     !!localStorage.getItem("token")
   );
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogin = ({ token, userId, role }) => {
-    console.log("Login successful in App.jsx:", { token, userId, role });
     localStorage.setItem("token", token);
     localStorage.setItem("userId", userId);
     localStorage.setItem("role", role);
     setIsAuthenticated(true);
+    navigate("/"); // This triggers immediate correct page load!
   };
 
   const handleLogout = () => {
@@ -66,29 +74,44 @@ const AppContent = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (
+      isAuthenticated &&
+      (location.pathname === "/" ||
+        location.pathname === "/login" ||
+        location.pathname === "/signup")
+    ) {
       const role = localStorage.getItem("role");
-      if (role === "Production") {
-        navigate("/production");
-      } else if (role === "Finish") {
-        navigate("/finish");
-      } else if (role === "Installation") {
-        navigate("/installation");
-      } else if (role === "Accounts") {
-        navigate("/accounts");
-      } else if (role === "Verification") {
-        navigate("/verification");
-      } else if (role === "Bill") {
-        navigate("/bill");
-      } else if (role === "ProductionApproval") {
-        navigate("/production-approval");
-      } else if (role === "Sales" || role === "Admin") {
-        navigate("/sales");
-      } else {
-        navigate("/login");
+      switch (role) {
+        case "Production":
+          navigate("/production");
+          break;
+        case "Finish":
+          navigate("/finish");
+          break;
+        case "Installation":
+          navigate("/installation");
+          break;
+        case "Accounts":
+          navigate("/accounts");
+          break;
+        case "Verification":
+          navigate("/verification");
+          break;
+        case "Bill":
+          navigate("/bill");
+          break;
+        case "ProductionApproval":
+          navigate("/production-approval");
+          break;
+        case "Sales":
+        case "Admin":
+          navigate("/sales");
+          break;
+        default:
+          navigate("/login");
       }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, location.pathname]);
 
   return (
     <>
@@ -100,6 +123,27 @@ const AppContent = () => {
       <Routes>
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route
+          path="/change-password"
+          element={
+            <PrivateRoute
+              element={<ChangePassword />}
+              isAuthenticated={isAuthenticated}
+              allowedRoles={[
+                "Production",
+                "Finish",
+                "Installation",
+                "Accounts",
+                "Verification",
+                "Bill",
+                "ProductionApproval",
+                "Sales", // Added Sales
+                "Admin", // Added Admin
+              ]}
+            />
+          }
+        />
+
         <Route
           path="/sales"
           element={
