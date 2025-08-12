@@ -81,13 +81,31 @@ const EditProductionApproval = ({
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
-      toast.error(error.response?.data?.message || "Failed to update order!", {
+
+      let userMessage = "Something went wrong while updating the order.";
+
+      if (!error.response) {
+        // No response from server (internet issue)
+        userMessage = "Please check your internet connection and try again.";
+      } else if (error.response.status === 400) {
+        userMessage =
+          error.response.data?.message ||
+          "Invalid data provided. Please check your inputs.";
+      } else if (error.response.status === 401) {
+        userMessage = "You are not authorized. Please log in again.";
+      } else if (error.response.status === 404) {
+        userMessage = "Order not found. It may have been removed.";
+      } else if (error.response.status >= 500) {
+        userMessage =
+          "Server is currently unavailable. Please try again later.";
+      }
+
+      toast.error(userMessage, {
         position: "top-right",
         autoClose: 5000,
       });
     }
   };
-
   return (
     <Modal
       show={isOpen}

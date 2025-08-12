@@ -60,7 +60,27 @@ const ProductionApproval = () => {
       toast.success("Production approval orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching production approval orders:", error);
-      toast.error("Failed to fetch production approval orders!");
+
+      let errorMessage =
+        "Something went wrong while loading orders. Please try again.";
+
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 404) {
+          errorMessage = "No orders found at the moment.";
+        } else if (error.response.status >= 500) {
+          errorMessage = "Server is facing issues. Please try again later.";
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect. Please check your internet connection.";
+      }
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      });
     }
   }, []);
 

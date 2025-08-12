@@ -246,15 +246,35 @@ const OutFinishedGoodModal = ({
       onClose();
     } catch (err) {
       console.error("Dispatch submission error:", err);
-      const errorMessage =
-        err.response?.data?.message || "Failed to update dispatch.";
-      const errorDetails = err.response?.data?.errors
-        ? err.response.data.errors.join(", ")
-        : err.response?.data?.error || err.message;
-      setError(
-        errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
-      );
-      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
+
+      let userFriendlyMessage = "Something went wrong while updating dispatch.";
+
+      if (err.response) {
+        if (err.response.status === 400) {
+          userFriendlyMessage =
+            "Some details are missing or invalid. Please check and try again.";
+        } else if (err.response.status === 401) {
+          userFriendlyMessage =
+            "Your session has expired. Please log in again.";
+        } else if (err.response.status === 404) {
+          userFriendlyMessage = "The dispatch record could not be found.";
+        } else if (err.response.status === 500) {
+          userFriendlyMessage =
+            "The server is having issues. Please try again later.";
+        } else {
+          userFriendlyMessage =
+            err.response.data?.message || userFriendlyMessage;
+        }
+      } else if (err.request) {
+        userFriendlyMessage =
+          "Cannot connect to the server. Please check your internet connection.";
+      }
+
+      setError(userFriendlyMessage);
+      toast.error(userFriendlyMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      });
     } finally {
       setLoading(false);
       setShowConfirm(false);

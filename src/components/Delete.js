@@ -42,15 +42,24 @@ function DeleteModal({ isOpen, onClose, onDelete, itemId }) {
       }
     } catch (error) {
       console.error("Error deleting entry:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        `Request failed with status code ${
-          error.response?.status || "unknown"
-        }`;
-      toast.error(`Error deleting entry: ${errorMessage}`);
+
+      // Friendly messages for non-tech users
+      let errorMessage = "Something went wrong while deleting.";
+
+      if (error.response) {
+        if (error.response.status === 404) {
+          errorMessage = "The entry you are trying to delete was not found.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Your session expired. Please log in again.";
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+
+      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
     } finally {
       setIsLoading(false);
-      setConfirmationText(""); // Reset input after action
+      setConfirmationText(""); // Reset after action
     }
   };
 

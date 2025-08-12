@@ -53,7 +53,22 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
       onClose();
     } catch (error) {
       console.error("Error updating bill order:", error);
-      toast.error(error.response?.data?.message || "Failed to update order!", {
+
+      let friendlyMessage = "Failed to update the bill order.";
+
+      if (error.response?.status === 404) {
+        friendlyMessage =
+          "The bill order you are trying to update was not found.";
+      } else if (error.response?.status === 400) {
+        friendlyMessage =
+          "Some details are missing or invalid. Please check again.";
+      } else if (error.response?.status === 500) {
+        friendlyMessage = "Server is having trouble. Please try again later.";
+      } else if (!navigator.onLine) {
+        friendlyMessage = "No internet connection. Please check your network.";
+      }
+
+      toast.error(friendlyMessage, {
         position: "top-right",
         autoClose: 5000,
       });

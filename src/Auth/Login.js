@@ -22,7 +22,7 @@ function Login({ onLogin }) {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      toast.error("Please fill in both fields.", {
+      toast.error("Please enter your email and password.", {
         position: "top-right",
         autoClose: 3000,
         theme: "colored",
@@ -62,7 +62,7 @@ function Login({ onLogin }) {
 
         onLogin({ token, userId: user.id, role: user.role });
       } else {
-        toast.error("Unexpected response. Please try again.", {
+        toast.error("Something went wrong. Please try again later.", {
           position: "top-right",
           autoClose: 3000,
           theme: "colored",
@@ -70,14 +70,34 @@ function Login({ onLogin }) {
       }
     } catch (error) {
       console.error("Error while logging in:", error);
-      toast.error(
-        error.response?.data?.message || "Login failed. Please try again.",
-        {
-          position: "top-right",
-          autoClose: 3000,
-          theme: "colored",
+
+      let friendlyMessage = "Unable to login. Please try again.";
+
+      if (error.response) {
+        const serverMsg = error.response.data?.message?.toLowerCase() || "";
+
+        if (
+          serverMsg.includes("invalid email") ||
+          serverMsg.includes("user not found")
+        ) {
+          friendlyMessage = "We couldn't find an account with that email.";
+        } else if (
+          serverMsg.includes("incorrect password") ||
+          serverMsg.includes("invalid password")
+        ) {
+          friendlyMessage = "The password you entered is incorrect.";
+        } else if (serverMsg.includes("missing fields")) {
+          friendlyMessage = "Please enter all required details.";
+        } else {
+          friendlyMessage = "Something went wrong. Please try again later.";
         }
-      );
+      }
+
+      toast.error(friendlyMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      });
     } finally {
       setLoading(false);
     }

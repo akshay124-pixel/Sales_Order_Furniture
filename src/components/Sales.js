@@ -1437,7 +1437,33 @@ const Sales = () => {
         toast.success("Order updated successfully!");
       } catch (error) {
         console.error("Error updating order:", error);
-        toast.error("Failed to update order!");
+
+        let userFriendlyMessage =
+          "Something went wrong while saving your changes.";
+
+        if (error.response) {
+          if (error.response.status === 404) {
+            userFriendlyMessage =
+              "The order you are trying to update was not found.";
+          } else if (error.response.status === 400) {
+            userFriendlyMessage =
+              "The details provided seem to be incorrect. Please check and try again.";
+          } else if (error.response.status === 401) {
+            userFriendlyMessage =
+              "You are not authorized to update this order. Please log in again.";
+          } else {
+            userFriendlyMessage =
+              error.response.data?.message || userFriendlyMessage;
+          }
+        } else if (error.request) {
+          userFriendlyMessage =
+            "Unable to reach the server. Please check your internet connection.";
+        }
+
+        toast.error(userFriendlyMessage, {
+          position: "top-right",
+          autoClose: 5000,
+        });
       }
     },
     [
@@ -1679,11 +1705,32 @@ const Sales = () => {
           );
         } catch (error) {
           console.error("Error uploading entries:", error);
-          const message =
-            error.response?.data?.details?.join(", ") ||
-            error.response?.data?.message ||
-            "Failed to upload entries. Please check the data and try again.";
-          toast.error(message);
+
+          let userFriendlyMessage =
+            "Something went wrong while uploading your file.";
+
+          if (error.response) {
+            if (error.response.status === 400) {
+              userFriendlyMessage =
+                "The file format seems incorrect. Please check your Excel template.";
+            } else if (error.response.status === 413) {
+              userFriendlyMessage =
+                "The file is too large. Please upload a smaller file.";
+            } else {
+              userFriendlyMessage =
+                error.response.data?.details?.join(", ") ||
+                error.response.data?.message ||
+                userFriendlyMessage;
+            }
+          } else if (error.request) {
+            userFriendlyMessage =
+              "Could not connect to the server. Please check your internet connection.";
+          }
+
+          toast.error(userFriendlyMessage, {
+            position: "top-right",
+            autoClose: 5000,
+          });
         }
       };
       reader.readAsArrayBuffer(file);

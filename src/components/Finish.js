@@ -103,15 +103,31 @@ function Finish() {
       }
     } catch (error) {
       console.error("Error fetching finished goods:", error);
-      toast.error(
+
+      let userFriendlyMessage =
         error.response?.data?.message ||
-          error.message ||
-          "Failed to fetch finished goods",
-        {
-          position: "top-right",
-          autoClose: 5000,
-        }
-      );
+        error.message ||
+        "Sorry! We couldn’t load the finished goods data right now.";
+
+      // Extra friendly explanations for common cases
+      if (userFriendlyMessage.includes("Network Error")) {
+        userFriendlyMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      } else if (userFriendlyMessage.includes("401")) {
+        userFriendlyMessage =
+          "Your session has expired. Please log in again to continue.";
+      } else if (userFriendlyMessage.includes("404")) {
+        userFriendlyMessage =
+          "We couldn't find the finished goods data. It might be moved or deleted.";
+      } else if (userFriendlyMessage.includes("500")) {
+        userFriendlyMessage =
+          "The server is facing some issues. Please try again later.";
+      }
+
+      toast.error(userFriendlyMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      });
     } finally {
       setLoading(false);
     }

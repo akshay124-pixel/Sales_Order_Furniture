@@ -445,15 +445,21 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       onClose();
     } catch (err) {
       console.error("Edit submission error:", err);
-      const errorMessage =
-        err.response?.data?.message || err.message || "Failed to update entry.";
-      const errorDetails = err.response?.data?.errors
-        ? err.response.data.errors.join(", ")
-        : err.response?.data?.error || "";
-      setError(
-        errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
-      );
-      toast.error(errorMessage);
+
+      let friendlyMessage = "Something went wrong while updating the entry.";
+      if (err.response?.status === 404) {
+        friendlyMessage = "The entry you are trying to update was not found.";
+      } else if (err.response?.status === 400) {
+        friendlyMessage =
+          "Some details are missing or invalid. Please check and try again.";
+      } else if (err.response?.status === 500) {
+        friendlyMessage = "Server error occurred. Please try again later.";
+      } else if (!navigator.onLine) {
+        friendlyMessage = "No internet connection. Please check your network.";
+      }
+
+      toast.error(friendlyMessage);
+      setError(friendlyMessage);
     } finally {
       setLoading(false);
       setShowConfirm(false);
@@ -489,15 +495,23 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       onClose();
     } catch (err) {
       console.error("Update submission error:", err);
-      const errorMessage =
-        err.response?.data?.message || "Failed to update approvals.";
-      const errorDetails = err.response?.data?.errors
-        ? err.response.data.errors.join(", ")
-        : err.response?.data?.error || err.message;
-      setError(
-        errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
-      );
-      toast.error(errorMessage);
+
+      let friendlyMessage =
+        "Something went wrong while updating the approvals.";
+      if (err.response?.status === 404) {
+        friendlyMessage = "The record you are trying to update was not found.";
+      } else if (err.response?.status === 400) {
+        friendlyMessage =
+          "Invalid or incomplete details. Please check and try again.";
+      } else if (err.response?.status === 500) {
+        friendlyMessage =
+          "Server is currently unavailable. Please try again later.";
+      } else if (!navigator.onLine) {
+        friendlyMessage = "No internet connection. Please check your network.";
+      }
+
+      toast.error(friendlyMessage);
+      setError(friendlyMessage);
     } finally {
       setLoading(false);
       setShowConfirm(false);

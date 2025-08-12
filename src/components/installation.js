@@ -49,10 +49,33 @@ function Installation() {
       }
     } catch (error) {
       console.error("Error fetching installation orders:", error);
-      const errorMessage =
-        error.response?.data?.message || "Failed to fetch installation orders";
-      setError(errorMessage);
-      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
+
+      // User-friendly message mapping
+      let userFriendlyMessage = "Something went wrong. Please try again.";
+
+      if (error.response) {
+        if (error.response.status === 404) {
+          userFriendlyMessage = "No orders found.";
+        } else if (error.response.status === 401) {
+          userFriendlyMessage =
+            "Your session has expired. Please log in again.";
+        } else if (error.response.status === 500) {
+          userFriendlyMessage = "Server is facing issues. Please try later.";
+        } else {
+          userFriendlyMessage =
+            error.response.data?.message ||
+            "Unable to load orders at the moment.";
+        }
+      } else if (error.request) {
+        userFriendlyMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      }
+
+      setError(userFriendlyMessage);
+      toast.error(userFriendlyMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      });
     } finally {
       setLoading(false);
     }

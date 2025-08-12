@@ -48,7 +48,27 @@ const EditVerification = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
-      toast.error(error.response?.data?.message || "Failed to update order!", {
+
+      // User-friendly error message
+      let userMessage =
+        "Something went wrong while updating the order. Please try again.";
+
+      if (error.response?.status === 404) {
+        userMessage = "The order you are trying to update was not found.";
+      } else if (error.response?.status === 400) {
+        userMessage =
+          "Some details you entered are invalid. Please check and try again.";
+      } else if (error.response?.status === 401) {
+        userMessage = "Your session has expired. Please log in again.";
+      } else if (error.response?.status === 500) {
+        userMessage =
+          "There is a technical issue on our side. Please try again later.";
+      } else if (error.message.includes("Network Error")) {
+        userMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      }
+
+      toast.error(userMessage, {
         position: "top-right",
         autoClose: 5000,
       });

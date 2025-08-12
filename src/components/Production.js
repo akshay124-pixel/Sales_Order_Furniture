@@ -382,10 +382,17 @@ const Production = () => {
           autoClose: 3000,
         });
       } else {
-        throw new Error(response.data.message || "Failed to update order");
+        throw new Error(
+          response.data.message ||
+            "We couldn’t update your order. Please try again."
+        );
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update order.", {
+      const userFriendlyMessage =
+        error.response?.data?.message ||
+        "❌ Something went wrong while updating your order. Please check your details and try again.";
+
+      toast.error(userFriendlyMessage, {
         position: "top-right",
         autoClose: 5000,
       });

@@ -446,19 +446,29 @@ function AddEntry({ onSubmit, onClose }) {
       onSubmit(response.data);
       onClose();
     } catch (error) {
-      console.error("Error submitting order:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        error.response?.data?.details?.join(", ") ||
-        "Failed to create order. Please try again.";
-      toast.error(errorMessage);
-      if (error.response?.status === 403) {
-        toast.error("Unauthorized: Insufficient permissions or invalid token");
+      console.error("Error submitting order:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+
+      let errorMessage = "Something went wrong while creating your order.";
+      if (!navigator.onLine) {
+        errorMessage =
+          "You are offline. Please check your internet connection.";
+      } else if (error.response?.status === 403) {
+        errorMessage = "You are not authorized to create this order.";
       } else if (error.response?.status === 400) {
-        toast.error(
-          `Validation Error: ${JSON.stringify(error.response?.data, null, 2)}`
-        );
+        errorMessage =
+          error.response?.data?.message ||
+          "Some required fields are missing or invalid.";
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.details) {
+        errorMessage = error.response.data.details.join(", ");
       }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

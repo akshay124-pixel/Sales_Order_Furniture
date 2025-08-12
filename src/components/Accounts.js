@@ -33,15 +33,22 @@ function Accounts() {
   const fetchAccountsOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to view your orders.");
+      }
+
       const response = await axios.get(
         `${process.env.REACT_APP_URL}/api/accounts-orders`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
+
       if (response.data.success) {
         const data = Array.isArray(response.data.data)
           ? response.data.data
@@ -50,13 +57,28 @@ function Accounts() {
         setFilteredOrders(data);
       } else {
         throw new Error(
-          response.data.message || "Failed to fetch accounts orders"
+          response.data.message || "We couldn’t load your orders right now."
         );
       }
     } catch (error) {
-      console.error("Error fetching accounts orders:", error);
-      const errorMessage =
-        error.response?.data?.message || "Failed to fetch accounts orders";
+      // Log technical details for developers
+      console.error("Error fetching accounts orders:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+
+      // Show user-friendly error
+      let errorMessage = "Something went wrong while loading your orders.";
+      if (!navigator.onLine) {
+        errorMessage =
+          "You are offline. Please check your internet connection.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Your session has expired. Please log in again.";
+      } else if (error.response?.status === 404) {
+        errorMessage = "No orders found for your account.";
+      }
+
       setError(errorMessage);
       toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
     } finally {

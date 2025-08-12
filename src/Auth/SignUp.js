@@ -24,13 +24,9 @@ function Signup() {
     e.preventDefault();
 
     if (!form.username || !form.email || !form.password || !form.role) {
-      toast.error("All fields are required", {
+      toast.error("Please fill all the fields before signing up.", {
         position: "top-right",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
       });
       return;
@@ -61,10 +57,6 @@ function Signup() {
         toast.success("Signup successful! Redirecting...", {
           position: "top-right",
           autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
           theme: "colored",
         });
 
@@ -88,29 +80,34 @@ function Signup() {
           navigate("/sales"); // Sales or Admin
         }
       } else {
-        toast.error("Unexpected response. Please try again.", {
+        toast.error("Unexpected issue. Please try again.", {
           position: "top-right",
           autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
           theme: "colored",
         });
       }
     } catch (error) {
       console.error("Error during signup", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "Something went wrong. Please try again.";
-      setError(errorMessage);
-      toast.error(errorMessage, {
+
+      // Non-tech friendly error mapping
+      const backendMessage = error.response?.data?.message?.toLowerCase() || "";
+
+      let readableMessage = "Something went wrong. Please try again.";
+
+      if (backendMessage.includes("email already exists")) {
+        readableMessage = "This email is already registered. Try logging in.";
+      } else if (backendMessage.includes("invalid email")) {
+        readableMessage = "Please enter a valid email address.";
+      } else if (backendMessage.includes("password too short")) {
+        readableMessage = "Password should be at least 6 characters.";
+      } else if (backendMessage.includes("missing fields")) {
+        readableMessage = "Please fill in all required fields.";
+      }
+
+      setError(readableMessage);
+      toast.error(readableMessage, {
         position: "top-right",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
       });
     }

@@ -350,9 +350,16 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+
       if (!token) {
-        throw new Error("No authentication token found. Please log in.");
+        toast.error("You are not logged in. Please log in to view orders.", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "colored",
+        });
+        return;
       }
+
       const response = await axios.get(
         `${process.env.REACT_APP_URL}/api/get-orders`,
         {
@@ -361,6 +368,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           },
         }
       );
+
       console.log("Fetched orders:", response.data);
       setOrders(response.data || []);
     } catch (error) {
@@ -369,11 +377,37 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         status: error.response?.status,
         data: error.response?.data,
       });
-      toast.error(
-        `Failed to fetch orders: ${
-          error.response?.data?.error || error.message
-        }`
-      );
+
+      let errorMessage = "Something went wrong while fetching orders.";
+
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            errorMessage = "Your session has expired. Please log in again.";
+            break;
+          case 403:
+            errorMessage = "You do not have permission to view orders.";
+            break;
+          case 404:
+            errorMessage = "No orders found.";
+            break;
+          case 500:
+            errorMessage = "Server is having an issue. Please try again later.";
+            break;
+          default:
+            errorMessage = error.response.data?.error || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      }
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      });
+
       setOrders([]);
     } finally {
       setLoading(false);
