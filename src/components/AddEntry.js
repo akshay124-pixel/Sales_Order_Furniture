@@ -66,7 +66,12 @@ function AddEntry({ onSubmit, onClose }) {
     fulfillingStatus: "Pending",
   });
 
-  const gstOptions = ["18", "28", "including"];
+  // Memoize gstOptions to avoid recalculation
+  const gstOptions = useMemo(
+    () =>
+      formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"],
+    [formData.orderType]
+  );
 
   // Calculate total amount
   const calculateTotal = useCallback(() => {
@@ -173,10 +178,6 @@ function AddEntry({ onSubmit, onClose }) {
 
   const handleProductChange = (e) => {
     const { name, value } = e.target;
-    if (["qty", "unitPrice"].includes(name) && value && Number(value) < 0) {
-      toast.error(`${name} cannot be negative`);
-      return;
-    }
 
     setCurrentProduct((prev) => {
       if (name === "productType") {
@@ -199,7 +200,6 @@ function AddEntry({ onSubmit, onClose }) {
   };
 
   const addProduct = () => {
-    // Validate required fields
     const requiredFields = [
       {
         name: "productType",
@@ -216,28 +216,15 @@ function AddEntry({ onSubmit, onClose }) {
     ];
 
     const missingField = requiredFields.find(
-      (field) => !field.value || field.value.trim() === ""
+      (field) => !field.value || field.value.toString().trim() === ""
     );
     if (missingField) {
       toast.error(`Please fill ${missingField.label} field`);
       return;
     }
 
-    const qty = Number(currentProduct.qty);
-    if (isNaN(qty) || qty <= 0) {
-      toast.error("Quantity must be a positive number");
-      return;
-    }
-
-    const unitPrice = Number(currentProduct.unitPrice);
-    if (isNaN(unitPrice) || unitPrice <= 0) {
-      toast.error("Unit Price must be a positive number");
-      return;
-    }
-
-    const gst = currentProduct.gst;
-    if (!gstOptions.includes(gst)) {
-      toast.error("Please select a valid GST option");
+    if (!gstOptions.includes(currentProduct.gst)) {
+      toast.error(`GST must be one of: ${gstOptions.join(", ")}`);
       return;
     }
 
@@ -245,9 +232,9 @@ function AddEntry({ onSubmit, onClose }) {
       productType: currentProduct.productType,
       size: currentProduct.size || "N/A",
       spec: currentProduct.spec || "N/A",
-      qty,
-      unitPrice,
-      gst,
+      qty: Number(currentProduct.qty),
+      unitPrice: Number(currentProduct.unitPrice),
+      gst: currentProduct.gst,
       modelNos: currentProduct.modelNos || "",
     };
 
@@ -271,7 +258,6 @@ function AddEntry({ onSubmit, onClose }) {
       gst: "",
     });
   };
-
   const removeProduct = (index) => {
     setProducts((prev) => prev.filter((_, i) => i !== index));
   };
@@ -446,29 +432,19 @@ function AddEntry({ onSubmit, onClose }) {
       onSubmit(response.data);
       onClose();
     } catch (error) {
-      console.error("Error submitting order:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
-
-      let errorMessage = "Something went wrong while creating your order.";
-      if (!navigator.onLine) {
-        errorMessage =
-          "You are offline. Please check your internet connection.";
-      } else if (error.response?.status === 403) {
-        errorMessage = "You are not authorized to create this order.";
-      } else if (error.response?.status === 400) {
-        errorMessage =
-          error.response?.data?.message ||
-          "Some required fields are missing or invalid.";
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error.response?.data?.details) {
-        errorMessage = error.response.data.details.join(", ");
-      }
-
+      console.error("Error submitting order:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.details?.join(", ") ||
+        "Failed to create order. Please try again.";
       toast.error(errorMessage);
+      if (error.response?.status === 403) {
+        toast.error("Unauthorized: Insufficient permissions or invalid token");
+      } else if (error.response?.status === 400) {
+        toast.error(
+          `Validation Error: ${JSON.stringify(error.response?.data, null, 2)}`
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -1120,6 +1096,7 @@ function AddEntry({ onSubmit, onClose }) {
 
           {/* Add Products Section */}
 
+          {/* Add Products Section */}
           <div>
             <h3
               style={{
@@ -1154,19 +1131,14 @@ function AddEntry({ onSubmit, onClose }) {
                     display: "block",
                   }}
                 >
-                  Product* <span style={{ color: "#f43f5e" }}>*</span>
+                  Product * <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
-                <select
+                <input
+                  type="text"
                   name="productType"
-                  value={
-                    currentProduct.productType &&
-                    !Object.keys(productOptions).includes(
-                      currentProduct.productType
-                    )
-                      ? "Others"
-                      : currentProduct.productType
-                  }
+                  value={currentProduct.productType}
                   onChange={handleProductChange}
+                  placeholder="Enter Product Type"
                   style={{
                     width: "100%",
                     padding: "0.75rem",
@@ -1178,63 +1150,7 @@ function AddEntry({ onSubmit, onClose }) {
                   }}
                   aria-label="Product Type"
                   aria-required="true"
-                >
-                  <option value="" disabled>
-                    Select Product
-                  </option>
-                  {Object.keys(productOptions).map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-                {(currentProduct.productType === "Others" ||
-                  (currentProduct.productType &&
-                    !Object.keys(productOptions).includes(
-                      currentProduct.productType
-                    ))) && (
-                  <div
-                    style={{
-                      marginTop: "1rem",
-                      animation: "fadeIn 0.3s ease-in",
-                    }}
-                  >
-                    <label
-                      style={{
-                        fontSize: "1rem",
-                        fontWeight: "600",
-                        color: "#475569",
-                        marginBottom: "0.5rem",
-                        display: "block",
-                      }}
-                    >
-                      Custom Product *{" "}
-                      <span style={{ color: "#f43f5e" }}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="productType"
-                      value={
-                        currentProduct.productType === "Others"
-                          ? ""
-                          : currentProduct.productType
-                      }
-                      onChange={handleProductChange}
-                      placeholder="Enter Custom Product Type"
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
-                        fontSize: "1rem",
-                        color: "#1e293b",
-                      }}
-                      aria-label="Custom Product Type"
-                      aria-required="true"
-                    />
-                  </div>
-                )}
+                />
               </div>
               <div style={{ gridColumn: "2 / 3" }}>
                 <label
@@ -1248,58 +1164,23 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   Size
                 </label>
-                {currentProduct.productType === "Others" ||
-                (currentProduct.productType &&
-                  !Object.keys(productOptions).includes(
-                    currentProduct.productType
-                  )) ? (
-                  <input
-                    type="text"
-                    name="size"
-                    value={currentProduct.size}
-                    onChange={handleProductChange}
-                    placeholder="Enter Size"
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.75rem",
-                      backgroundColor: "#f8fafc",
-                      fontSize: "1rem",
-                      color: "#1e293b",
-                    }}
-                    aria-label="Custom Product Size"
-                  />
-                ) : (
-                  <select
-                    name="size"
-                    value={currentProduct.size}
-                    onChange={handleProductChange}
-                    disabled={!currentProduct.productType}
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.75rem",
-                      backgroundColor: !currentProduct.productType
-                        ? "#e5e7eb"
-                        : "#f8fafc",
-                      fontSize: "1rem",
-                      color: "#1e293b",
-                    }}
-                    aria-label="Product Size"
-                  >
-                    <option value="">Select Size</option>
-                    {currentProduct.productType &&
-                      productOptions[currentProduct.productType]?.sizes?.map(
-                        (size) => (
-                          <option key={size} value={size}>
-                            {size}
-                          </option>
-                        )
-                      )}
-                  </select>
-                )}
+                <input
+                  type="text"
+                  name="size"
+                  value={currentProduct.size}
+                  onChange={handleProductChange}
+                  placeholder="Enter Size"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                  aria-label="Product Size"
+                />
               </div>
               <div style={{ gridColumn: "3 / 4" }}>
                 <label
@@ -1313,58 +1194,23 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   Specification
                 </label>
-                {currentProduct.productType === "Others" ||
-                (currentProduct.productType &&
-                  !Object.keys(productOptions).includes(
-                    currentProduct.productType
-                  )) ? (
-                  <input
-                    type="text"
-                    name="spec"
-                    value={currentProduct.spec}
-                    onChange={handleProductChange}
-                    placeholder="Enter Specification"
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.75rem",
-                      backgroundColor: "#f8fafc",
-                      fontSize: "1rem",
-                      color: "#1e293b",
-                    }}
-                    aria-label="Custom Product Specification"
-                  />
-                ) : (
-                  <select
-                    name="spec"
-                    value={currentProduct.spec}
-                    onChange={handleProductChange}
-                    disabled={!currentProduct.productType}
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.75rem",
-                      backgroundColor: !currentProduct.productType
-                        ? "#e5e7eb"
-                        : "#f8fafc",
-                      fontSize: "1rem",
-                      color: "#1e293b",
-                    }}
-                    aria-label="Product Specification"
-                  >
-                    <option value="">Select Spec</option>
-                    {currentProduct.productType &&
-                      productOptions[currentProduct.productType]?.specs?.map(
-                        (spec) => (
-                          <option key={spec} value={spec}>
-                            {spec}
-                          </option>
-                        )
-                      )}
-                  </select>
-                )}
+                <input
+                  type="text"
+                  name="spec"
+                  value={currentProduct.spec}
+                  onChange={handleProductChange}
+                  placeholder="Enter Specification"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                  aria-label="Product Specification"
+                />
               </div>
               <div style={{ gridColumn: "1 / 2" }}>
                 <label
@@ -1440,10 +1286,12 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   GST * <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
-                <select
+                <input
+                  type="text"
                   name="gst"
                   value={currentProduct.gst}
                   onChange={handleProductChange}
+                  placeholder="Enter GST (e.g., 18, 28, or including)"
                   style={{
                     width: "100%",
                     padding: "0.75rem",
@@ -1455,16 +1303,7 @@ function AddEntry({ onSubmit, onClose }) {
                   }}
                   aria-label="GST Rate"
                   aria-required="true"
-                >
-                  <option value="" disabled>
-                    Select GST
-                  </option>
-                  {gstOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div style={{ gridColumn: "1 / 2" }}>
                 <label
@@ -1483,6 +1322,7 @@ function AddEntry({ onSubmit, onClose }) {
                   name="modelNos"
                   value={currentProduct.modelNos}
                   onChange={handleProductChange}
+                  placeholder="Enter Model Numbers"
                   style={{
                     width: "100%",
                     padding: "0.75rem",
@@ -1495,7 +1335,6 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-label="Model Numbers"
                 />
               </div>
-
               <div style={{ gridColumn: "2 / 4", alignSelf: "end" }}>
                 <button
                   type="button"
@@ -1540,6 +1379,7 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   {products.map((product, index) => (
                     <div
+                      key={index}
                       style={{
                         display: "grid",
                         gridTemplateColumns:
