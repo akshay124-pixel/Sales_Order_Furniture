@@ -27,6 +27,7 @@ function AddEntry({ onSubmit, onClose }) {
     modelNos: "",
     unitPrice: "",
     gst: "",
+    customProduct: "",
   });
 
   const [formData, setFormData] = useState({
@@ -61,7 +62,6 @@ function AddEntry({ onSubmit, onClose }) {
     deliveryDate: "",
     demoDate: "",
     paymentTerms: "",
-
     dispatchFrom: "",
     fulfillingStatus: "Pending",
   });
@@ -164,7 +164,6 @@ function AddEntry({ onSubmit, onClose }) {
           ...(name === "orderType" && value !== "B2G"
             ? { gemOrderNumber: "", deliveryDate: "" }
             : {}),
-
           ...(name === "dispatchFrom"
             ? {
                 fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled",
@@ -183,13 +182,19 @@ function AddEntry({ onSubmit, onClose }) {
       if (name === "productType") {
         return {
           ...prev,
-          [name]: value,
+          productType: value,
+          customProduct: value === "Others" ? prev.customProduct : "",
           size: "",
           spec: "",
           qty: "",
           modelNos: "",
           unitPrice: "",
           gst: "",
+        };
+      } else if (name === "customProduct") {
+        return {
+          ...prev,
+          customProduct: value,
         };
       }
       return {
@@ -203,8 +208,14 @@ function AddEntry({ onSubmit, onClose }) {
     const requiredFields = [
       {
         name: "productType",
-        value: currentProduct.productType,
-        label: "Product Type",
+        value:
+          currentProduct.productType === "Others"
+            ? currentProduct.customProduct
+            : currentProduct.productType,
+        label:
+          currentProduct.productType === "Others"
+            ? "Custom Product"
+            : "Product Type",
       },
       { name: "qty", value: currentProduct.qty, label: "Quantity" },
       {
@@ -229,7 +240,10 @@ function AddEntry({ onSubmit, onClose }) {
     }
 
     const newProduct = {
-      productType: currentProduct.productType,
+      productType:
+        currentProduct.productType === "Others"
+          ? currentProduct.customProduct
+          : currentProduct.productType,
       size: currentProduct.size || "N/A",
       spec: currentProduct.spec || "N/A",
       qty: Number(currentProduct.qty),
@@ -247,7 +261,6 @@ function AddEntry({ onSubmit, onClose }) {
       return updatedProducts;
     });
 
-    // Reset currentProduct
     setCurrentProduct({
       productType: "",
       size: "",
@@ -256,8 +269,10 @@ function AddEntry({ onSubmit, onClose }) {
       modelNos: "",
       unitPrice: "",
       gst: "",
+      customProduct: "",
     });
   };
+
   const removeProduct = (index) => {
     setProducts((prev) => prev.filter((_, i) => i !== index));
   };
@@ -371,7 +386,7 @@ function AddEntry({ onSubmit, onClose }) {
         !product.gst
       ) {
         toast.error(
-          "All added products must have product type, quantity, unit price, GST, and warranty"
+          "All added products must have product type, quantity, unit price, and GST"
         );
         return;
       }
@@ -391,7 +406,7 @@ function AddEntry({ onSubmit, onClose }) {
         qty: Number(p.qty),
         unitPrice: Number(p.unitPrice),
         gst: String(p.gst),
-        modelNos: p.modelNos ? p.modelNos.split(",").map((s) => s.trim()) : [], // Convert
+        modelNos: p.modelNos ? p.modelNos.split(",").map((s) => s.trim()) : [],
       })),
       soDate: formData.soDate,
       total,
@@ -1095,8 +1110,6 @@ function AddEntry({ onSubmit, onClose }) {
           </div>
 
           {/* Add Products Section */}
-
-          {/* Add Products Section */}
           <div>
             <h3
               style={{
@@ -1116,12 +1129,12 @@ function AddEntry({ onSubmit, onClose }) {
               className="product-grid"
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                 gap: "1.5rem",
                 marginBottom: "1.5rem",
               }}
             >
-              <div style={{ gridColumn: "1 / 2" }}>
+              <div>
                 <label
                   style={{
                     fontSize: "1rem",
@@ -1133,12 +1146,10 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   Product * <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   name="productType"
                   value={currentProduct.productType}
                   onChange={handleProductChange}
-                  placeholder="Enter Product Type"
                   style={{
                     width: "100%",
                     padding: "0.75rem",
@@ -1150,9 +1161,49 @@ function AddEntry({ onSubmit, onClose }) {
                   }}
                   aria-label="Product Type"
                   aria-required="true"
-                />
+                >
+                  <option value="">Select Product Type</option>
+                  {productOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div style={{ gridColumn: "2 / 3" }}>
+              {currentProduct.productType === "Others" && (
+                <div>
+                  <label
+                    style={{
+                      fontSize: "1rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                      display: "block",
+                    }}
+                  >
+                    Custom Product * <span style={{ color: "#f43f5e" }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="customProduct"
+                    value={currentProduct.customProduct || ""}
+                    onChange={handleProductChange}
+                    placeholder="Enter Custom Product"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                    aria-label="Custom Product"
+                    aria-required="true"
+                  />
+                </div>
+              )}
+              <div>
                 <label
                   style={{
                     fontSize: "1rem",
@@ -1182,7 +1233,7 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-label="Product Size"
                 />
               </div>
-              <div style={{ gridColumn: "3 / 4" }}>
+              <div>
                 <label
                   style={{
                     fontSize: "1rem",
@@ -1212,7 +1263,7 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-label="Product Specification"
                 />
               </div>
-              <div style={{ gridColumn: "1 / 2" }}>
+              <div>
                 <label
                   style={{
                     fontSize: "1rem",
@@ -1243,7 +1294,7 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-required="true"
                 />
               </div>
-              <div style={{ gridColumn: "2 / 3" }}>
+              <div>
                 <label
                   style={{
                     fontSize: "1rem",
@@ -1274,7 +1325,7 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-required="true"
                 />
               </div>
-              <div style={{ gridColumn: "3 / 4" }}>
+              <div>
                 <label
                   style={{
                     fontSize: "1rem",
@@ -1286,12 +1337,10 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   GST * <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   name="gst"
                   value={currentProduct.gst}
                   onChange={handleProductChange}
-                  placeholder="Enter GST (e.g., 18, 28, or including)"
                   style={{
                     width: "100%",
                     padding: "0.75rem",
@@ -1303,9 +1352,16 @@ function AddEntry({ onSubmit, onClose }) {
                   }}
                   aria-label="GST Rate"
                   aria-required="true"
-                />
+                >
+                  <option value="">Select GST</option>
+                  {gstOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div style={{ gridColumn: "1 / 2" }}>
+              <div>
                 <label
                   style={{
                     fontSize: "1rem",
@@ -1335,12 +1391,12 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-label="Model Numbers"
                 />
               </div>
-              <div style={{ gridColumn: "2 / 4", alignSelf: "end" }}>
+              <div style={{ alignSelf: "end" }}>
                 <button
                   type="button"
                   onClick={addProduct}
                   style={{
-                    width: "40%",
+                    width: "100%",
                     padding: "0.75rem",
                     background: "linear-gradient(135deg, #7c3aed, #3b82f6)",
                     color: "#ffffff",
@@ -1439,6 +1495,7 @@ function AddEntry({ onSubmit, onClose }) {
               </div>
             )}
           </div>
+
           {/* Additional Charges Section */}
           <div>
             <h3
