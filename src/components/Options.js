@@ -1,83 +1,13 @@
-export const productOptions = {
-  Chairs: {
-    sizes: ["Standard", "Ergonomic", "Executive", "Stackable"],
-    specs: [
-      "Fabric Upholstery, Adjustable Height",
-      "Leather Upholstery, Lumbar Support",
-      "Mesh Back, Swivel Base",
-      "Plastic, Foldable",
-    ],
-  },
-  Tables: {
-    sizes: [
-      "Small (2-4 seats)",
-      "Medium (4-6 seats)",
-      "Large (6-8 seats)",
-      "Conference",
-    ],
-    specs: [
-      "Wooden Top, Metal Frame",
-      "Glass Top, Wooden Legs",
-      "Foldable, Particle Board",
-      "Oval Shape, Veneer Finish",
-    ],
-  },
-  "Sheet Metal": {
-    sizes: ["Thin (0.5-1mm)", "Medium (1-3mm)", "Thick (3-5mm)"],
-    specs: [
-      "Stainless Steel, Polished Finish",
-      "Galvanized Steel, Powder Coated",
-      "Aluminum, Brushed Finish",
-      "Carbon Steel, Matte Finish",
-    ],
-  },
-  Desking: {
-    sizes: ["Single Desk", "Double Desk", "Corner Desk", "Workstation"],
-    specs: [
-      "Laminate Finish, Cable Management",
-      "Wooden Top, Metal Frame",
-      "Adjustable Height, Ergonomic",
-      "Modular, Partition Included",
-    ],
-  },
-  "Solid Wood": {
-    sizes: ["Standard", "Custom"],
-    specs: [
-      "Oak, Natural Finish",
-      "Teak, Polished",
-      "Pine, Stained",
-      "Mahogany, Varnished",
-    ],
-  },
-  Boards: {
-    sizes: ["2x3 ft", "3x4 ft", "4x6 ft", "4x8 ft"],
-    specs: [
-      "Magnetic Whiteboard",
-      "Non-Magnetic Whiteboard",
-      "Green Chalkboard",
-      "Cork Pinboard",
-    ],
-  },
-  "Lab Tables": {
-    sizes: ["Small (4x2 ft)", "Medium (6x3 ft)", "Large (8x4 ft)"],
-    specs: [
-      "Chemical-Resistant Top, Steel Frame",
-      "Epoxy Resin Surface, Adjustable Legs",
-      "Laminate Top, Storage Drawers",
-      "Anti-Slip Surface, Heavy Duty",
-    ],
-  },
-  Others: {
-    sizes: ["N/A"],
-    specs: [
-      "Miscellaneous Furniture Accessories",
-      "Decorative Panels",
-      "Storage Units",
-      "Custom Fixtures",
-    ],
-  },
-};
-
+export const productOptions = [
+  "Chairs",
+  "Tables",
+  "Sheet Metal",
+  "Desking",
+  "Solid Wood",
+  "Boards",
+  "Lab Tables",
+  "Others",
+];
 export const statesAndCities = {
   "Andhra Pradesh": [
     "Visakhapatnam",
