@@ -949,7 +949,6 @@ export const salesPersonlist = [
   "Rohit Kumar Tiwari",
   "Sahil Gupta",
   "Sahil Kapoor",
-
   "Sahiba",
   "Savir Khan",
   "Shri Kant",
