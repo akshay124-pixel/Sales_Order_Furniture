@@ -949,6 +949,7 @@ export const salesPersonlist = [
   "Rohit Kumar Tiwari",
   "Sahil Gupta",
   "Sahil Kapoor",
+
   "Sahiba",
   "Savir Khan",
   "Shri Kant",
@@ -961,6 +962,7 @@ export const salesPersonlist = [
   "Sunil Kukkar",
   "Surbhi Chugh",
   "Sushil Kumar",
+  "Sunil Kumar",
   "Vageesh Bhardwaj",
   "Vaibhav Mishra",
   "Varun Budhiraja",
