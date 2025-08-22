@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Spinner } from "react-bootstrap";
@@ -183,7 +183,7 @@ function AddEntry({ onSubmit, onClose }) {
         return {
           ...prev,
           productType: value,
-          customProduct: value === "Others" ? prev.customProduct : "",
+          customProduct: value === "Others" ? prev.customProduct : "", // Retain customProduct if Others
           size: "",
           spec: "",
           qty: "",
