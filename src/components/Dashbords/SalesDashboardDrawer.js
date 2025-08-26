@@ -704,22 +704,37 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                   <TotalHeader>Overall Totals</TotalHeader>
                   <TotalHeader>{overallTotals.totalOrders}</TotalHeader>
                   <TotalHeader>
-                    ₹{overallTotals.totalAmount.toLocaleString("en-IN")}
+                    ₹
+                    {overallTotals.totalAmount.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
                   </TotalHeader>
                   <TotalHeader>
                     ₹
                     {overallTotals.totalPaymentCollected.toLocaleString(
-                      "en-IN"
+                      "en-IN",
+                      {
+                        maximumFractionDigits: 0,
+                      }
                     )}
                   </TotalHeader>
                   <TotalHeader>
-                    ₹{overallTotals.totalPaymentDue.toLocaleString("en-IN")}
+                    ₹
+                    {overallTotals.totalPaymentDue.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
                   </TotalHeader>
                   <TotalHeader>
-                    ₹{overallTotals.dueOver30Days.toLocaleString("en-IN")}
+                    ₹
+                    {overallTotals.dueOver30Days.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
                   </TotalHeader>
                   <TotalHeader>
-                    ₹{overallTotals.totalUnitPrice.toLocaleString("en-IN")}
+                    ₹
+                    {overallTotals.totalUnitPrice.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
                   </TotalHeader>
                 </TotalHeaderRow>
                 <TableHeaderRow>
@@ -739,19 +754,34 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                       <TableCell>{data.createdBy}</TableCell>
                       <TableCell>{data.totalOrders}</TableCell>
                       <TableCell>
-                        ₹{data.totalAmount.toLocaleString("en-IN")}
+                        ₹
+                        {data.totalAmount.toLocaleString("en-IN", {
+                          maximumFractionDigits: 0,
+                        })}
                       </TableCell>
                       <TableCell>
-                        ₹{data.totalPaymentCollected.toLocaleString("en-IN")}
+                        ₹
+                        {data.totalPaymentCollected.toLocaleString("en-IN", {
+                          maximumFractionDigits: 0,
+                        })}
                       </TableCell>
                       <TableCell>
-                        ₹{data.totalPaymentDue.toLocaleString("en-IN")}
+                        ₹
+                        {data.totalPaymentDue.toLocaleString("en-IN", {
+                          maximumFractionDigits: 0,
+                        })}
                       </TableCell>
                       <TableCell>
-                        ₹{data.dueOver30Days.toLocaleString("en-IN")}
+                        ₹
+                        {data.dueOver30Days.toLocaleString("en-IN", {
+                          maximumFractionDigits: 0,
+                        })}
                       </TableCell>
                       <TableCell>
-                        ₹{data.totalUnitPrice.toLocaleString("en-IN")}
+                        ₹
+                        {data.totalUnitPrice.toLocaleString("en-IN", {
+                          maximumFractionDigits: 0,
+                        })}
                       </TableCell>
                     </TableRow>
                   ))
