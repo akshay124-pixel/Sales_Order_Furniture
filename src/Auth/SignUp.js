@@ -77,7 +77,7 @@ function Signup() {
         } else if (role === "ProductionApproval") {
           navigate("/production-approval");
         } else {
-          navigate("/sales"); // Sales or Admin
+          navigate("/sales");
         }
       } else {
         toast.error("Unexpected issue. Please try again.", {
@@ -197,6 +197,7 @@ function Signup() {
               <option value="Installation">Installation</option>
               <option value="Accounts">Accounts</option>
               <option value="Admin">Admin</option>
+                <option value="SuperAdmin">SuperAdmin</option>
               <option value="Verification">Verification</option>
               <option value="Bill">Bill</option>
               <option value="ProductionApproval">Production Approval</option> */}

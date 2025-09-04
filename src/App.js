@@ -42,7 +42,11 @@ const PrivateRoute = ({ element, isAuthenticated, allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    if (userRole === "Sales" || userRole === "Admin") {
+    if (
+      userRole === "Sales" ||
+      userRole === "Admin" ||
+      userRole === "SuperAdmin"
+    ) {
       return <Navigate to="/sales" replace />;
     }
     return <Navigate to="/login" replace />;
@@ -104,6 +108,7 @@ const AppContent = () => {
           navigate("/production-approval");
           break;
         case "Sales":
+        case "SuperAdmin":
         case "Admin":
           navigate("/sales");
           break;
@@ -139,6 +144,7 @@ const AppContent = () => {
                 "ProductionApproval",
                 "Sales", // Added Sales
                 "Admin", // Added Admin
+                "SuperAdmin", // Added SuperAdmin
               ]}
             />
           }
@@ -150,7 +156,7 @@ const AppContent = () => {
             <PrivateRoute
               element={<Sales />}
               isAuthenticated={isAuthenticated}
-              allowedRoles={["Sales", "Admin"]}
+              allowedRoles={["Sales", "Admin", "SuperAdmin"]}
             />
           }
         />

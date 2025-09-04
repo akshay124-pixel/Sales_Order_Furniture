@@ -528,7 +528,7 @@ const Row = React.memo(({ index, style, data }) => {
               >
                 <FaEye />
               </Button>
-              {userRole == "Admin" && (
+              {(userRole == "Admin" || userRole == "SuperAdmin") && (
                 <>
                   <button
                     className="editBtn"
@@ -2188,7 +2188,7 @@ const Sales = () => {
             flexWrap: "wrap",
           }}
         >
-          {userRole === "Admin" && (
+          {(userRole === "Admin" || userRole === "SuperAdmin") && (
             <label
               style={{
                 background: "linear-gradient(135deg, #2575fc, #6a11cb)",
@@ -2253,36 +2253,38 @@ const Sales = () => {
             {/* Reduced from 1.3rem */}
             Add Order
           </Button>
-          <Button
-            onClick={handleExport}
-            style={{
-              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-              border: "none",
-              padding: "12px 24px", // Reduced from 15px 30px
-              borderRadius: "30px", // Reduced from 35px
-              color: "white",
-              fontWeight: "600",
-              fontSize: "1rem", // Reduced from 1.1rem
-              boxShadow: "0 6px 16px rgba(0,0,0,0.25)", // Reduced from 0 8px 20px
-              display: "flex",
-              alignItems: "center",
-              gap: "8px", // Reduced from 10px
-              transition: "all 0.4s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)"; // Reduced from 0 12px 30px
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"; // Reduced from 0 8px 20px
-            }}
-          >
-            <span style={{ fontSize: "1.2rem" }}>➔</span>{" "}
-            {/* Reduced from 1.3rem */}
-            Export Orders
-          </Button>
-          {userRole === "Admin" && (
+          {userRole === "SuperAdmin" && (
+            <Button
+              onClick={handleExport}
+              style={{
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                border: "none",
+                padding: "12px 24px", // Reduced from 15px 30px
+                borderRadius: "30px", // Reduced from 35px
+                color: "white",
+                fontWeight: "600",
+                fontSize: "1rem", // Reduced from 1.1rem
+                boxShadow: "0 6px 16px rgba(0,0,0,0.25)", // Reduced from 0 8px 20px
+                display: "flex",
+                alignItems: "center",
+                gap: "8px", // Reduced from 10px
+                transition: "all 0.4s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.05)";
+                e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)"; // Reduced from 0 12px 30px
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+                e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"; // Reduced from 0 8px 20px
+              }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>➔</span>{" "}
+              {/* Reduced from 1.3rem */}
+              Export Orders
+            </Button>
+          )}
+          {(userRole === "Admin" || userRole === "SuperAdmin") && (
             <Button
               variant="primary"
               onClick={() => setIsDashboardOpen(true)}
