@@ -418,10 +418,19 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       fetchOrders();
-      const socket = io(`${process.env.REACT_APP_URL}`, {
+      const baseOrigin = (() => {
+        try {
+          return new URL(process.env.REACT_APP_URL).origin;
+        } catch {
+          return process.env.REACT_APP_URL;
+        }
+      })();
+      const socket = io(baseOrigin, {
+        path: "/furni/socket.io",
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
+        withCredentials: true,
         transports: ["websocket", "polling"],
       });
 

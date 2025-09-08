@@ -1041,10 +1041,21 @@ const Sales = () => {
   }, []);
 
   useEffect(() => {
-    const socket = io(`${process.env.REACT_APP_URL}`, {
+    const baseOrigin = (() => {
+      try {
+        return new URL(process.env.REACT_APP_URL).origin;
+      } catch {
+        return process.env.REACT_APP_URL;
+      }
+    })();
+
+    const socket = io(baseOrigin, {
+      path: "/furni/socket.io",
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
+      withCredentials: true,
     });
 
     socket.on("connect", () => {
@@ -1078,7 +1089,7 @@ const Sales = () => {
         return updatedOrders;
       });
       setNotifications((prev) => {
-        if (prev.some((n) => n.id === notification.id)) return prev; // Prevent duplicates
+        if (prev.some((n) => n.id === notification.id)) return prev;
         const updated = [notification, ...prev].slice(0, 50);
         localStorage.setItem("notifications", JSON.stringify(updated));
         return updated;
