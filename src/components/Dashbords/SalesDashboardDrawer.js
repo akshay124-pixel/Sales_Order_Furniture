@@ -436,13 +436,29 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
 
       socket.on("connect", () => {
         console.log("Connected to Socket.IO server, ID:", socket.id);
-        socket.emit("join", "global");
+        // BUGFIX: Join per-user/admin rooms instead of a global room
+        const userId = localStorage.getItem("userId");
+        const role = localStorage.getItem("role");
+        socket.emit("join", { userId, role });
         toast.success("Connected to real-time updates!");
       });
 
-      socket.on("orderUpdate", (data) => {
-        console.log("Order update received:", data);
-        fetchOrders();
+      socket.on("orderUpdate", ({ operationType, fullDocument }) => {
+        // Only accept inserts for own orders or if admin
+        if (operationType !== "insert" || !fullDocument) return;
+        const currentUserId = localStorage.getItem("userId");
+        const role = localStorage.getItem("role");
+        const ownerId =
+          typeof fullDocument.createdBy === "object" && fullDocument.createdBy?._id
+            ? fullDocument.createdBy._id
+            : String(fullDocument.createdBy || "");
+        const isAuthorized =
+          role === "Admin" || role === "SuperAdmin" || ownerId === currentUserId;
+        if (!isAuthorized) return;
+        setOrders((prev) => {
+          if (prev.some((o) => o._id === fullDocument._id)) return prev;
+          return [fullDocument, ...prev];
+        });
       });
 
       socket.on("connect_error", (error) => {

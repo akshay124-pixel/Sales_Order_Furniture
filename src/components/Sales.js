@@ -1067,43 +1067,64 @@ const Sales = () => {
       console.error("Socket.IO connection error:", error);
     });
 
-    socket.on("newOrder", ({ notification }) => {
+    // BUGFIX: Previously we trusted globally-broadcast payload and pushed
+    // it into orders for all users. Now we only add if it belongs to
+    // the current user or the current user has admin role.
+    socket.on("newOrder", ({ order }) => {
+      if (!order) return;
+      const currentUserId = localStorage.getItem("userId");
+      const role = localStorage.getItem("role");
+      const createdById =
+        typeof order.createdBy === "object" && order.createdBy?._id
+          ? order.createdBy._id
+          : String(order.createdBy || "");
+      const isAuthorized =
+        role === "Admin" || role === "SuperAdmin" || createdById === currentUserId;
+      if (!isAuthorized) return;
       setOrders((prev) => {
-        if (prev.some((o) => o._id === notification._id)) return prev;
-        return [notification, ...prev];
+        if (prev.some((o) => o._id === order._id)) return prev;
+        return [order, ...prev];
       });
-      setNotifications((prev) => {
-        if (prev.some((n) => n.id === notification.id)) return prev;
-        const updated = [notification, ...prev].slice(0, 50);
-        localStorage.setItem("notifications", JSON.stringify(updated));
-        return updated;
-      });
-      toast.info(notification.message);
     });
 
-    socket.on("updateOrder", ({ _id, customername, orderId, notification }) => {
-      setOrders((prev) => {
-        const updatedOrders = prev.map((order) =>
-          order._id === _id ? { ...order, customername, orderId } : order
-        );
-        return updatedOrders;
-      });
-      setNotifications((prev) => {
-        if (prev.some((n) => n.id === notification.id)) return prev;
-        const updated = [notification, ...prev].slice(0, 50);
-        localStorage.setItem("notifications", JSON.stringify(updated));
-        return updated;
-      });
-      toast.info(notification.message);
+    socket.on("updateOrder", ({ order, notification }) => {
+      if (!order) return;
+      const currentUserId = localStorage.getItem("userId");
+      const role = localStorage.getItem("role");
+      const ownerId =
+        typeof order.createdBy === "object" && order.createdBy?._id
+          ? order.createdBy._id
+          : String(order.createdBy || "");
+      const isAuthorized =
+        role === "Admin" || role === "SuperAdmin" || ownerId === currentUserId;
+      if (!isAuthorized) return;
+      setOrders((prev) => prev.map((o) => (o._id === order._id ? { ...o, ...order } : o)));
+      if (notification?.id) {
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === notification.id)) return prev;
+          const updated = [notification, ...prev].slice(0, 50);
+          localStorage.setItem("notifications", JSON.stringify(updated));
+          return updated;
+        });
+        toast.info(notification.message);
+      }
     });
 
     socket.on("orderUpdate", ({ operationType, documentId, fullDocument }) => {
-      if (operationType === "insert" && fullDocument) {
-        setOrders((prev) => {
-          if (prev.some((o) => o._id === documentId)) return prev;
-          return [fullDocument, ...prev];
-        });
-      }
+      if (operationType !== "insert" || !fullDocument) return;
+      const currentUserId = localStorage.getItem("userId");
+      const role = localStorage.getItem("role");
+      const ownerId =
+        typeof fullDocument.createdBy === "object" && fullDocument.createdBy?._id
+          ? fullDocument.createdBy._id
+          : String(fullDocument.createdBy || "");
+      const isAuthorized =
+        role === "Admin" || role === "SuperAdmin" || ownerId === currentUserId;
+      if (!isAuthorized) return;
+      setOrders((prev) => {
+        if (prev.some((o) => o._id === documentId)) return prev;
+        return [fullDocument, ...prev];
+      });
     });
 
     fetchOrders();
@@ -1142,6 +1163,19 @@ const Sales = () => {
       let filtered = [...ordersToFilter].filter(
         (order) => order._id && order.orderId
       ); // Only include orders with _id and orderId
+
+      // BUGFIX (defensive): Scope client-side list to current user unless admin
+      const role = localStorage.getItem("role");
+      const currentUserId = localStorage.getItem("userId");
+      if (!(role === "Admin" || role === "SuperAdmin")) {
+        filtered = filtered.filter((order) => {
+          const ownerId =
+            typeof order.createdBy === "object" && order.createdBy?._id
+              ? order.createdBy._id
+              : String(order.createdBy || "");
+          return ownerId === currentUserId;
+        });
+      }
 
       const searchLower = search.toLowerCase().trim(); // Define searchLower before usage
 
