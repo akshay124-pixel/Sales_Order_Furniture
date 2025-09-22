@@ -1110,15 +1110,15 @@ function AddEntry({ onSubmit, onClose }) {
           </div>
 
           {/* Add Products Section */}
-          <div>
+          <div style={{ margin: "1rem 0.5rem", padding: "0 0.5rem" }}>
             <h3
               style={{
-                fontSize: "1.5rem",
+                fontSize: "calc(1.2rem + 0.5vw)",
                 background: "linear-gradient(135deg, #2575fc, #6a11cb)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 fontWeight: "700",
-                marginBottom: "1.5rem",
+                marginBottom: "1rem",
                 letterSpacing: "1px",
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
               }}
@@ -1128,16 +1128,16 @@ function AddEntry({ onSubmit, onClose }) {
             <div
               className="product-grid"
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "1.5rem",
-                marginBottom: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                marginBottom: "1rem",
               }}
             >
               <div>
                 <label
                   style={{
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     fontWeight: "600",
                     color: "#475569",
                     marginBottom: "0.5rem",
@@ -1156,7 +1156,7 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     color: "#1e293b",
                   }}
                   aria-label="Product Type"
@@ -1174,7 +1174,7 @@ function AddEntry({ onSubmit, onClose }) {
                 <div>
                   <label
                     style={{
-                      fontSize: "1rem",
+                      fontSize: "calc(0.9rem + 0.2vw)",
                       fontWeight: "600",
                       color: "#475569",
                       marginBottom: "0.5rem",
@@ -1195,7 +1195,7 @@ function AddEntry({ onSubmit, onClose }) {
                       border: "1px solid #e2e8f0",
                       borderRadius: "0.75rem",
                       backgroundColor: "#f8fafc",
-                      fontSize: "1rem",
+                      fontSize: "calc(0.9rem + 0.2vw)",
                       color: "#1e293b",
                     }}
                     aria-label="Custom Product"
@@ -1206,7 +1206,7 @@ function AddEntry({ onSubmit, onClose }) {
               <div>
                 <label
                   style={{
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     fontWeight: "600",
                     color: "#475569",
                     marginBottom: "0.5rem",
@@ -1227,7 +1227,7 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     color: "#1e293b",
                   }}
                   aria-label="Product Size"
@@ -1236,7 +1236,7 @@ function AddEntry({ onSubmit, onClose }) {
               <div>
                 <label
                   style={{
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     fontWeight: "600",
                     color: "#475569",
                     marginBottom: "0.5rem",
@@ -1257,7 +1257,7 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     color: "#1e293b",
                   }}
                   aria-label="Product Specification"
@@ -1266,7 +1266,7 @@ function AddEntry({ onSubmit, onClose }) {
               <div>
                 <label
                   style={{
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     fontWeight: "600",
                     color: "#475569",
                     marginBottom: "0.5rem",
@@ -1287,7 +1287,7 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     color: "#1e293b",
                   }}
                   aria-label="Product Quantity"
@@ -1297,7 +1297,7 @@ function AddEntry({ onSubmit, onClose }) {
               <div>
                 <label
                   style={{
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     fontWeight: "600",
                     color: "#475569",
                     marginBottom: "0.5rem",
@@ -1318,7 +1318,7 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     color: "#1e293b",
                   }}
                   aria-label="Unit Price"
@@ -1328,7 +1328,7 @@ function AddEntry({ onSubmit, onClose }) {
               <div>
                 <label
                   style={{
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     fontWeight: "600",
                     color: "#475569",
                     marginBottom: "0.5rem",
@@ -1347,7 +1347,7 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     color: "#1e293b",
                   }}
                   aria-label="GST Rate"
@@ -1364,7 +1364,7 @@ function AddEntry({ onSubmit, onClose }) {
               <div>
                 <label
                   style={{
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     fontWeight: "600",
                     color: "#475569",
                     marginBottom: "0.5rem",
@@ -1385,13 +1385,13 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     color: "#1e293b",
                   }}
                   aria-label="Model Numbers"
                 />
               </div>
-              <div style={{ alignSelf: "end" }}>
+              <div style={{ alignSelf: "stretch" }}>
                 <button
                   type="button"
                   onClick={addProduct}
@@ -1403,9 +1403,16 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "none",
                     borderRadius: "0.75rem",
                     cursor: "pointer",
-                    fontSize: "1rem",
+                    fontSize: "calc(0.9rem + 0.2vw)",
                     fontWeight: "600",
+                    transition: "transform 0.1s ease, background 0.2s ease",
                   }}
+                  onTouchStart={(e) =>
+                    (e.currentTarget.style.transform = "scale(0.95)")
+                  }
+                  onTouchEnd={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
                   aria-label="Add Product"
                 >
                   Add +
@@ -1414,38 +1421,46 @@ function AddEntry({ onSubmit, onClose }) {
             </div>
 
             {products.length > 0 && (
-              <div style={{ marginTop: "1.5rem" }}>
+              <div style={{ marginTop: "1rem" }}>
                 <h4
                   style={{
-                    fontSize: "1.1rem",
+                    fontSize: "calc(1rem + 0.2vw)",
                     color: "#475569",
-                    marginBottom: "1rem",
+                    marginBottom: "0.75rem",
                   }}
                 >
                   Added Products:
                 </h4>
                 <div
                   style={{
-                    maxHeight: "200px",
+                    maxHeight: "calc(40vh)",
                     overflowY: "auto",
+                    scrollBehavior: "smooth",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     padding: "0.5rem",
+                    background: "#fff",
                   }}
                 >
                   {products.map((product, index) => (
                     <div
                       key={index}
                       style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "2fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.4rem",
                         padding: "0.75rem",
                         background: "#f1f5f9",
                         borderRadius: "0.5rem",
                         marginBottom: "0.5rem",
-                        transition: "background 0.2s ease",
+                        transition: "background 0.2s ease, transform 0.1s ease",
                       }}
+                      onTouchStart={(e) =>
+                        (e.currentTarget.style.transform = "scale(0.98)")
+                      }
+                      onTouchEnd={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
                       onMouseOver={(e) =>
                         (e.currentTarget.style.background = "#e2e8f0")
                       }
@@ -1453,25 +1468,60 @@ function AddEntry({ onSubmit, onClose }) {
                         (e.currentTarget.style.background = "#f1f5f9")
                       }
                     >
-                      <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
-                        {product.productType}
+                      <span
+                        style={{
+                          fontSize: "calc(0.85rem + 0.2vw)",
+                          color: "#1e293b",
+                        }}
+                      >
+                        Type: {product.productType}
                       </span>
-                      <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
+                      <span
+                        style={{
+                          fontSize: "calc(0.85rem + 0.2vw)",
+                          color: "#1e293b",
+                        }}
+                      >
                         Size: {product.size || "N/A"}
                       </span>
-                      <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
-                        {product.spec || "N/A"}
+                      <span
+                        style={{
+                          fontSize: "calc(0.85rem + 0.2vw)",
+                          color: "#1e293b",
+                        }}
+                      >
+                        Spec: {product.spec || "N/A"}
                       </span>
-                      <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
+                      <span
+                        style={{
+                          fontSize: "calc(0.85rem + 0.2vw)",
+                          color: "#1e293b",
+                        }}
+                      >
                         Qty: {product.qty}
                       </span>
-                      <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
+                      <span
+                        style={{
+                          fontSize: "calc(0.85rem + 0.2vw)",
+                          color: "#1e293b",
+                        }}
+                      >
                         ₹{product.unitPrice}
                       </span>
-                      <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
+                      <span
+                        style={{
+                          fontSize: "calc(0.85rem + 0.2vw)",
+                          color: "#1e293b",
+                        }}
+                      >
                         GST: {product.gst}
                       </span>
-                      <span style={{ fontSize: "0.95rem", color: "#1e293b" }}>
+                      <span
+                        style={{
+                          fontSize: "calc(0.85rem + 0.2vw)",
+                          color: "#1e293b",
+                        }}
+                      >
                         Model: {product.modelNos || "N/A"}
                       </span>
                       <button
@@ -1482,9 +1532,18 @@ function AddEntry({ onSubmit, onClose }) {
                           background: "none",
                           border: "none",
                           cursor: "pointer",
-                          fontSize: "0.95rem",
-                          textAlign: "right",
+                          fontSize: "calc(0.85rem + 0.2vw)",
+                          padding: "0.5rem 0",
+                          textAlign: "left",
+                          borderRadius: "0.25rem",
+                          transition: "background 0.2s ease",
                         }}
+                        onTouchStart={(e) =>
+                          (e.currentTarget.style.background = "#fee2e2")
+                        }
+                        onTouchEnd={(e) =>
+                          (e.currentTarget.style.background = "none")
+                        }
                         aria-label={`Remove product ${product.productType}`}
                       >
                         Remove
@@ -1494,6 +1553,55 @@ function AddEntry({ onSubmit, onClose }) {
                 </div>
               </div>
             )}
+            <style>
+              {`
+      @media (min-width: 768px) {
+        div.product-grid {
+          display: grid !important;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+          gap: 1.5rem !important;
+          margin-bottom: 1.5rem !important;
+        }
+        div[style*="margin: 1rem 0.5rem"] {
+          margin: 1.5rem 1rem !important;
+        }
+        h3[style*="font-size: calc(1.2rem + 0.5vw)"] {
+          font-size: 1.5rem !important;
+        }
+        h4[style*="font-size: calc(1rem + 0.2vw)"] {
+          font-size: 1.1rem !important;
+          margin-bottom: 1rem !important;
+        }
+        div[style*="max-height: calc(40vh)"] {
+          max-height: 200px !important;
+        }
+        div[style*="flex-direction: column"][style*="gap: 0.4rem"] {
+          display: grid !important;
+          grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr !important;
+          gap: 0 !important;
+        }
+        div[style*="flex-direction: column"][style*="gap: 0.4rem"] > span,
+        div[style*="flex-direction: column"][style*="gap: 0.4rem"] > button {
+          font-size: 0.95rem !important;
+        }
+        div[style*="flex-direction: column"][style*="gap: 0.4rem"] > button {
+          text-align: right !important;
+          padding: 0.25rem 0 !important;
+        }
+        select[name="productType"],
+        select[name="gst"],
+        input:not([type="button"]) {
+          font-size: 1rem !important;
+        }
+        label[style*="font-size: calc(0.9rem + 0.2vw)"] {
+          font-size: 1rem !important;
+        }
+        button[style*="font-size: calc(0.9rem + 0.2vw)"] {
+          font-size: 1rem !important;
+        }
+      }
+    `}
+            </style>
           </div>
 
           {/* Additional Charges Section */}

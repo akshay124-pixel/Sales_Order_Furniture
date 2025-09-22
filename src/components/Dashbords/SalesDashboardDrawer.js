@@ -9,7 +9,6 @@ import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-// Styled Components
 const DrawerOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -40,6 +39,12 @@ const DrawerContainer = styled.div`
   font-family: "Poppins", sans-serif;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    height: 90vh;
+    max-height: 90vh;
+    padding: 10px;
+  }
 `;
 
 const DrawerHeader = styled.div`
@@ -52,6 +57,13 @@ const DrawerHeader = styled.div`
   margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 15px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px;
+    gap: 8px;
+  }
 `;
 
 const DrawerTitle = styled.h3`
@@ -59,13 +71,27 @@ const DrawerTitle = styled.h3`
   font-weight: 700;
   font-size: 1.2rem;
   margin: 0;
-`;
 
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+  }
+`;
 const ButtonContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
 `;
 
 const CloseButton = styled(Button)`
@@ -79,6 +105,12 @@ const CloseButton = styled(Button)`
   font-size: 0.9rem;
   &:hover {
     background: #b02a37;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.8rem;
   }
 `;
 
@@ -94,6 +126,12 @@ const ExportButton = styled(Button)`
   &:hover {
     background: #218838;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.8rem;
+  }
 `;
 
 const ResetButton = styled(Button)`
@@ -108,6 +146,12 @@ const ResetButton = styled(Button)`
   &:hover {
     background: #4b5563;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.8rem;
+  }
 `;
 
 const DatePickerContainer = styled.div`
@@ -116,6 +160,10 @@ const DatePickerContainer = styled.div`
   flex-direction: column;
   gap: 5px;
   z-index: 2000;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const DatePickerLabel = styled.label`
@@ -123,6 +171,10 @@ const DatePickerLabel = styled.label`
   color: white;
   font-weight: 500;
   text-transform: uppercase;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
 `;
 
 const StyledDatePicker = styled(DatePicker)`
@@ -142,6 +194,12 @@ const StyledDatePicker = styled(DatePicker)`
   &::placeholder {
     color: #6b7280;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 8px;
+  }
 `;
 
 const DatePickerIcon = styled(Calendar)`
@@ -153,6 +211,12 @@ const DatePickerIcon = styled(Calendar)`
   width: 18px;
   height: 18px;
   pointer-events: none;
+
+  @media (max-width: 768px) {
+    right: 8px;
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const DatePickerPopup = styled.div`
@@ -190,6 +254,13 @@ const DatePickerPopup = styled.div`
   .react-datepicker__day--outside-month {
     color: #6b7280;
   }
+
+  @media (max-width: 768px) {
+    .react-datepicker {
+      width: 100%;
+      font-size: 0.8rem;
+    }
+  }
 `;
 
 const TableContainer = styled.div`
@@ -199,12 +270,21 @@ const TableContainer = styled.div`
   background: white;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   max-height: calc(80vh - 100px);
+
+  @media (max-width: 768px) {
+    max-height: calc(90vh - 120px);
+    overflow-x: auto;
+  }
 `;
 
 const DashboardTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+
+  @media (max-width: 768px) {
+    min-width: 1080px; /* Ensure horizontal scrolling */
+  }
 `;
 
 const TotalHeaderRow = styled.tr`
@@ -219,6 +299,10 @@ const TableHeaderRow = styled.tr`
   position: sticky;
   top: 44px;
   z-index: 10;
+
+  @media (max-width: 768px) {
+    top: 35px;
+  }
 `;
 
 const TableHeader = styled.th`
@@ -249,6 +333,11 @@ const TableHeader = styled.th`
   &:nth-child(7) {
     width: 12%;
   }
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
 `;
 
 const TotalHeader = styled.th`
@@ -277,6 +366,11 @@ const TotalHeader = styled.th`
   }
   &:nth-child(7) {
     width: 12%;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 8px;
   }
 `;
 
@@ -309,6 +403,11 @@ const TableCell = styled.td`
   }
   &:nth-child(7) {
     width: 12%;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    padding: 8px;
   }
 `;
 
@@ -449,11 +548,14 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         const currentUserId = localStorage.getItem("userId");
         const role = localStorage.getItem("role");
         const ownerId =
-          typeof fullDocument.createdBy === "object" && fullDocument.createdBy?._id
+          typeof fullDocument.createdBy === "object" &&
+          fullDocument.createdBy?._id
             ? fullDocument.createdBy._id
             : String(fullDocument.createdBy || "");
         const isAuthorized =
-          role === "Admin" || role === "SuperAdmin" || ownerId === currentUserId;
+          role === "Admin" ||
+          role === "SuperAdmin" ||
+          ownerId === currentUserId;
         if (!isAuthorized) return;
         setOrders((prev) => {
           if (prev.some((o) => o._id === fullDocument._id)) return prev;
