@@ -163,6 +163,7 @@ const StyledButton = styled(Button)`
     justify-content: center;
     font-size: 0.95rem;
     padding: 0.8rem 1rem;
+    border-radius: 60px;
   }
 `;
 
