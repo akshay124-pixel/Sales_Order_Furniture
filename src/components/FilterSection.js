@@ -103,7 +103,7 @@ const DatePickerWrapper = styled.div`
     border: 1px solid #e5e7eb;
     background: #f9fafb;
     font-size: 0.85rem;
-    width: 100%;
+    width: 80%;
     transition: all 0.3s ease-in-out;
 
     &:focus {
@@ -175,7 +175,7 @@ const StyledDropdownToggle = styled(Dropdown.Toggle)`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease-in-out;
   flex: 1;
-  max-width: 105px;
+  max-width: 150px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
