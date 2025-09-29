@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
-import { Button } from "react-bootstrap";
-import { X, Download, Calendar } from "lucide-react";
+import { Button, Dropdown } from "react-bootstrap";
+import { X, Download, Calendar, ArrowRight } from "lucide-react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { toast } from "react-toastify";
@@ -9,6 +9,7 @@ import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+// Styled Components
 const DrawerOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -81,6 +82,7 @@ const DrawerTitle = styled.h3`
     text-align: center;
   }
 `;
+
 const ButtonContainer = styled.div`
   display: flex;
   align-items: center;
@@ -163,17 +165,6 @@ const DatePickerContainer = styled.div`
 
   @media (max-width: 768px) {
     width: 100%;
-  }
-`;
-
-const DatePickerLabel = styled.label`
-  font-size: 0.85rem;
-  color: white;
-  font-weight: 500;
-  text-transform: uppercase;
-
-  @media (max-width: 768px) {
-    font-size: 0.75rem;
   }
 `;
 
@@ -263,6 +254,66 @@ const DatePickerPopup = styled.div`
   }
 `;
 
+const StyledDropdownToggle = styled(Dropdown.Toggle)`
+  background: #487fdfff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease-in-out;
+  max-width: 150px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    opacity: 0.9;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: none;
+    font-size: 0.8rem;
+    padding: 10px;
+  }
+`;
+
+const StyledDropdownMenu = styled(Dropdown.Menu)`
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  background: white;
+  border: none;
+  padding: 0.5rem;
+  min-width: 180px;
+
+  @media (max-width: 768px) {
+    min-width: 100%;
+  }
+`;
+
+const StyledDropdownItem = styled(Dropdown.Item)`
+  padding: 0.5rem 0.75rem;
+  color: #1e40af;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background 0.3s ease-in-out;
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.1);
+  }
+
+  &:focus,
+  &:active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #1e40af;
+  }
+`;
+
 const TableContainer = styled.div`
   flex: 1;
   overflow-y: auto;
@@ -283,7 +334,7 @@ const DashboardTable = styled.table`
   table-layout: fixed;
 
   @media (max-width: 768px) {
-    min-width: 1080px; /* Ensure horizontal scrolling */
+    min-width: 1080px;
   }
 `;
 
@@ -417,181 +468,166 @@ const TableRow = styled.tr`
   }
 `;
 
+// Reusable Dropdown Component
+const FilterDropdown = ({ id, label, value, onChange, options, tableId }) => (
+  <Dropdown>
+    <StyledDropdownToggle id={id} aria-controls={tableId}>
+      {value === "All" ? label : value}
+    </StyledDropdownToggle>
+    <StyledDropdownMenu>
+      {options.map((option) => (
+        <StyledDropdownItem
+          key={option}
+          onClick={() => onChange(option)}
+          aria-label={`Select ${label} filter: ${option}`}
+        >
+          {option}
+        </StyledDropdownItem>
+      ))}
+    </StyledDropdownMenu>
+  </Dropdown>
+);
+
+// SalesDashboardDrawer Component
 const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [productionStatusFilter, setProductionStatusFilter] = useState("All");
+  const [productStatus, setProductStatusFilter] = useState("All");
+  const [installStatusFilter, setInstallStatusFilter] = useState("All");
+  const [accountsStatusFilter, setAccountsStatusFilter] = useState("All");
+  const [dispatchFilter, setDispatchFilter] = useState("All");
 
-  // Filter orders by date range
-  const filterOrders = useCallback((ordersToFilter, start, end) => {
-    let filtered = [...ordersToFilter];
-    if (start || end) {
-      filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.soDate);
-        const startDateAdjusted = start
-          ? new Date(start.setHours(0, 0, 0, 0))
-          : null;
-        const endDateAdjusted = end
-          ? new Date(end.setHours(23, 59, 59, 999))
-          : null;
-        return (
-          (!startDateAdjusted || orderDate >= startDateAdjusted) &&
-          (!endDateAdjusted || orderDate <= endDateAdjusted)
-        );
-      });
-    }
-    return filtered;
-  }, []);
-
-  // Fetch orders from API
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        toast.error("You are not logged in. Please log in to view orders.", {
-          position: "top-right",
-          autoClose: 3000,
-          theme: "colored",
-        });
-        return;
-      }
-
-      const response = await axios.get(
-        `${process.env.REACT_APP_URL}/api/get-orders`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+  // Filter orders
+  const filterOrders = useCallback(
+    (
+      ordersToFilter,
+      productionStatus,
+      productStatus,
+      installStatus,
+      accountsStatus,
+      dispatch,
+      start,
+      end
+    ) => {
+      let filtered = [...ordersToFilter].filter(
+        (order) => order._id && order.orderId
       );
 
-      console.log("Fetched orders:", response.data);
-      setOrders(response.data || []);
-    } catch (error) {
-      console.error("Error fetching orders:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
-
-      let errorMessage = "Something went wrong while fetching orders.";
-
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            errorMessage = "Your session has expired. Please log in again.";
-            break;
-          case 403:
-            errorMessage = "You do not have permission to view orders.";
-            break;
-          case 404:
-            errorMessage = "No orders found.";
-            break;
-          case 500:
-            errorMessage = "Server is having an issue. Please try again later.";
-            break;
-          default:
-            errorMessage = error.response.data?.error || errorMessage;
-        }
-      } else if (error.request) {
-        errorMessage =
-          "Unable to connect to the server. Please check your internet connection.";
+      // Scope to current user unless admin
+      const role = localStorage.getItem("role");
+      const currentUserId = localStorage.getItem("userId");
+      if (!(role === "Admin" || role === "SuperAdmin")) {
+        filtered = filtered.filter((order) => {
+          const ownerId =
+            typeof order.createdBy === "object" && order.createdBy?._id
+              ? order.createdBy._id
+              : String(order.createdBy || "");
+          return ownerId === currentUserId;
+        });
       }
 
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "colored",
-      });
+      if (productionStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.fulfillingStatus === productionStatus
+        );
+      }
 
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (productStatus !== "All") {
+        filtered = filtered.filter((order) =>
+          order.products?.some((p) => p.productType === productStatus)
+        );
+      }
 
-  // Initialize Socket.IO connection
-  useEffect(() => {
-    if (isOpen) {
-      fetchOrders();
-      const baseOrigin = (() => {
-        try {
-          return new URL(process.env.REACT_APP_URL).origin;
-        } catch {
-          return process.env.REACT_APP_URL;
-        }
-      })();
-      const socket = io(baseOrigin, {
-        path: "/furni/socket.io",
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        withCredentials: true,
-        transports: ["websocket", "polling"],
-      });
+      if (installStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.installationStatus === installStatus
+        );
+      }
 
-      socket.on("connect", () => {
-        console.log("Connected to Socket.IO server, ID:", socket.id);
-        // BUGFIX: Join per-user/admin rooms instead of a global room
-        const userId = localStorage.getItem("userId");
-        const role = localStorage.getItem("role");
-        socket.emit("join", { userId, role });
-        toast.success("Connected to real-time updates!");
-      });
+      if (accountsStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.paymentReceived === accountsStatus
+        );
+      }
 
-      socket.on("orderUpdate", ({ operationType, fullDocument }) => {
-        // Only accept inserts for own orders or if admin
-        if (operationType !== "insert" || !fullDocument) return;
-        const currentUserId = localStorage.getItem("userId");
-        const role = localStorage.getItem("role");
-        const ownerId =
-          typeof fullDocument.createdBy === "object" &&
-          fullDocument.createdBy?._id
-            ? fullDocument.createdBy._id
-            : String(fullDocument.createdBy || "");
-        const isAuthorized =
-          role === "Admin" ||
-          role === "SuperAdmin" ||
-          ownerId === currentUserId;
-        if (!isAuthorized) return;
-        setOrders((prev) => {
-          if (prev.some((o) => o._id === fullDocument._id)) return prev;
-          return [fullDocument, ...prev];
+      if (dispatch !== "All") {
+        filtered = filtered.filter(
+          (order) => order.dispatchStatus === dispatch
+        );
+      }
+
+      if (start || end) {
+        filtered = filtered.filter((order) => {
+          const orderDate = order.soDate ? new Date(order.soDate) : null;
+          if (!orderDate || isNaN(orderDate.getTime())) return false;
+
+          const startDateAdjusted =
+            start && start instanceof Date && !isNaN(start.getTime())
+              ? new Date(
+                  start.getFullYear(),
+                  start.getMonth(),
+                  start.getDate(),
+                  0,
+                  0,
+                  0,
+                  0
+                )
+              : null;
+          const endDateAdjusted =
+            end && end instanceof Date && !isNaN(end.getTime())
+              ? new Date(
+                  end.getFullYear(),
+                  end.getMonth(),
+                  end.getDate(),
+                  23,
+                  59,
+                  59,
+                  999
+                )
+              : null;
+
+          return (
+            (!startDateAdjusted || orderDate >= startDateAdjusted) &&
+            (!endDateAdjusted || orderDate <= endDateAdjusted)
+          );
         });
-      });
+      }
 
-      socket.on("connect_error", (error) => {
-        console.error("Socket.IO connection error:", error.message);
-        toast.error(`Connection to server failed: ${error.message}`);
+      return filtered.sort((a, b) => {
+        const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+        const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+        return bUpdatedAt - aUpdatedAt;
       });
-
-      socket.on("disconnect", (reason) => {
-        console.log("Socket.IO disconnected:", reason);
-        if (reason !== "io client disconnect") {
-          toast.warn(`Disconnected from server: ${reason}. Reconnecting...`);
-        }
-      });
-
-      socket.on("reconnect", (attempt) => {
-        console.log("Socket.IO reconnected after attempt:", attempt);
-        toast.success("Reconnected to server!");
-        fetchOrders();
-      });
-
-      return () => {
-        socket.disconnect();
-        console.log("Socket.IO disconnected");
-      };
-    }
-  }, [isOpen]);
+    },
+    []
+  );
 
   // Memoize filtered orders
   const filteredOrders = useMemo(() => {
-    return filterOrders(orders, startDate, endDate);
-  }, [orders, startDate, endDate, filterOrders]);
+    return filterOrders(
+      orders,
+      productionStatusFilter,
+      productStatus,
+      installStatusFilter,
+      accountsStatusFilter,
+      dispatchFilter,
+      startDate,
+      endDate
+    );
+  }, [
+    orders,
+    productionStatusFilter,
+    productStatus,
+    installStatusFilter,
+    accountsStatusFilter,
+    dispatchFilter,
+    startDate,
+    endDate,
+    filterOrders,
+  ]);
 
   // Memoize sales analytics computation
   const salesAnalytics = useMemo(() => {
@@ -693,6 +729,148 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     })
   );
 
+  // Fetch orders from API
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast.error("You are not logged in. Please log in to view orders.", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "colored",
+        });
+        return;
+      }
+
+      const response = await axios.get(
+        `${process.env.REACT_APP_URL}/api/get-orders`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Fetched orders:", response.data);
+      setOrders(response.data || []);
+    } catch (error) {
+      console.error("Error fetching orders:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+
+      let errorMessage = "Something went wrong while fetching orders.";
+
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            errorMessage = "Your session has expired. Please log in again.";
+            break;
+          case 403:
+            errorMessage = "You do not have permission to view orders.";
+            break;
+          case 404:
+            errorMessage = "No orders found.";
+            break;
+          case 500:
+            errorMessage = "Server is having an issue. Please try again later.";
+            break;
+          default:
+            errorMessage = error.response.data?.error || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      }
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      });
+
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize Socket.IO connection
+  useEffect(() => {
+    if (isOpen) {
+      fetchOrders();
+      const baseOrigin = (() => {
+        try {
+          return new URL(process.env.REACT_APP_URL).origin;
+        } catch {
+          return process.env.REACT_APP_URL;
+        }
+      })();
+      const socket = io(baseOrigin, {
+        path: "/furni/socket.io",
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        withCredentials: true,
+        transports: ["websocket", "polling"],
+      });
+
+      socket.on("connect", () => {
+        console.log("Connected to Socket.IO server, ID:", socket.id);
+        const userId = localStorage.getItem("userId");
+        const role = localStorage.getItem("role");
+        socket.emit("join", { userId, role });
+        toast.success("Connected to real-time updates!");
+      });
+
+      socket.on("orderUpdate", ({ operationType, fullDocument }) => {
+        if (operationType !== "insert" || !fullDocument) return;
+        const currentUserId = localStorage.getItem("userId");
+        const role = localStorage.getItem("role");
+        const ownerId =
+          typeof fullDocument.createdBy === "object" &&
+          fullDocument.createdBy?._id
+            ? fullDocument.createdBy._id
+            : String(fullDocument.createdBy || "");
+        const isAuthorized =
+          role === "Admin" ||
+          role === "SuperAdmin" ||
+          ownerId === currentUserId;
+        if (!isAuthorized) return;
+        setOrders((prev) => {
+          if (prev.some((o) => o._id === fullDocument._id)) return prev;
+          return [fullDocument, ...prev];
+        });
+      });
+
+      socket.on("connect_error", (error) => {
+        console.error("Socket.IO connection error:", error.message);
+        toast.error(`Connection to server failed: ${error.message}`);
+      });
+
+      socket.on("disconnect", (reason) => {
+        console.log("Socket.IO disconnected:", reason);
+        if (reason !== "io client disconnect") {
+          toast.warn(`Disconnected from server: ${reason}. Reconnecting...`);
+        }
+      });
+
+      socket.on("reconnect", (attempt) => {
+        console.log("Socket.IO reconnected after attempt:", attempt);
+        toast.success("Reconnected to server!");
+        fetchOrders();
+      });
+
+      return () => {
+        socket.disconnect();
+        console.log("Socket.IO disconnected");
+      };
+    }
+  }, [isOpen]);
+
   // Handle Excel export
   const handleExportToExcel = () => {
     try {
@@ -759,10 +937,15 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle date reset
+  // Handle filter reset
   const handleReset = useCallback(() => {
     setStartDate(null);
     setEndDate(null);
+    setProductionStatusFilter("All");
+    setProductStatusFilter("All");
+    setInstallStatusFilter("All");
+    setAccountsStatusFilter("All");
+    setDispatchFilter("All");
   }, []);
 
   return (
@@ -772,6 +955,62 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         <DrawerHeader>
           <DrawerTitle>Sales Orders Analytics</DrawerTitle>
           <ButtonContainer>
+            <FilterDropdown
+              id="production-status-filter"
+              label="Production Status"
+              value={productionStatusFilter}
+              onChange={setProductionStatusFilter}
+              options={[
+                "All",
+                "Pending",
+                "Under Process",
+                "Partial Dispatch",
+                "Fulfilled",
+              ]}
+              tableId="sales-analytics-table"
+            />
+            <FilterDropdown
+              id="product-status-filter"
+              label="Product Type"
+              value={productStatus}
+              onChange={setProductStatusFilter}
+              options={[
+                "All",
+                "Chairs",
+                "Tables",
+                "Sheet Metal",
+                "Desking",
+                "Solid Wood",
+                "Boards",
+                "Lab Tables",
+                "Others",
+              ]}
+              tableId="sales-analytics-table"
+            />
+            <FilterDropdown
+              id="installation-status-filter"
+              label="Installation Status"
+              value={installStatusFilter}
+              onChange={setInstallStatusFilter}
+              options={["All", "Pending", "In Progress", "Completed"]}
+              tableId="sales-analytics-table"
+            />
+            <FilterDropdown
+              id="dispatch-status-filter"
+              label="Dispatch Status"
+              value={dispatchFilter}
+              onChange={setDispatchFilter}
+              options={["All", "Not Dispatched", "Dispatched", "Delivered"]}
+              tableId="sales-analytics-table"
+            />
+            <FilterDropdown
+              id="accounts-status-filter"
+              label="Accounts Status"
+              value={accountsStatusFilter}
+              onChange={setAccountsStatusFilter}
+              options={["All", "Not Received", "Received"]}
+              tableId="sales-analytics-table"
+            />{" "}
             <DatePickerPopup>
               <DatePickerContainer>
                 <StyledDatePicker
@@ -806,7 +1045,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
               </DatePickerContainer>
             </DatePickerPopup>
             <ResetButton onClick={handleReset}>
-              <X size={16} />
+              <ArrowRight size={16} />
               Reset
             </ResetButton>
             <ExportButton onClick={handleExportToExcel}>

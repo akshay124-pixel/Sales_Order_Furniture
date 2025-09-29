@@ -26,7 +26,6 @@ const FilterContainer = styled.div`
   @media (max-width: 1023px) {
     flex-wrap: wrap;
     gap: 0.75rem;
-    padding: 0.5rem;
     justify-content: flex-start;
   }
 
@@ -163,7 +162,6 @@ const StyledButton = styled(Button)`
     justify-content: center;
     font-size: 0.95rem;
     padding: 0.8rem 1rem;
-    border-radius: 60px;
   }
 `;
 
@@ -226,6 +224,12 @@ const StyledDropdownItem = styled(Dropdown.Item)`
   &:hover {
     background: rgba(59, 130, 246, 0.1);
   }
+
+  &:focus,
+  &:active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #1e40af;
+  }
 `;
 
 const NotificationWrapper = styled.div`
@@ -260,7 +264,27 @@ const NotificationBadge = styled.span`
   font-weight: 600;
 `;
 
-// Filter Section JSX
+// Reusable Dropdown Component
+const FilterDropdown = ({ id, label, value, onChange, options, tableId }) => (
+  <Dropdown>
+    <StyledDropdownToggle id={id} aria-controls={tableId}>
+      {value === "All" ? label : value}
+    </StyledDropdownToggle>
+    <StyledDropdownMenu>
+      {options.map((option) => (
+        <StyledDropdownItem
+          key={option}
+          onClick={() => onChange(option)}
+          aria-label={`Select ${label} filter: ${option}`}
+        >
+          {option}
+        </StyledDropdownItem>
+      ))}
+    </StyledDropdownMenu>
+  </Dropdown>
+);
+
+// Filter Section Component
 const FilterSection = ({
   debouncedSetSearchTerm,
   userRole,
@@ -274,12 +298,14 @@ const FilterSection = ({
   setProductionStatusFilter,
   installStatusFilter,
   setInstallStatusFilter,
+  productStatus,
+  setProductStatusFilter,
   accountsStatusFilter,
   setAccountsStatusFilter,
   dispatchFilter,
   setDispatchFilter,
   handleReset,
-  tableId = "orders-table", // Optional prop for accessibility
+  tableId = "orders-table",
 }) => {
   return (
     <FilterContainer>
@@ -332,80 +358,62 @@ const FilterSection = ({
             aria-label="Select order end date"
           />
         </DatePickerWrapper>
-        <Dropdown>
-          <StyledDropdownToggle aria-controls={tableId}>
-            {productionStatusFilter === "All"
-              ? "Production Status"
-              : productionStatusFilter}
-          </StyledDropdownToggle>
-          <StyledDropdownMenu>
-            {[
-              "All",
-              "Pending",
-              "Under Process",
-              "Partial Dispatch",
-              "Fulfilled",
-            ].map((option) => (
-              <StyledDropdownItem
-                key={option}
-                onClick={() => setProductionStatusFilter(option)}
-              >
-                {option}
-              </StyledDropdownItem>
-            ))}
-          </StyledDropdownMenu>
-        </Dropdown>
-        <Dropdown>
-          <StyledDropdownToggle aria-controls={tableId}>
-            {installStatusFilter === "All"
-              ? "Installation Status"
-              : installStatusFilter}
-          </StyledDropdownToggle>
-          <StyledDropdownMenu>
-            {["All", "Pending", "In Progress", "Completed"].map((option) => (
-              <StyledDropdownItem
-                key={option}
-                onClick={() => setInstallStatusFilter(option)}
-              >
-                {option}
-              </StyledDropdownItem>
-            ))}
-          </StyledDropdownMenu>
-        </Dropdown>{" "}
-        <Dropdown>
-          <StyledDropdownToggle aria-controls={tableId}>
-            {dispatchFilter === "All" ? "Dispatch Status" : dispatchFilter}
-          </StyledDropdownToggle>
-          <StyledDropdownMenu>
-            {["All", "Not Dispatched", "Dispatched", "Delivered"].map(
-              (option) => (
-                <StyledDropdownItem
-                  key={option}
-                  onClick={() => setDispatchFilter(option)}
-                >
-                  {option}
-                </StyledDropdownItem>
-              )
-            )}
-          </StyledDropdownMenu>
-        </Dropdown>
-        <Dropdown>
-          <StyledDropdownToggle aria-controls={tableId}>
-            {accountsStatusFilter === "All"
-              ? "Accounts Status"
-              : accountsStatusFilter}
-          </StyledDropdownToggle>
-          <StyledDropdownMenu>
-            {["All", "Not Received", "Received"].map((option) => (
-              <StyledDropdownItem
-                key={option}
-                onClick={() => setAccountsStatusFilter(option)}
-              >
-                {option}
-              </StyledDropdownItem>
-            ))}
-          </StyledDropdownMenu>
-        </Dropdown>
+        <FilterDropdown
+          id="production-status-filter"
+          label="Production Status"
+          value={productionStatusFilter}
+          onChange={setProductionStatusFilter}
+          options={[
+            "All",
+            "Pending",
+            "Under Process",
+            "Partial Dispatch",
+            "Fulfilled",
+          ]}
+          tableId={tableId}
+        />
+        <FilterDropdown
+          id="product-status-filter"
+          label="Product Type"
+          value={productStatus}
+          onChange={setProductStatusFilter}
+          options={[
+            "All",
+            "Chairs",
+            "Tables",
+            "Sheet Metal",
+            "Desking",
+            "Solid Wood",
+            "Boards",
+            "Lab Tables",
+            "Others",
+          ]}
+          tableId={tableId}
+        />
+        <FilterDropdown
+          id="installation-status-filter"
+          label="Installation Status"
+          value={installStatusFilter}
+          onChange={setInstallStatusFilter}
+          options={["All", "Pending", "In Progress", "Completed"]}
+          tableId={tableId}
+        />
+        <FilterDropdown
+          id="dispatch-status-filter"
+          label="Dispatch Status"
+          value={dispatchFilter}
+          onChange={setDispatchFilter}
+          options={["All", "Not Dispatched", "Dispatched", "Delivered"]}
+          tableId={tableId}
+        />
+        <FilterDropdown
+          id="accounts-status-filter"
+          label="Accounts Status"
+          value={accountsStatusFilter}
+          onChange={setAccountsStatusFilter}
+          options={["All", "Not Received", "Received"]}
+          tableId={tableId}
+        />
         <StyledButton onClick={handleReset} aria-label="Reset all filters">
           Reset <ArrowRight size={16} />
         </StyledButton>

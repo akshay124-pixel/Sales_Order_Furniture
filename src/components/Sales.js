@@ -941,7 +941,9 @@ const Sales = () => {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [productionStatusFilter, setProductionStatusFilter] = useState("All");
+
   const [installStatusFilter, setInstallStatusFilter] = useState("All");
+  const [productStatus, setProductStatusFilter] = useState("All");
   const [accountsStatusFilter, setAccountsStatusFilter] = useState("All");
   const [dispatchFilter, setDispatchFilter] = useState("All");
   const [startDate, setStartDate] = useState(null);
@@ -1079,7 +1081,9 @@ const Sales = () => {
           ? order.createdBy._id
           : String(order.createdBy || "");
       const isAuthorized =
-        role === "Admin" || role === "SuperAdmin" || createdById === currentUserId;
+        role === "Admin" ||
+        role === "SuperAdmin" ||
+        createdById === currentUserId;
       if (!isAuthorized) return;
       setOrders((prev) => {
         if (prev.some((o) => o._id === order._id)) return prev;
@@ -1098,7 +1102,9 @@ const Sales = () => {
       const isAuthorized =
         role === "Admin" || role === "SuperAdmin" || ownerId === currentUserId;
       if (!isAuthorized) return;
-      setOrders((prev) => prev.map((o) => (o._id === order._id ? { ...o, ...order } : o)));
+      setOrders((prev) =>
+        prev.map((o) => (o._id === order._id ? { ...o, ...order } : o))
+      );
       if (notification?.id) {
         setNotifications((prev) => {
           if (prev.some((n) => n.id === notification.id)) return prev;
@@ -1115,7 +1121,8 @@ const Sales = () => {
       const currentUserId = localStorage.getItem("userId");
       const role = localStorage.getItem("role");
       const ownerId =
-        typeof fullDocument.createdBy === "object" && fullDocument.createdBy?._id
+        typeof fullDocument.createdBy === "object" &&
+        fullDocument.createdBy?._id
           ? fullDocument.createdBy._id
           : String(fullDocument.createdBy || "");
       const isAuthorized =
@@ -1147,14 +1154,13 @@ const Sales = () => {
     );
   }, [filteredOrders]);
 
-  // Filter orders
-  // Filter orders
   const filterOrders = useCallback(
     (
       ordersToFilter,
       search,
       productionStatus,
       installStatus,
+      productStatus, // Added productStatus parameter
       accountsStatus,
       dispatch,
       start,
@@ -1164,7 +1170,7 @@ const Sales = () => {
         (order) => order._id && order.orderId
       ); // Only include orders with _id and orderId
 
-      // BUGFIX (defensive): Scope client-side list to current user unless admin
+      // Scope client-side list to current user unless admin
       const role = localStorage.getItem("role");
       const currentUserId = localStorage.getItem("userId");
       if (!(role === "Admin" || role === "SuperAdmin")) {
@@ -1177,7 +1183,7 @@ const Sales = () => {
         });
       }
 
-      const searchLower = search.toLowerCase().trim(); // Define searchLower before usage
+      const searchLower = search.toLowerCase().trim();
 
       if (searchLower) {
         filtered = filtered.filter((order) => {
@@ -1279,6 +1285,12 @@ const Sales = () => {
         );
       }
 
+      if (productStatus !== "All") {
+        filtered = filtered.filter((order) =>
+          order.products?.some((p) => p.productType === productStatus)
+        );
+      }
+
       if (accountsStatus !== "All") {
         filtered = filtered.filter(
           (order) => order.paymentReceived === accountsStatus
@@ -1293,13 +1305,34 @@ const Sales = () => {
 
       if (start || end) {
         filtered = filtered.filter((order) => {
-          const orderDate = new Date(order.soDate);
-          const startDateAdjusted = start
-            ? new Date(start.setHours(0, 0, 0, 0))
-            : null;
-          const endDateAdjusted = end
-            ? new Date(end.setHours(23, 59, 59, 999))
-            : null;
+          const orderDate = order.soDate ? new Date(order.soDate) : null;
+          if (!orderDate || isNaN(orderDate.getTime())) return false;
+
+          const startDateAdjusted =
+            start && start instanceof Date && !isNaN(start.getTime())
+              ? new Date(
+                  start.getFullYear(),
+                  start.getMonth(),
+                  start.getDate(),
+                  0,
+                  0,
+                  0,
+                  0
+                )
+              : null;
+          const endDateAdjusted =
+            end && end instanceof Date && !isNaN(end.getTime())
+              ? new Date(
+                  end.getFullYear(),
+                  end.getMonth(),
+                  end.getDate(),
+                  23,
+                  59,
+                  59,
+                  999
+                )
+              : null;
+
           return (
             (!startDateAdjusted || orderDate >= startDateAdjusted) &&
             (!endDateAdjusted || orderDate <= endDateAdjusted)
@@ -1308,7 +1341,6 @@ const Sales = () => {
       }
 
       filtered = filtered.sort((a, b) => {
-        // Get timestamps for sorting
         const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
         const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
         const aCreatedAt = a.createdAt ? Date.parse(a.createdAt) : 0;
@@ -1339,6 +1371,7 @@ const Sales = () => {
       searchTerm,
       productionStatusFilter,
       installStatusFilter,
+      productStatus,
       accountsStatusFilter,
       dispatchFilter,
       startDate,
@@ -1349,6 +1382,7 @@ const Sales = () => {
     searchTerm,
     productionStatusFilter,
     installStatusFilter,
+    productStatus,
     accountsStatusFilter,
     dispatchFilter,
     startDate,
@@ -1356,10 +1390,11 @@ const Sales = () => {
     filterOrders,
   ]);
   // Event handlers
-  // Event handlers
+
   const handleReset = useCallback(() => {
     setProductionStatusFilter("All");
     setInstallStatusFilter("All");
+    setProductStatusFilter("All");
     setAccountsStatusFilter("All");
     setDispatchFilter("All");
     setSearchTerm("");
@@ -1381,6 +1416,7 @@ const Sales = () => {
           searchTerm,
           productionStatusFilter,
           installStatusFilter,
+          productStatus,
           accountsStatusFilter,
           dispatchFilter,
           startDate,
@@ -1397,6 +1433,7 @@ const Sales = () => {
       searchTerm,
       productionStatusFilter,
       installStatusFilter,
+      productStatus,
       accountsStatusFilter,
       dispatchFilter,
       startDate,
@@ -1430,6 +1467,7 @@ const Sales = () => {
           searchTerm,
           productionStatusFilter,
           installStatusFilter,
+          productStatus,
           accountsStatusFilter,
           dispatchFilter,
           startDate,
@@ -1445,6 +1483,7 @@ const Sales = () => {
       searchTerm,
       productionStatusFilter,
       installStatusFilter,
+      productStatus,
       accountsStatusFilter,
       dispatchFilter,
       startDate,
@@ -1471,6 +1510,7 @@ const Sales = () => {
             searchTerm,
             productionStatusFilter,
             installStatusFilter,
+            productStatus,
             accountsStatusFilter,
             dispatchFilter,
             startDate,
@@ -1516,6 +1556,7 @@ const Sales = () => {
       searchTerm,
       productionStatusFilter,
       installStatusFilter,
+      productStatus,
       accountsStatusFilter,
       dispatchFilter,
       startDate,
@@ -1738,6 +1779,7 @@ const Sales = () => {
               searchTerm,
               productionStatusFilter,
               installStatusFilter,
+              productStatus,
               accountsStatusFilter,
               dispatchFilter,
               startDate,
@@ -1786,6 +1828,7 @@ const Sales = () => {
       searchTerm,
       productionStatusFilter,
       installStatusFilter,
+      productStatus,
       accountsStatusFilter,
       dispatchFilter,
       startDate,
@@ -2159,6 +2202,8 @@ const Sales = () => {
           setProductionStatusFilter={setProductionStatusFilter}
           installStatusFilter={installStatusFilter}
           setInstallStatusFilter={setInstallStatusFilter}
+          productStatus={productStatus}
+          setProductStatusFilter={setProductStatusFilter}
           accountsStatusFilter={accountsStatusFilter}
           setAccountsStatusFilter={setAccountsStatusFilter}
           dispatchFilter={dispatchFilter}
