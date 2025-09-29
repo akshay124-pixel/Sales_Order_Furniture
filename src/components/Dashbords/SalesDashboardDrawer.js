@@ -264,7 +264,7 @@ const StyledDropdownToggle = styled(Dropdown.Toggle)`
   font-size: 0.9rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease-in-out;
-  max-width: 150px;
+  max-width: 135px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
