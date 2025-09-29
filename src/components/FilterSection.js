@@ -47,7 +47,7 @@ const FilterContainer = styled.div`
 `;
 
 const SearchInput = styled(Form.Control)`
-  flex: 0 0 18%;
+  flex: 0 0 15%;
   min-width: 140px;
   padding: 0.7rem 1rem;
   border-radius: 0.75rem;
@@ -65,7 +65,7 @@ const SearchInput = styled(Form.Control)`
   }
 
   @media (max-width: 1440px) {
-    flex: 0 0 22%; /* Adjusted for 14-inch screens */
+    flex: 0 0 15%; /* Adjusted for 14-inch screens */
     min-width: 130px;
     max-width: 180px; /* Prevent overflow */
     font-size: 0.85rem;
@@ -125,7 +125,7 @@ const DatePickerWrapper = styled.div`
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  flex: 0 0 28%;
+  flex: 0 0 22%;
 
   .react-datepicker-wrapper {
     flex: 1;
