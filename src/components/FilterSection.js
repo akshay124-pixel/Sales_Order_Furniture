@@ -65,7 +65,7 @@ const SearchInput = styled(Form.Control)`
   }
 
   @media (max-width: 1440px) {
-    flex: 0 0 16%; /* Adjusted for 14-inch screens */
+    flex: 0 0 22%; /* Adjusted for 14-inch screens */
     min-width: 130px;
     max-width: 180px; /* Prevent overflow */
     font-size: 0.85rem;
