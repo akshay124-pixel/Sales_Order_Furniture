@@ -1,17 +1,17 @@
-import { Form, Button, Dropdown } from "react-bootstrap";
+import React from "react";
+import { Form, Button, Dropdown, OverlayTrigger } from "react-bootstrap";
 import { FaBell } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ArrowRight } from "lucide-react";
 import styled from "styled-components";
-import { OverlayTrigger } from "react-bootstrap";
 
 // Styled components
 const FilterContainer = styled.div`
   background: rgb(230, 240, 250);
   padding: 0.75rem;
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap; /* Changed to wrap for better responsiveness */
   gap: 0.5rem;
   align-items: center;
   justify-content: space-between;
@@ -22,23 +22,33 @@ const FilterContainer = styled.div`
   margin: 0;
   font-family: "Inter", sans-serif;
 
+  @media (max-width: 1440px) {
+    gap: 0.4rem; /* Slightly reduced gap for 14-inch screens */
+    padding: 0.6rem;
+  }
+
   @media (max-width: 1023px) {
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
     justify-content: flex-start;
   }
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: 0.75rem;
     padding: 1rem;
+  }
+
+  @media (max-width: 576px) {
+    gap: 0.5rem;
+    padding: 0.5rem;
   }
 `;
 
 const SearchInput = styled(Form.Control)`
   flex: 0 0 18%;
-  min-width: 160px;
+  min-width: 140px;
   padding: 0.7rem 1rem;
   border-radius: 0.75rem;
   border: none;
@@ -54,36 +64,60 @@ const SearchInput = styled(Form.Control)`
     outline: none;
   }
 
+  @media (max-width: 1440px) {
+    flex: 0 0 16%; /* Adjusted for 14-inch screens */
+    min-width: 130px;
+    max-width: 180px; /* Prevent overflow */
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+  }
+
   @media (max-width: 1023px) {
     flex: 0 0 25%;
-    min-width: 140px;
+    min-width: 120px;
+    max-width: 160px;
   }
 
   @media (max-width: 768px) {
     flex: 0 0 100%;
+    max-width: none;
     font-size: 0.95rem;
     padding: 0.8rem 1rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+    padding: 0.7rem 0.9rem;
   }
 `;
 
 const FilterGroup = styled.div`
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap; /* Changed to wrap for better responsiveness */
   gap: 0.5rem;
   align-items: center;
   flex: 1;
   justify-content: space-between;
 
+  @media (max-width: 1440px) {
+    gap: 0.4rem; /* Adjusted for 14-inch screens */
+    justify-content: flex-end;
+  }
+
   @media (max-width: 1023px) {
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
     justify-content: flex-start;
   }
 
   @media (max-width: 768px) {
     flex-direction: column;
     flex: 0 0 100%;
-    gap: 1rem;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 576px) {
+    gap: 0.5rem;
   }
 `;
 
@@ -114,8 +148,19 @@ const DatePickerWrapper = styled.div`
     }
   }
 
+  @media (max-width: 1440px) {
+    flex: 0 0 26%; /* Adjusted for 14-inch screens */
+    max-width: 260px; /* Prevent overflow */
+    input {
+      font-size: 0.8rem;
+      padding: 0.6rem 0.7rem;
+      width: 100%; /* Full width for better fit */
+    }
+  }
+
   @media (max-width: 1023px) {
     flex: 0 0 35%;
+    max-width: 220px;
     input {
       font-size: 0.8rem;
       padding: 0.6rem 0.7rem;
@@ -123,13 +168,22 @@ const DatePickerWrapper = styled.div`
   }
 
   @media (max-width: 768px) {
-    flex-direction: column;
+    flex-direction: row; /* Keep horizontal for usability */
     flex: 0 0 100%;
-    gap: 1rem;
-
+    max-width: none;
     input {
       font-size: 0.95rem;
       padding: 0.8rem 1rem;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 576px) {
+    flex-direction: column; /* Stack on very small screens */
+    gap: 0.5rem;
+    input {
+      font-size: 0.9rem;
+      padding: 0.7rem 0.9rem;
     }
   }
 `;
@@ -156,11 +210,26 @@ const StyledButton = styled(Button)`
     opacity: 0.9;
   }
 
+  @media (max-width: 1440px) {
+    font-size: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    min-width: 100px; /* Ensure button is clickable */
+  }
+
+  @media (max-width: 1023px) {
+    min-width: 90px;
+  }
+
   @media (max-width: 768px) {
     flex: 0 0 100%;
     justify-content: center;
     font-size: 0.95rem;
     padding: 0.8rem 1rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+    padding: 0.7rem 0.9rem;
   }
 `;
 
@@ -174,7 +243,8 @@ const StyledDropdownToggle = styled(Dropdown.Toggle)`
   font-size: 0.85rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease-in-out;
-  flex: 1;
+  flex: 0 0 auto;
+  min-width: 120px;
   max-width: 150px;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -186,17 +256,29 @@ const StyledDropdownToggle = styled(Dropdown.Toggle)`
     opacity: 0.9;
   }
 
-  @media (max-width: 1023px) {
-    max-width: 120px;
+  @media (max-width: 1440px) {
+    min-width: 110px;
+    max-width: 140px;
     font-size: 0.8rem;
     padding: 0.6rem 0.7rem;
+  }
+
+  @media (max-width: 1023px) {
+    min-width: 100px;
+    max-width: 130px;
   }
 
   @media (max-width: 768px) {
     flex: 0 0 100%;
     max-width: none;
+    min-width: auto;
     font-size: 0.95rem;
     padding: 0.8rem 1rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+    padding: 0.7rem 0.9rem;
   }
 `;
 
@@ -210,6 +292,11 @@ const StyledDropdownMenu = styled(Dropdown.Menu)`
 
   @media (max-width: 768px) {
     min-width: 100%;
+  }
+
+  @media (max-width: 576px) {
+    min-width: 100%;
+    padding: 0.4rem;
   }
 `;
 
@@ -229,6 +316,16 @@ const StyledDropdownItem = styled(Dropdown.Item)`
     background: rgba(59, 130, 246, 0.2);
     color: #1e40af;
   }
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.7rem;
+  }
 `;
 
 const NotificationWrapper = styled.div`
@@ -238,6 +335,15 @@ const NotificationWrapper = styled.div`
   align-items: center;
   padding: 0.5rem;
   flex: 0 0 auto;
+
+  @media (max-width: 1440px) {
+    padding: 0.4rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    justify-content: center;
+  }
 `;
 
 const NotificationIcon = styled(FaBell)`
@@ -248,6 +354,14 @@ const NotificationIcon = styled(FaBell)`
   &:hover {
     color: #3b82f6;
     transform: scale(1.1);
+  }
+
+  @media (max-width: 1440px) {
+    font-size: 1.15rem;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
   }
 `;
 
@@ -261,6 +375,16 @@ const NotificationBadge = styled.span`
   padding: 2px 6px;
   font-size: 0.7rem;
   font-weight: 600;
+
+  @media (max-width: 1440px) {
+    padding: 2px 5px;
+    font-size: 0.65rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+  }
 `;
 
 // Reusable Dropdown Component
