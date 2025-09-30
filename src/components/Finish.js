@@ -1685,6 +1685,10 @@ function Finish() {
                     {viewOrder.dispatchFrom || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Bill Number:</strong>{" "}
+                    {viewOrder.billNumber || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Customer:</strong> {viewOrder.customername || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
