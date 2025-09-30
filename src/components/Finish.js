@@ -743,6 +743,7 @@ function Finish() {
                 <option value="">All</option>
                 <option value="Not Dispatched">Not Dispatched</option>
                 <option value="Dispatched">Dispatched</option>
+                <option value="Delivered">Delivered</option>
               </select>
             </div>
             <div>

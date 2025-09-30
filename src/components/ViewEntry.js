@@ -88,7 +88,7 @@ Dispatch Date: ${
         ? new Date(entry.dispatchDate).toLocaleDateString("en-GB")
         : "N/A"
     }
-Docket No: ${entry.docketNo || "N/A"}
+
 Delivery Date: ${
       entry.deliveryDate
         ? new Date(entry.deliveryDate).toLocaleDateString("en-GB")
@@ -336,9 +336,7 @@ Created By: ${
                       : "N/A"}
                   </div>
                 )}
-                <div>
-                  <strong>Docket No:</strong> {entry.docketNo || "N/A"}
-                </div>
+
                 <div>
                   <strong>SO Status:</strong>{" "}
                   <Badge
@@ -932,9 +930,6 @@ Created By: ${
                   <strong>Transporter Details:</strong>{" "}
                   {entry.transporterDetails || "N/A"}
                 </div>{" "}
-                <div>
-                  <strong>Docket Number:</strong> {entry.docketNo || "N/A"}
-                </div>
               </div>
             </Accordion.Body>
           </Accordion.Item>

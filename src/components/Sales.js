@@ -1200,7 +1200,7 @@ const Sales = () => {
             order.company,
             order.transporter,
             order.transporterDetails,
-            order.docketNo,
+
             order.shippingAddress,
             order.billingAddress,
             order.invoiceNo,
@@ -1727,7 +1727,7 @@ const Sales = () => {
               company: String(entry.company || "Promark").trim(),
               transporter: String(entry.transporter || "").trim(),
               transporterDetails: String(entry.transporterdetails || "").trim(),
-              docketNo: String(entry.docketno || "").trim(),
+
               receiptDate: parseExcelDate(entry.receiptdate) || "",
               shippingAddress: String(entry.shippingaddress || "").trim(),
               billingAddress: String(entry.billingaddress || "").trim(),
@@ -2046,7 +2046,7 @@ const Sales = () => {
       "freightstatus",
       "billNumber",
       "piNumber",
-      "docketNo",
+
       "invoiceNo",
       "invoiceDate",
     ];

@@ -17,7 +17,6 @@ const OutFinishedGoodModal = ({
     transporterDetails: "",
     billNumber: "",
     dispatchDate: new Date().toISOString().split("T")[0],
-    docketNo: "",
     stamp: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
@@ -41,7 +40,7 @@ const OutFinishedGoodModal = ({
       const dispatchStatus = initialData.dispatchStatus || "Not Dispatched";
       const validDispatchStatus = isBillingComplete
         ? dispatchStatus
-        : ["Dispatched", "Delivered"].includes(dispatchStatus)
+        : ["Delivered"].includes(dispatchStatus)
         ? "Not Dispatched"
         : dispatchStatus;
 
@@ -64,7 +63,7 @@ const OutFinishedGoodModal = ({
         dispatchDate: initialData.dispatchDate
           ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
-        docketNo: initialData.docketNo || "",
+
         actualFreight: initialData.actualFreight || "",
         dispatchStatus: validDispatchStatus,
         remarksBydispatch: initialData.remarksBydispatch || "",
@@ -146,8 +145,7 @@ const OutFinishedGoodModal = ({
   const handleSubmit = async () => {
     if (!showConfirm) {
       if (
-        (formData.dispatchStatus === "Dispatched" ||
-          formData.dispatchStatus === "Delivered") &&
+        formData.dispatchStatus === "Delivered" &&
         entryToEdit?.billStatus !== "Billing Complete"
       ) {
         setError(
@@ -202,7 +200,7 @@ const OutFinishedGoodModal = ({
         transporterDetails: formData.transporterDetails || undefined,
         billNumber: formData.billNumber || undefined,
         dispatchDate: new Date(formData.dispatchDate).toISOString(),
-        docketNo: formData.docketNo || undefined,
+
         actualFreight:
           formData.actualFreight !== ""
             ? Number(formData.actualFreight)
@@ -354,7 +352,7 @@ const OutFinishedGoodModal = ({
         </div>
         {[
           { key: "dispatchDate", label: "Dispatch Date", type: "date" },
-          { key: "docketNo", label: "Docket No", type: "text" },
+
           { key: "actualFreight", label: "Actual Freight", type: "number" },
           {
             key: "transporterDetails",
@@ -421,12 +419,10 @@ const OutFinishedGoodModal = ({
             <Option value="Hold by Salesperson">Hold by Salesperson</Option>
             <Option value="Hold by Customer">Hold by Customer</Option>
             <Option value="Order Cancelled">Order Cancelled</Option>
+            <Option value="Dispatched">Dispatched</Option>
             {(entryToEdit?.billStatus || "Pending").trim().toLowerCase() ===
               "billing complete" && (
-              <>
-                <Option value="Dispatched">Dispatched</Option>
-                <Option value="Delivered">Delivered</Option>
-              </>
+              <Option value="Delivered">Delivered</Option>
             )}
           </Select>
         </div>

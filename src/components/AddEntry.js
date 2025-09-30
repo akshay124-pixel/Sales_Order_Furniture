@@ -68,8 +68,7 @@ function AddEntry({ onSubmit, onClose }) {
 
   // Memoize gstOptions to avoid recalculation
   const gstOptions = useMemo(
-    () =>
-      formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"],
+    () => (formData.orderType === "B2G" ? ["18", "including"] : ["18"]),
     [formData.orderType]
   );
 

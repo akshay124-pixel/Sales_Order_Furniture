@@ -130,7 +130,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       stamp: "",
       installationReport: "No",
       transporterDetails: "",
-      docketNo: "",
+
       receiptDate: "",
       shippingAddress: "",
       billingAddress: "",
@@ -263,7 +263,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         report: entryToEdit.report || "",
         company: entryToEdit.company || "Promark",
         transporterDetails: entryToEdit.transporterDetails || "",
-        docketNo: entryToEdit.docketNo || "",
+
         receiptDate: entryToEdit.receiptDate
           ? new Date(entryToEdit.receiptDate).toISOString().split("T")[0]
           : "",
@@ -404,7 +404,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         installationReport: data.installationReport || null,
 
         transporterDetails: data.transporterDetails || null,
-        docketNo: data.docketNo || null,
+
         receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
         shippingAddress: data.shippingAddress || null,
         billingAddress: data.billingAddress || null,
@@ -2566,16 +2566,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("transporterDetails", e.target.value)
             }
             isInvalid={!!errors.transporterDetails}
-          />
-        </Form.Group>
-        <Form.Group controlId="docketNo">
-          <Form.Label>📄 Docket No</Form.Label>
-          <Form.Control
-            {...register("docketNo")}
-            onChange={(e) =>
-              debouncedHandleInputChange("docketNo", e.target.value)
-            }
-            isInvalid={!!errors.docketNo}
           />
         </Form.Group>
         <Form.Group controlId="receiptDate">
