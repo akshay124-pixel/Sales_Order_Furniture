@@ -1390,7 +1390,7 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-label="Model Numbers"
                 />
               </div>
-              <div style={{ alignSelf: "stretch" }}>
+              <div style={{ alignSelf: "stretch",marginTop:"32px" }}>
                 <button
                   type="button"
                   onClick={addProduct}
