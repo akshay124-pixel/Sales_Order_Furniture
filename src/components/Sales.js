@@ -383,8 +383,8 @@ const Row = React.memo(({ index, style, data }) => {
     userRole,
     isOrderComplete,
     columnWidths,
-    openTooltipId, // Destructure openTooltipId
-    setOpenTooltipId, // Destructure setOpenTooltipId
+    openTooltipId, 
+    setOpenTooltipId, 
   } = data;
 
   const order = orders[index];
@@ -941,7 +941,7 @@ const Sales = () => {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [productionStatusFilter, setProductionStatusFilter] = useState("All");
-
+  
   const [installStatusFilter, setInstallStatusFilter] = useState("All");
   const [productStatus, setProductStatusFilter] = useState("All");
   const [accountsStatusFilter, setAccountsStatusFilter] = useState("All");
@@ -975,6 +975,7 @@ const Sales = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
+      console.log("Token for notifications request:", token);
       if (!token) {
         throw new Error("No token found in localStorage");
       }
@@ -990,8 +991,7 @@ const Sales = () => {
       toast.error("Failed to fetch notifications!");
     }
   }, []);
-
-  // Mark all notifications as read
+    // Mark all notifications as read
   const markAllRead = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -1025,6 +1025,7 @@ const Sales = () => {
     }
   }, []);
 
+
   // Fetch orders
   const fetchOrders = useCallback(async () => {
     try {
@@ -1042,12 +1043,13 @@ const Sales = () => {
     }
   }, []);
 
+  // WebSocket setup
   useEffect(() => {
     const baseOrigin = (() => {
       try {
         return new URL(process.env.REACT_APP_URL).origin;
       } catch {
-        return process.env.REACT_APP_URL;
+        return process.env.REACT_APP_URL; // fallback
       }
     })();
 
@@ -1062,84 +1064,56 @@ const Sales = () => {
 
     socket.on("connect", () => {
       console.log("Socket.IO connected:", socket.id);
+      
       socket.emit("join", { userId, role: userRole });
     });
 
     socket.on("connect_error", (error) => {
       console.error("Socket.IO connection error:", error);
     });
-
-    // BUGFIX: Previously we trusted globally-broadcast payload and pushed
-    // it into orders for all users. Now we only add if it belongs to
-    // the current user or the current user has admin role.
-    socket.on("newOrder", ({ order }) => {
-      if (!order) return;
-      const currentUserId = localStorage.getItem("userId");
-      const role = localStorage.getItem("role");
-      const createdById =
-        typeof order.createdBy === "object" && order.createdBy?._id
-          ? order.createdBy._id
-          : String(order.createdBy || "");
-      const isAuthorized =
-        role === "Admin" ||
-        role === "SuperAdmin" ||
-        createdById === currentUserId;
-      if (!isAuthorized) return;
-      setOrders((prev) => {
-        if (prev.some((o) => o._id === order._id)) return prev;
-        return [order, ...prev];
+        
+    socket.on("deleteOrder", ({ _id, createdBy, assignedTo }) => {
+      const currentUserId = userId;
+      const owners = [createdBy, assignedTo].filter(Boolean);
+      if (!owners.includes(currentUserId)) return;
+      setOrders((prev) => prev.filter((o) => o._id !== _id));
+    });
+    
+    socket.on("notification", (notif) => {
+      setNotifications((prev) => {
+        if (notif?._id && prev.some((n) => n._id === notif._id)) return prev;
+        const next = [notif, ...prev].slice(0, 50);
+        if (notif?.message) toast.info(notif.message);
+        return next;
       });
     });
 
-    socket.on("updateOrder", ({ order, notification }) => {
-      if (!order) return;
-      const currentUserId = localStorage.getItem("userId");
-      const role = localStorage.getItem("role");
-      const ownerId =
-        typeof order.createdBy === "object" && order.createdBy?._id
-          ? order.createdBy._id
-          : String(order.createdBy || "");
-      const isAuthorized =
-        role === "Admin" || role === "SuperAdmin" || ownerId === currentUserId;
-      if (!isAuthorized) return;
-      setOrders((prev) =>
-        prev.map((o) => (o._id === order._id ? { ...o, ...order } : o))
-      );
-      if (notification?.id) {
-        setNotifications((prev) => {
-          if (prev.some((n) => n.id === notification.id)) return prev;
-          const updated = [notification, ...prev].slice(0, 50);
-          localStorage.setItem("notifications", JSON.stringify(updated));
-          return updated;
-        });
-        toast.info(notification.message);
+    socket.on(
+      "orderUpdate",
+      ({ operationType, documentId, fullDocument, createdBy, assignedTo }) => {
+        const currentUserId = userId;
+        const owners = [createdBy, assignedTo].filter(Boolean);
+        if (!owners.includes(currentUserId)) return;
+        if (operationType === "insert" && fullDocument) {
+          setOrders((prev) => {
+            if (prev.some((o) => o._id === documentId)) return prev;
+            return [fullDocument, ...prev];
+          });
+        }
       }
-    });
-
-    socket.on("orderUpdate", ({ operationType, documentId, fullDocument }) => {
-      if (operationType !== "insert" || !fullDocument) return;
-      const currentUserId = localStorage.getItem("userId");
-      const role = localStorage.getItem("role");
-      const ownerId =
-        typeof fullDocument.createdBy === "object" &&
-        fullDocument.createdBy?._id
-          ? fullDocument.createdBy._id
-          : String(fullDocument.createdBy || "");
-      const isAuthorized =
-        role === "Admin" || role === "SuperAdmin" || ownerId === currentUserId;
-      if (!isAuthorized) return;
-      setOrders((prev) => {
-        if (prev.some((o) => o._id === documentId)) return prev;
-        return [fullDocument, ...prev];
-      });
-    });
+    );
 
     fetchOrders();
     fetchNotifications();
 
     return () => {
+      
+      socket.off("connect");
+      socket.off("connect_error");
+      socket.off("notification");
+      socket.off("orderUpdate");
       socket.disconnect();
-      console.log("Socket.IO disconnected");
+      console.log("Socket.IO disconnected and listeners cleaned up");
     };
   }, [fetchOrders, fetchNotifications, userRole, userId]);
 
@@ -1154,215 +1128,199 @@ const Sales = () => {
     );
   }, [filteredOrders]);
 
-  const filterOrders = useCallback(
-    (
-      ordersToFilter,
-      search,
-      productionStatus,
-      installStatus,
-      productStatus, // Added productStatus parameter
-      accountsStatus,
-      dispatch,
-      start,
-      end
-    ) => {
-      let filtered = [...ordersToFilter].filter(
-        (order) => order._id && order.orderId
-      ); // Only include orders with _id and orderId
+ const filterOrders = useCallback(
+  (
+    ordersToFilter,
+    search,
+    productionStatus,
+    installStatus,
+    productStatus, 
+    accountsStatus,
+    dispatch,
+    start,
+    end
+  ) => {
+    let filtered = [...ordersToFilter].filter(
+      (order) => order._id && order.orderId
+    ); // Only include orders with _id and orderId
 
-      // Scope client-side list to current user unless admin
-      const role = localStorage.getItem("role");
-      const currentUserId = localStorage.getItem("userId");
-      if (!(role === "Admin" || role === "SuperAdmin")) {
-        filtered = filtered.filter((order) => {
-          const ownerId =
-            typeof order.createdBy === "object" && order.createdBy?._id
-              ? order.createdBy._id
-              : String(order.createdBy || "");
-          return ownerId === currentUserId;
-        });
-      }
+    // Scope client-side list to current user unless admin
+    const role = localStorage.getItem("role");
+    const currentUserId = localStorage.getItem("userId");
+    if (!(role === "Admin" || role === "SuperAdmin")) {
+      filtered = filtered.filter((order) => {
+        const ownerId =
+          typeof order.createdBy === "object" && order.createdBy?._id
+            ? order.createdBy._id
+            : String(order.createdBy || "");
+        return ownerId === currentUserId;
+      });
+    }
 
-      const searchLower = search.toLowerCase().trim();
+    const searchLower = search.toLowerCase().trim();
 
-      if (searchLower) {
-        filtered = filtered.filter((order) => {
-          const orderFields = [
-            order.customername,
-            order.city,
-            order.state,
-            order.pinCode,
-            order.contactNo,
-            order.customerEmail,
-            order.orderId,
-            order.orderType,
-            order.salesPerson,
-            order.company,
-            order.transporter,
-            order.transporterDetails,
+    if (searchLower) {
+      filtered = filtered.filter((order) => {
+        const orderFields = [
+          order.customername,
+          order.city,
+          order.state,
+          order.pinCode,
+          order.contactNo,
+          order.customerEmail,
+          order.orderId,
+          order.orderType,
+          order.salesPerson,
+          order.company,
+          order.transporter,
+          order.transporterDetails,
+        
+          order.shippingAddress,
+          order.billingAddress,
+          order.invoiceNo,
+          order.piNumber,
+          order.billStatus,
+          order.remarks,
+          order.sostatus,
+          order.gstno,
+          order.paymentCollected,
+          order.paymentMethod,
+          order.paymentDue,
+          order.paymentTerms,
+          order.gemOrderNumber,
+          order.installation,
+          order.dispatchFrom,
+          order.freightcs,
+          order.fulfillingStatus,
+          order.remarksByProduction,
+          order.remarksByAccounts,
+          order.paymentReceived,
+          order.billNumber,
+          order.remarksByBilling,
+          order.verificationRemarks,
+          order.completionStatus,
+          order.installationStatus,
+          order.dispatchStatus,
+          order.name,
+          order.remarksByInstallation,
+          order.report,
+          order.soDate
+            ? new Date(order.soDate).toLocaleDateString("en-GB")
+            : "",
+          order.dispatchDate
+            ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
+            : "",
+          order.deliveryDate
+            ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
+            : "",
+          order.receiptDate
+            ? new Date(order.receiptDate).toLocaleDateString("en-GB")
+            : "",
+          order.invoiceDate
+            ? new Date(order.invoiceDate).toLocaleDateString("en-GB")
+            : "",
+          order.fulfillmentDate
+            ? new Date(order.fulfillmentDate).toLocaleDateString("en-GB")
+            : "",
+        ]
+          .filter(Boolean)
+          .map((field) => String(field).toLowerCase());
 
-            order.shippingAddress,
-            order.billingAddress,
-            order.invoiceNo,
-            order.piNumber,
-            order.billStatus,
-            order.remarks,
-            order.sostatus,
-            order.gstno,
-            order.paymentCollected,
-            order.paymentMethod,
-            order.paymentDue,
-            order.paymentTerms,
-            order.gemOrderNumber,
-            order.installation,
-            order.dispatchFrom,
-            order.freightcs,
-            order.fulfillingStatus,
-            order.remarksByProduction,
-            order.remarksByAccounts,
-            order.paymentReceived,
-            order.billNumber,
-            order.remarksByBilling,
-            order.verificationRemarks,
-            order.completionStatus,
-            order.installationStatus,
-            order.dispatchStatus,
-            order.name,
-            order.remarksByInstallation,
-            order.report,
-            order.soDate
-              ? new Date(order.soDate).toLocaleDateString("en-GB")
-              : "",
-            order.dispatchDate
-              ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
-              : "",
-            order.deliveryDate
-              ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
-              : "",
-            order.receiptDate
-              ? new Date(order.receiptDate).toLocaleDateString("en-GB")
-              : "",
-            order.invoiceDate
-              ? new Date(order.invoiceDate).toLocaleDateString("en-GB")
-              : "",
-            order.fulfillmentDate
-              ? new Date(order.fulfillmentDate).toLocaleDateString("en-GB")
-              : "",
+        const productFields = (order.products || []).map((p) =>
+          [
+            p.productType,
+            p.size,
+            p.spec,
+            p.gst,
+            p.serialNos?.join(", "),
+            p.modelNos?.join(", "),
+            String(p.qty),
+            String(p.unitPrice),
           ]
             .filter(Boolean)
-            .map((field) => String(field).toLowerCase());
-
-          const productFields = (order.products || []).map((p) =>
-            [
-              p.productType,
-              p.size,
-              p.spec,
-              p.gst,
-              p.serialNos?.join(", "),
-              p.modelNos?.join(", "),
-              String(p.qty),
-              String(p.unitPrice),
-            ]
-              .filter(Boolean)
-              .map((field) => String(field).toLowerCase())
-              .join(" ")
-          );
-
-          const allFields = [...orderFields, ...productFields].join(" ");
-          return allFields.includes(searchLower);
-        });
-      }
-
-      if (productionStatus !== "All") {
-        filtered = filtered.filter(
-          (order) => order.fulfillingStatus === productionStatus
+            .map((field) => String(field).toLowerCase())
+            .join(" ")
         );
-      }
 
-      if (installStatus !== "All") {
-        filtered = filtered.filter(
-          (order) => order.installationStatus === installStatus
-        );
-      }
-
-      if (productStatus !== "All") {
-        filtered = filtered.filter((order) =>
-          order.products?.some((p) => p.productType === productStatus)
-        );
-      }
-
-      if (accountsStatus !== "All") {
-        filtered = filtered.filter(
-          (order) => order.paymentReceived === accountsStatus
-        );
-      }
-
-      if (dispatch !== "All") {
-        filtered = filtered.filter(
-          (order) => order.dispatchStatus === dispatch
-        );
-      }
-
-      if (start || end) {
-        filtered = filtered.filter((order) => {
-          const orderDate = order.soDate ? new Date(order.soDate) : null;
-          if (!orderDate || isNaN(orderDate.getTime())) return false;
-
-          const startDateAdjusted =
-            start && start instanceof Date && !isNaN(start.getTime())
-              ? new Date(
-                  start.getFullYear(),
-                  start.getMonth(),
-                  start.getDate(),
-                  0,
-                  0,
-                  0,
-                  0
-                )
-              : null;
-          const endDateAdjusted =
-            end && end instanceof Date && !isNaN(end.getTime())
-              ? new Date(
-                  end.getFullYear(),
-                  end.getMonth(),
-                  end.getDate(),
-                  23,
-                  59,
-                  59,
-                  999
-                )
-              : null;
-
-          return (
-            (!startDateAdjusted || orderDate >= startDateAdjusted) &&
-            (!endDateAdjusted || orderDate <= endDateAdjusted)
-          );
-        });
-      }
-
-      filtered = filtered.sort((a, b) => {
-        const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
-        const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
-        const aCreatedAt = a.createdAt ? Date.parse(a.createdAt) : 0;
-        const bCreatedAt = b.createdAt ? Date.parse(b.createdAt) : 0;
-        const aSoDate = a.soDate ? Date.parse(a.soDate) : 0;
-        const bSoDate = b.soDate ? Date.parse(b.soDate) : 0;
-
-        if (aUpdatedAt !== bUpdatedAt) {
-          return bUpdatedAt - aUpdatedAt;
-        }
-
-        if (aCreatedAt !== bCreatedAt) {
-          return bCreatedAt - aCreatedAt;
-        }
-
-        return bSoDate - aSoDate;
+        const allFields = [...orderFields, ...productFields].join(" ");
+        return allFields.includes(searchLower);
       });
+    }
 
-      setFilteredOrders(filtered);
-    },
-    []
-  );
+    if (productionStatus !== "All") {
+      filtered = filtered.filter(
+        (order) => order.fulfillingStatus === productionStatus
+      );
+    }
+
+    if (installStatus !== "All") {
+      filtered = filtered.filter(
+        (order) => order.installationStatus === installStatus
+      );
+    }
+
+    if (productStatus !== "All") {
+      filtered = filtered.filter((order) =>
+        order.products?.some((p) => p.productType === productStatus)
+      );
+    }
+
+    if (accountsStatus !== "All") {
+      filtered = filtered.filter(
+        (order) => order.paymentReceived === accountsStatus
+      );
+    }
+
+    if (dispatch !== "All") {
+      filtered = filtered.filter(
+        (order) => order.dispatchStatus === dispatch
+      );
+    }
+
+    if (start || end) {
+      filtered = filtered.filter((order) => {
+        const orderDate = order.soDate ? new Date(order.soDate) : null;
+        if (!orderDate || isNaN(orderDate.getTime())) return false;
+
+        const startDateAdjusted =
+          start && start instanceof Date && !isNaN(start.getTime())
+            ? new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0)
+            : null;
+        const endDateAdjusted =
+          end && end instanceof Date && !isNaN(end.getTime())
+            ? new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999)
+            : null;
+
+        return (
+          (!startDateAdjusted || orderDate >= startDateAdjusted) &&
+          (!endDateAdjusted || orderDate <= endDateAdjusted)
+        );
+      });
+    }
+
+    filtered = filtered.sort((a, b) => {
+      const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+      const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+      const aCreatedAt = a.createdAt ? Date.parse(a.createdAt) : 0;
+      const bCreatedAt = b.createdAt ? Date.parse(b.createdAt) : 0;
+      const aSoDate = a.soDate ? Date.parse(a.soDate) : 0;
+      const bSoDate = b.soDate ? Date.parse(b.soDate) : 0;
+
+      if (aUpdatedAt !== bUpdatedAt) {
+        return bUpdatedAt - aUpdatedAt;
+      }
+
+      if (aCreatedAt !== bCreatedAt) {
+        return bCreatedAt - aCreatedAt;
+      }
+
+      return bSoDate - aSoDate;
+    });
+
+    setFilteredOrders(filtered);
+  },
+  []
+);
 
   // Apply filters
   useEffect(() => {
@@ -1394,7 +1352,7 @@ const Sales = () => {
   const handleReset = useCallback(() => {
     setProductionStatusFilter("All");
     setInstallStatusFilter("All");
-    setProductStatusFilter("All");
+    setProductStatusFilter("All")
     setAccountsStatusFilter("All");
     setDispatchFilter("All");
     setSearchTerm("");
@@ -1493,63 +1451,28 @@ const Sales = () => {
 
   const handleEntryUpdated = useCallback(
     async (updatedEntry) => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.put(
-          `${process.env.REACT_APP_URL}/api/edit/${updatedEntry._id}`,
-          updatedEntry,
-          { headers: { Authorization: `Bearer ${token}` } }
+      // Child (EditEntry) has already completed the API call and returns the updated entry.
+      // Avoid sending a second PUT to prevent duplicate server notifications.
+      const updatedOrder = updatedEntry;
+      setOrders((prev) => {
+        const updatedOrders = prev.map((order) =>
+          order._id === updatedOrder._id ? updatedOrder : order
         );
-        const updatedOrder = response.data.data || response.data;
-        setOrders((prev) => {
-          const updatedOrders = prev.map((order) =>
-            order._id === updatedOrder._id ? updatedOrder : order
-          );
-          filterOrders(
-            updatedOrders,
-            searchTerm,
-            productionStatusFilter,
-            installStatusFilter,
-            productStatus,
-            accountsStatusFilter,
-            dispatchFilter,
-            startDate,
-            endDate
-          );
-          return updatedOrders;
-        });
-        setIsEditModalOpen(false);
-        toast.success("Order updated successfully!");
-      } catch (error) {
-        console.error("Error updating order:", error);
-
-        let userFriendlyMessage =
-          "Something went wrong while saving your changes.";
-
-        if (error.response) {
-          if (error.response.status === 404) {
-            userFriendlyMessage =
-              "The order you are trying to update was not found.";
-          } else if (error.response.status === 400) {
-            userFriendlyMessage =
-              "The details provided seem to be incorrect. Please check and try again.";
-          } else if (error.response.status === 401) {
-            userFriendlyMessage =
-              "You are not authorized to update this order. Please log in again.";
-          } else {
-            userFriendlyMessage =
-              error.response.data?.message || userFriendlyMessage;
-          }
-        } else if (error.request) {
-          userFriendlyMessage =
-            "Unable to reach the server. Please check your internet connection.";
-        }
-
-        toast.error(userFriendlyMessage, {
-          position: "top-right",
-          autoClose: 5000,
-        });
-      }
+        filterOrders(
+          updatedOrders,
+          searchTerm,
+          productionStatusFilter,
+          installStatusFilter,
+          productStatus,
+          accountsStatusFilter,
+          dispatchFilter,
+          startDate,
+          endDate
+        );
+        return updatedOrders;
+      });
+      setIsEditModalOpen(false);
+     
     },
     [
       filterOrders,
@@ -1727,7 +1650,7 @@ const Sales = () => {
               company: String(entry.company || "Promark").trim(),
               transporter: String(entry.transporter || "").trim(),
               transporterDetails: String(entry.transporterdetails || "").trim(),
-
+            
               receiptDate: parseExcelDate(entry.receiptdate) || "",
               shippingAddress: String(entry.shippingaddress || "").trim(),
               billingAddress: String(entry.billingaddress || "").trim(),
@@ -1779,7 +1702,7 @@ const Sales = () => {
               searchTerm,
               productionStatusFilter,
               installStatusFilter,
-              productStatus,
+               productStatus,
               accountsStatusFilter,
               dispatchFilter,
               startDate,
@@ -1828,7 +1751,7 @@ const Sales = () => {
       searchTerm,
       productionStatusFilter,
       installStatusFilter,
-      productStatus,
+       productStatus,
       accountsStatusFilter,
       dispatchFilter,
       startDate,
@@ -2046,7 +1969,7 @@ const Sales = () => {
       "freightstatus",
       "billNumber",
       "piNumber",
-
+     
       "invoiceNo",
       "invoiceDate",
     ];
