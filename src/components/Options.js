@@ -946,6 +946,7 @@ export const salesPersonlist = [
   "Manjit Singh Chowhan",
   "Mayank Goutam",
   "Mayank Prasad",
+  "Nadeem Khan",
   "Nikhil Sharma",
   "Parmjeet Singh",
   "Pitamber Sharma",
