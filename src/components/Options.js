@@ -983,6 +983,7 @@ export const salesPersonlist = [
   "Utsav Mahesh",
   "Vageesh Bhardwaj",
   "Vaibhav Mishra",
+  "Vaibhav Mishra (2)",
   "Varun Budhiraja",
   "Vaseem Khan",
 ];
