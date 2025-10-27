@@ -1362,7 +1362,6 @@ const Sales = () => {
     filterOrders,
   ]);
   // Event handlers
-
   const handleReset = useCallback(() => {
     setProductionStatusFilter("All");
     setInstallStatusFilter("All");
@@ -1372,10 +1371,11 @@ const Sales = () => {
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
-    filterOrders(orders, "All", "All", "All", "All", "All", "", null, null);
-    toast.info("Filters reset!");
-  }, [filterOrders, orders]);
 
+    // Directly set filteredOrders to all orders
+    setFilteredOrders(orders);
+    toast.info("Filters reset!");
+  }, [orders]);
   const handleAddEntry = useCallback(
     async (newEntry) => {
       setIsAddModalOpen(false);
