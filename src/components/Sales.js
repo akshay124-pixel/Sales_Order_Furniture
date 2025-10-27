@@ -1363,6 +1363,7 @@ const Sales = () => {
   ]);
   // Event handlers
   const handleReset = useCallback(() => {
+    // Reset all filter states to their default values
     setProductionStatusFilter("All");
     setInstallStatusFilter("All");
     setProductStatusFilter("All");
@@ -1371,9 +1372,54 @@ const Sales = () => {
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
-    filterOrders(orders, "All", "All", "All", "All", "All", "", null, null);
-    toast.info("Filters reset!");
-  }, [filterOrders, orders]);
+
+    // Ensure orders is an array to avoid errors
+    if (!Array.isArray(orders)) {
+      setFilteredOrders([]);
+      toast.info("Filters reset! No orders available.");
+      return;
+    }
+
+    // Create a copy of valid orders (with _id and orderId)
+    let resetOrders = orders.filter(
+      (order) => order && order._id && order.orderId
+    );
+
+    // Apply role-based filtering for non-admin users
+    const role = localStorage.getItem("role");
+    const currentUserId = localStorage.getItem("userId");
+    if (!(role === "Admin" || role === "SuperAdmin")) {
+      resetOrders = resetOrders.filter((order) => {
+        const ownerId =
+          typeof order.createdBy === "object" && order.createdBy?._id
+            ? order.createdBy._id
+            : String(order.createdBy || "");
+        return ownerId === currentUserId;
+      });
+    }
+
+    // Sort orders to match filterOrders sorting logic
+    resetOrders = resetOrders.sort((a, b) => {
+      const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+      const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+      const aCreatedAt = a.createdAt ? Date.parse(a.createdAt) : 0;
+      const bCreatedAt = b.createdAt ? Date.parse(b.createdAt) : 0;
+      const aSoDate = a.soDate ? Date.parse(a.soDate) : 0;
+      const bSoDate = b.soDate ? Date.parse(b.soDate) : 0;
+
+      if (aUpdatedAt !== bUpdatedAt) {
+        return bUpdatedAt - aUpdatedAt;
+      }
+      if (aCreatedAt !== bCreatedAt) {
+        return bCreatedAt - aCreatedAt;
+      }
+      return bSoDate - aSoDate;
+    });
+
+    // Update filteredOrders with the reset list
+    setFilteredOrders(resetOrders);
+    toast.info(`Filters reset! Showing ${resetOrders.length} orders.`);
+  }, [orders]);
 
   const handleAddEntry = useCallback(
     async (newEntry) => {
