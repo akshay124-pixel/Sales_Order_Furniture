@@ -383,8 +383,8 @@ const Row = React.memo(({ index, style, data }) => {
     userRole,
     isOrderComplete,
     columnWidths,
-    openTooltipId, 
-    setOpenTooltipId, 
+    openTooltipId,
+    setOpenTooltipId,
   } = data;
 
   const order = orders[index];
@@ -941,7 +941,7 @@ const Sales = () => {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [productionStatusFilter, setProductionStatusFilter] = useState("All");
-  
+
   const [installStatusFilter, setInstallStatusFilter] = useState("All");
   const [productStatus, setProductStatusFilter] = useState("All");
   const [accountsStatusFilter, setAccountsStatusFilter] = useState("All");
@@ -991,7 +991,7 @@ const Sales = () => {
       toast.error("Failed to fetch notifications!");
     }
   }, []);
-    // Mark all notifications as read
+  // Mark all notifications as read
   const markAllRead = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -1024,7 +1024,6 @@ const Sales = () => {
       toast.error("Failed to clear notifications!");
     }
   }, []);
-
 
   // Fetch orders
   const fetchOrders = useCallback(async () => {
@@ -1064,21 +1063,21 @@ const Sales = () => {
 
     socket.on("connect", () => {
       console.log("Socket.IO connected:", socket.id);
-      
+
       socket.emit("join", { userId, role: userRole });
     });
 
     socket.on("connect_error", (error) => {
       console.error("Socket.IO connection error:", error);
     });
-        
+
     socket.on("deleteOrder", ({ _id, createdBy, assignedTo }) => {
       const currentUserId = userId;
       const owners = [createdBy, assignedTo].filter(Boolean);
       if (!owners.includes(currentUserId)) return;
       setOrders((prev) => prev.filter((o) => o._id !== _id));
     });
-    
+
     socket.on("notification", (notif) => {
       setNotifications((prev) => {
         if (notif?._id && prev.some((n) => n._id === notif._id)) return prev;
@@ -1107,7 +1106,6 @@ const Sales = () => {
     fetchNotifications();
 
     return () => {
-      
       socket.off("connect");
       socket.off("connect_error");
       socket.off("notification");
@@ -1128,199 +1126,215 @@ const Sales = () => {
     );
   }, [filteredOrders]);
 
- const filterOrders = useCallback(
-  (
-    ordersToFilter,
-    search,
-    productionStatus,
-    installStatus,
-    productStatus, 
-    accountsStatus,
-    dispatch,
-    start,
-    end
-  ) => {
-    let filtered = [...ordersToFilter].filter(
-      (order) => order._id && order.orderId
-    ); // Only include orders with _id and orderId
+  const filterOrders = useCallback(
+    (
+      ordersToFilter,
+      search,
+      productionStatus,
+      installStatus,
+      productStatus,
+      accountsStatus,
+      dispatch,
+      start,
+      end
+    ) => {
+      let filtered = [...ordersToFilter].filter(
+        (order) => order._id && order.orderId
+      ); // Only include orders with _id and orderId
 
-    // Scope client-side list to current user unless admin
-    const role = localStorage.getItem("role");
-    const currentUserId = localStorage.getItem("userId");
-    if (!(role === "Admin" || role === "SuperAdmin")) {
-      filtered = filtered.filter((order) => {
-        const ownerId =
-          typeof order.createdBy === "object" && order.createdBy?._id
-            ? order.createdBy._id
-            : String(order.createdBy || "");
-        return ownerId === currentUserId;
-      });
-    }
+      // Scope client-side list to current user unless admin
+      const role = localStorage.getItem("role");
+      const currentUserId = localStorage.getItem("userId");
+      if (!(role === "Admin" || role === "SuperAdmin")) {
+        filtered = filtered.filter((order) => {
+          const ownerId =
+            typeof order.createdBy === "object" && order.createdBy?._id
+              ? order.createdBy._id
+              : String(order.createdBy || "");
+          return ownerId === currentUserId;
+        });
+      }
 
-    const searchLower = search.toLowerCase().trim();
+      const searchLower = search.toLowerCase().trim();
 
-    if (searchLower) {
-      filtered = filtered.filter((order) => {
-        const orderFields = [
-          order.customername,
-          order.city,
-          order.state,
-          order.pinCode,
-          order.contactNo,
-          order.customerEmail,
-          order.orderId,
-          order.orderType,
-          order.salesPerson,
-          order.company,
-          order.transporter,
-          order.transporterDetails,
-        
-          order.shippingAddress,
-          order.billingAddress,
-          order.invoiceNo,
-          order.piNumber,
-          order.billStatus,
-          order.remarks,
-          order.sostatus,
-          order.gstno,
-          order.paymentCollected,
-          order.paymentMethod,
-          order.paymentDue,
-          order.paymentTerms,
-          order.gemOrderNumber,
-          order.installation,
-          order.dispatchFrom,
-          order.freightcs,
-          order.fulfillingStatus,
-          order.remarksByProduction,
-          order.remarksByAccounts,
-          order.paymentReceived,
-          order.billNumber,
-          order.remarksByBilling,
-          order.verificationRemarks,
-          order.completionStatus,
-          order.installationStatus,
-          order.dispatchStatus,
-          order.name,
-          order.remarksByInstallation,
-          order.report,
-          order.soDate
-            ? new Date(order.soDate).toLocaleDateString("en-GB")
-            : "",
-          order.dispatchDate
-            ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
-            : "",
-          order.deliveryDate
-            ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
-            : "",
-          order.receiptDate
-            ? new Date(order.receiptDate).toLocaleDateString("en-GB")
-            : "",
-          order.invoiceDate
-            ? new Date(order.invoiceDate).toLocaleDateString("en-GB")
-            : "",
-          order.fulfillmentDate
-            ? new Date(order.fulfillmentDate).toLocaleDateString("en-GB")
-            : "",
-        ]
-          .filter(Boolean)
-          .map((field) => String(field).toLowerCase());
+      if (searchLower) {
+        filtered = filtered.filter((order) => {
+          const orderFields = [
+            order.customername,
+            order.city,
+            order.state,
+            order.pinCode,
+            order.contactNo,
+            order.customerEmail,
+            order.orderId,
+            order.orderType,
+            order.salesPerson,
+            order.company,
+            order.transporter,
+            order.transporterDetails,
 
-        const productFields = (order.products || []).map((p) =>
-          [
-            p.productType,
-            p.size,
-            p.spec,
-            p.gst,
-            p.serialNos?.join(", "),
-            p.modelNos?.join(", "),
-            String(p.qty),
-            String(p.unitPrice),
+            order.shippingAddress,
+            order.billingAddress,
+            order.invoiceNo,
+            order.piNumber,
+            order.billStatus,
+            order.remarks,
+            order.sostatus,
+            order.gstno,
+            order.paymentCollected,
+            order.paymentMethod,
+            order.paymentDue,
+            order.paymentTerms,
+            order.gemOrderNumber,
+            order.installation,
+            order.dispatchFrom,
+            order.freightcs,
+            order.fulfillingStatus,
+            order.remarksByProduction,
+            order.remarksByAccounts,
+            order.paymentReceived,
+            order.billNumber,
+            order.remarksByBilling,
+            order.verificationRemarks,
+            order.completionStatus,
+            order.installationStatus,
+            order.dispatchStatus,
+            order.name,
+            order.remarksByInstallation,
+            order.report,
+            order.soDate
+              ? new Date(order.soDate).toLocaleDateString("en-GB")
+              : "",
+            order.dispatchDate
+              ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
+              : "",
+            order.deliveryDate
+              ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
+              : "",
+            order.receiptDate
+              ? new Date(order.receiptDate).toLocaleDateString("en-GB")
+              : "",
+            order.invoiceDate
+              ? new Date(order.invoiceDate).toLocaleDateString("en-GB")
+              : "",
+            order.fulfillmentDate
+              ? new Date(order.fulfillmentDate).toLocaleDateString("en-GB")
+              : "",
           ]
             .filter(Boolean)
-            .map((field) => String(field).toLowerCase())
-            .join(" ")
-        );
+            .map((field) => String(field).toLowerCase());
 
-        const allFields = [...orderFields, ...productFields].join(" ");
-        return allFields.includes(searchLower);
-      });
-    }
+          const productFields = (order.products || []).map((p) =>
+            [
+              p.productType,
+              p.size,
+              p.spec,
+              p.gst,
+              p.serialNos?.join(", "),
+              p.modelNos?.join(", "),
+              String(p.qty),
+              String(p.unitPrice),
+            ]
+              .filter(Boolean)
+              .map((field) => String(field).toLowerCase())
+              .join(" ")
+          );
 
-    if (productionStatus !== "All") {
-      filtered = filtered.filter(
-        (order) => order.fulfillingStatus === productionStatus
-      );
-    }
-
-    if (installStatus !== "All") {
-      filtered = filtered.filter(
-        (order) => order.installationStatus === installStatus
-      );
-    }
-
-    if (productStatus !== "All") {
-      filtered = filtered.filter((order) =>
-        order.products?.some((p) => p.productType === productStatus)
-      );
-    }
-
-    if (accountsStatus !== "All") {
-      filtered = filtered.filter(
-        (order) => order.paymentReceived === accountsStatus
-      );
-    }
-
-    if (dispatch !== "All") {
-      filtered = filtered.filter(
-        (order) => order.dispatchStatus === dispatch
-      );
-    }
-
-    if (start || end) {
-      filtered = filtered.filter((order) => {
-        const orderDate = order.soDate ? new Date(order.soDate) : null;
-        if (!orderDate || isNaN(orderDate.getTime())) return false;
-
-        const startDateAdjusted =
-          start && start instanceof Date && !isNaN(start.getTime())
-            ? new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0)
-            : null;
-        const endDateAdjusted =
-          end && end instanceof Date && !isNaN(end.getTime())
-            ? new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999)
-            : null;
-
-        return (
-          (!startDateAdjusted || orderDate >= startDateAdjusted) &&
-          (!endDateAdjusted || orderDate <= endDateAdjusted)
-        );
-      });
-    }
-
-    filtered = filtered.sort((a, b) => {
-      const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
-      const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
-      const aCreatedAt = a.createdAt ? Date.parse(a.createdAt) : 0;
-      const bCreatedAt = b.createdAt ? Date.parse(b.createdAt) : 0;
-      const aSoDate = a.soDate ? Date.parse(a.soDate) : 0;
-      const bSoDate = b.soDate ? Date.parse(b.soDate) : 0;
-
-      if (aUpdatedAt !== bUpdatedAt) {
-        return bUpdatedAt - aUpdatedAt;
+          const allFields = [...orderFields, ...productFields].join(" ");
+          return allFields.includes(searchLower);
+        });
       }
 
-      if (aCreatedAt !== bCreatedAt) {
-        return bCreatedAt - aCreatedAt;
+      if (productionStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.fulfillingStatus === productionStatus
+        );
       }
 
-      return bSoDate - aSoDate;
-    });
+      if (installStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.installationStatus === installStatus
+        );
+      }
 
-    setFilteredOrders(filtered);
-  },
-  []
-);
+      if (productStatus !== "All") {
+        filtered = filtered.filter((order) =>
+          order.products?.some((p) => p.productType === productStatus)
+        );
+      }
+
+      if (accountsStatus !== "All") {
+        filtered = filtered.filter(
+          (order) => order.paymentReceived === accountsStatus
+        );
+      }
+
+      if (dispatch !== "All") {
+        filtered = filtered.filter(
+          (order) => order.dispatchStatus === dispatch
+        );
+      }
+
+      if (start || end) {
+        filtered = filtered.filter((order) => {
+          const orderDate = order.soDate ? new Date(order.soDate) : null;
+          if (!orderDate || isNaN(orderDate.getTime())) return false;
+
+          const startDateAdjusted =
+            start && start instanceof Date && !isNaN(start.getTime())
+              ? new Date(
+                  start.getFullYear(),
+                  start.getMonth(),
+                  start.getDate(),
+                  0,
+                  0,
+                  0,
+                  0
+                )
+              : null;
+          const endDateAdjusted =
+            end && end instanceof Date && !isNaN(end.getTime())
+              ? new Date(
+                  end.getFullYear(),
+                  end.getMonth(),
+                  end.getDate(),
+                  23,
+                  59,
+                  59,
+                  999
+                )
+              : null;
+
+          return (
+            (!startDateAdjusted || orderDate >= startDateAdjusted) &&
+            (!endDateAdjusted || orderDate <= endDateAdjusted)
+          );
+        });
+      }
+
+      filtered = filtered.sort((a, b) => {
+        const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+        const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+        const aCreatedAt = a.createdAt ? Date.parse(a.createdAt) : 0;
+        const bCreatedAt = b.createdAt ? Date.parse(b.createdAt) : 0;
+        const aSoDate = a.soDate ? Date.parse(a.soDate) : 0;
+        const bSoDate = b.soDate ? Date.parse(b.soDate) : 0;
+
+        if (aUpdatedAt !== bUpdatedAt) {
+          return bUpdatedAt - aUpdatedAt;
+        }
+
+        if (aCreatedAt !== bCreatedAt) {
+          return bCreatedAt - aCreatedAt;
+        }
+
+        return bSoDate - aSoDate;
+      });
+
+      setFilteredOrders(filtered);
+    },
+    []
+  );
 
   // Apply filters
   useEffect(() => {
@@ -1352,13 +1366,13 @@ const Sales = () => {
   const handleReset = useCallback(() => {
     setProductionStatusFilter("All");
     setInstallStatusFilter("All");
-    setProductStatusFilter("All")
+    setProductStatusFilter("All");
     setAccountsStatusFilter("All");
     setDispatchFilter("All");
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
-    filterOrders(orders, "", "All", "All", "All", "All", null, null);
+    filterOrders(orders, "All", "All", "All", "All", "All", "", null, null);
     toast.info("Filters reset!");
   }, [filterOrders, orders]);
 
@@ -1472,7 +1486,6 @@ const Sales = () => {
         return updatedOrders;
       });
       setIsEditModalOpen(false);
-     
     },
     [
       filterOrders,
@@ -1650,7 +1663,7 @@ const Sales = () => {
               company: String(entry.company || "Promark").trim(),
               transporter: String(entry.transporter || "").trim(),
               transporterDetails: String(entry.transporterdetails || "").trim(),
-            
+
               receiptDate: parseExcelDate(entry.receiptdate) || "",
               shippingAddress: String(entry.shippingaddress || "").trim(),
               billingAddress: String(entry.billingaddress || "").trim(),
@@ -1702,7 +1715,7 @@ const Sales = () => {
               searchTerm,
               productionStatusFilter,
               installStatusFilter,
-               productStatus,
+              productStatus,
               accountsStatusFilter,
               dispatchFilter,
               startDate,
@@ -1751,7 +1764,7 @@ const Sales = () => {
       searchTerm,
       productionStatusFilter,
       installStatusFilter,
-       productStatus,
+      productStatus,
       accountsStatusFilter,
       dispatchFilter,
       startDate,
@@ -1969,7 +1982,7 @@ const Sales = () => {
       "freightstatus",
       "billNumber",
       "piNumber",
-     
+
       "invoiceNo",
       "invoiceDate",
     ];
