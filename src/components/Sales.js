@@ -1371,11 +1371,10 @@ const Sales = () => {
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
-
-    // Directly set filteredOrders to all orders
-    setFilteredOrders(orders);
+    filterOrders(orders, "All", "All", "All", "All", "All", "", null, null);
     toast.info("Filters reset!");
-  }, [orders]);
+  }, [filterOrders, orders]);
+
   const handleAddEntry = useCallback(
     async (newEntry) => {
       setIsAddModalOpen(false);
