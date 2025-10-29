@@ -897,7 +897,20 @@ Created By: ${
                 </div>
                 <div>
                   <strong>Installation Report:</strong>{" "}
-                  {entry.installationReport || "No"}
+                  <Badge
+                    bg={
+                      entry.installationReport === "Yes" ||
+                      entry.installationReport === "Installed"
+                        ? "success"
+                        : entry.installationReport === "No"
+                        ? "danger"
+                        : "secondary"
+                    }
+                  >
+                    {entry.installationReport === "Installed"
+                      ? "Already Installed"
+                      : entry.installationReport || "No"}
+                  </Badge>
                 </div>
                 <div>
                   <strong>Remarks (Installation):</strong>{" "}

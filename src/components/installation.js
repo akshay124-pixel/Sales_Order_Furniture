@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import "../App.css";
 import { salesPersonlist } from "./Options";
+
 function Installation() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -64,7 +65,7 @@ function Installation() {
         } else {
           userFriendlyMessage =
             error.response.data?.message ||
-            "Unable to load orders at the moment.";
+            "Unable to load orders at this moment.";
         }
       } else if (error.request) {
         userFriendlyMessage =
@@ -134,13 +135,13 @@ function Installation() {
     }
     if (startDate) {
       filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.soDate);
+        const orderDate = new Date(order.dispatchDate);
         return orderDate >= new Date(startDate);
       });
     }
     if (endDate) {
       filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.soDate);
+        const orderDate = new Date(order.dispatchDate);
         return orderDate <= new Date(endDate);
       });
     }
@@ -153,6 +154,15 @@ function Installation() {
     startDate,
     endDate,
   ]);
+
+  // Add this helper function inside the Installation component, after the existing useEffects
+  const isDispatchOverdue = useCallback((dispatchDate) => {
+    if (!dispatchDate) return false;
+    const dispatch = new Date(dispatchDate);
+    const now = new Date();
+    const diffInDays = (now - dispatch) / (1000 * 60 * 60 * 24);
+    return diffInDays >= 15;
+  }, []);
 
   // Calculate total pending orders (billStatus === "Pending")
   const totalPending = filteredOrders.filter(
@@ -613,6 +623,7 @@ function Installation() {
                     {[
                       "Order ID",
                       "SO Date",
+                      "Dispatch Date",
                       "Product Details",
                       "Contact Person",
                       "Contact No",
@@ -659,19 +670,29 @@ function Installation() {
                             )
                             .join(", ")
                         : "N/A";
+                      const isOverdue = isDispatchOverdue(order.dispatchDate);
+                      const baseBg = isOverdue
+                        ? "#fff3cd" // Light yellow for overdue rows
+                        : index % 2 === 0
+                        ? "#f8f9fa"
+                        : "#fff";
+                      const hoverBg = isOverdue
+                        ? "#ffeaa7" // Darker yellow on hover
+                        : "#e9ecef";
+                      const leaveBg = baseBg;
+
                       return (
                         <tr
                           key={order._id}
                           style={{
-                            background: index % 2 === 0 ? "#f8f9fa" : "#fff",
+                            background: baseBg,
                             transition: "all 0.3s ease",
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.background = "#e9ecef")
+                            (e.currentTarget.style.background = hoverBg)
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.background =
-                              index % 2 === 0 ? "#f8f9fa" : "#fff")
+                            (e.currentTarget.style.background = leaveBg)
                           }
                         >
                           <td
@@ -706,10 +727,36 @@ function Installation() {
                               whiteSpace: "nowrap",
                               maxWidth: "150px",
                             }}
-                            title={order.orderId || "N/A"}
+                            title={order.soDate || "N/A"}
                           >
                             {order.soDate
                               ? new Date(order.soDate)
+                                  .toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })
+                                  .replace(/\//g, "/")
+                              : "N/A"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.dispatchDate || "N/A"}
+                          >
+                            {order.dispatchDate
+                              ? new Date(order.dispatchDate)
                                   .toLocaleDateString("en-GB", {
                                     day: "2-digit",
                                     month: "2-digit",
@@ -822,24 +869,6 @@ function Installation() {
                               whiteSpace: "nowrap",
                               maxWidth: "150px",
                             }}
-                            title={order.installchargesstatus || "N/A"}
-                          >
-                            {order.installchargesstatus || "N/A"}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
                             title={order.installationStatus || "Pending"}
                           >
                             <Badge
@@ -866,6 +895,24 @@ function Installation() {
                             >
                               {order.installationStatus || "Pending"}
                             </Badge>
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.installation || "N/A"}
+                          >
+                            {order.installation || "N/A"}
                           </td>
                           <td
                             style={{
@@ -1284,6 +1331,7 @@ function Installation() {
                   {" "}
                   <option value="No">No</option>
                   <option value="Yes">Yes</option>
+                  <option value="Installed">Already Installed</option>
                 </Form.Select>
                 {errors.installationReport && (
                   <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>

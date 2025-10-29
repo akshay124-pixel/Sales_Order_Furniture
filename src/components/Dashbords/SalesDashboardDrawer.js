@@ -499,7 +499,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   const [installStatusFilter, setInstallStatusFilter] = useState("All");
   const [accountsStatusFilter, setAccountsStatusFilter] = useState("All");
   const [dispatchFilter, setDispatchFilter] = useState("All");
-
+  const userRole = localStorage.getItem("role");
   // Filter orders
   const filterOrders = useCallback(
     (
@@ -1048,10 +1048,12 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
               <ArrowRight size={16} />
               Reset
             </ResetButton>
-            <ExportButton onClick={handleExportToExcel}>
-              <Download size={18} />
-              Export Excel
-            </ExportButton>
+            {userRole === "SuperAdmin" && (
+              <ExportButton onClick={handleExportToExcel}>
+                <Download size={18} />
+                Export Excel
+              </ExportButton>
+            )}
             <CloseButton onClick={onClose}>
               <X size={18} />
               Close
