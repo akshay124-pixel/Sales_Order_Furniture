@@ -853,8 +853,28 @@ function Installation() {
                             }}
                             title={order.installationReport || "N/A"}
                           >
-                            {order.installationReport || "N/A"}
+                            <Badge
+                              style={{
+                                background:
+                                  order.installationReport === "Yes"
+                                    ? "linear-gradient(135deg, #28a745, #4cd964)" // green gradient
+                                    : order.installationReport === "No"
+                                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // red gradient
+                                    : "linear-gradient(135deg, #6c757d, #a9a9a9)", // grey fallback
+                                color: "#fff",
+                                padding: "5px 10px",
+                                borderRadius: "12px",
+                                display: "inline-block",
+                                width: "100%",
+                                textOverflow: "ellipsis",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {order.installationReport || "N/A"}
+                            </Badge>
                           </td>
+
                           <td
                             style={{
                               padding: "15px",
