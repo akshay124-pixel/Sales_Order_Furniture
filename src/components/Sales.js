@@ -737,8 +737,22 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[31],
-          content: order.installation ? `₹${order.installation}` : "-",
-          title: order.installation ? `₹${order.installation}` : "-",
+          content: (
+            <Badge
+              bg={
+                order.installationStatus === "Pending"
+                  ? "warning"
+                  : order.installationStatus === "In Progress"
+                  ? "info"
+                  : order.installationStatus === "Completed"
+                  ? "success"
+                  : "secondary"
+              }
+            >
+              {order.installationStatus || "-"}
+            </Badge>
+          ),
+          title: order.installationStatus || "-",
         },
         {
           width: columnWidths[32],
@@ -2138,7 +2152,7 @@ const Sales = () => {
     "Payment Received",
     "Freight Charges",
     "Actual Freight",
-    "Installation",
+    "Installation Status",
     "Installation Report",
     "Transporter Details",
     "Dispatch From",
