@@ -1331,7 +1331,6 @@ function Installation() {
                   {" "}
                   <option value="No">No</option>
                   <option value="Yes">Yes</option>
-                  <option value="Installed">Already Installed</option>
                 </Form.Select>
                 {errors.installationReport && (
                   <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
