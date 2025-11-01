@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { FaEye, FaBell } from "react-icons/fa";
 import { Button, Badge, Popover } from "react-bootstrap";
+import { FaHome, FaWrench, FaIndustry, FaTruck } from "react-icons/fa";
+import { Card } from "react-bootstrap";
 
 import FilterSection from "./FilterSection";
 import "react-datepicker/dist/react-datepicker.css";
@@ -155,6 +157,7 @@ const DatePickerWrapper = styled.div`
     z-index: 1000 !important;
   }
 `;
+
 // Updated columnWidths array (removed Credit Days width: 100)
 const columnWidths = [
   60, // Seq No
@@ -372,6 +375,47 @@ body {
   width: 100%;
   min-width: ${totalTableWidth}px;
 }
+`;
+
+// Styled Components for Tracker
+const TrackerGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+`;
+
+const TrackerCard = styled(Card)`
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  &.active {
+    box-shadow: 0 8px 25px rgba(37, 117, 252, 0.3);
+    border: 2px solid #2575fc;
+  }
+  .card-body {
+    padding: 20px;
+    text-align: center;
+  }
+  .icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  .count {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  .title {
+    font-size: 1rem;
+    color: #6b7280;
+  }
 `;
 
 const Row = React.memo(({ index, style, data }) => {
@@ -944,6 +988,135 @@ const Row = React.memo(({ index, style, data }) => {
     </tr>
   );
 });
+
+// Reusable Tracker Component
+// Props:
+// - userRole: string (e.g., "Admin", "SuperAdmin") - Determines visibility
+// - apiBaseUrl: string - Base URL for API calls (e.g., process.env.REACT_APP_URL)
+// - onFilterChange: function(filterKey: string) - Callback when a tracker card is clicked
+// - initialFilter: string - Initial filter key (default: "all")
+// - fetchUserId: string - User ID for API auth (from localStorage or props)
+// - fetchToken: string - Auth token for API calls (from localStorage or props)
+const OrderTracker = ({
+  userRole,
+  apiBaseUrl,
+  onFilterChange,
+  initialFilter = "all",
+  fetchUserId,
+  fetchToken,
+  counts,
+}) => {
+  const [dashboardCounts, setDashboardCounts] = useState({
+    all: 0,
+    installation: 0,
+    production: 0,
+    dispatch: 0,
+  });
+  const [trackerFilter, setTrackerFilter] = useState(initialFilter);
+  const displayedCounts = counts || dashboardCounts;
+
+  // Keep internal trackerFilter in sync with parent-provided initialFilter (e.g., on Reset)
+  useEffect(() => {
+    setTrackerFilter(initialFilter);
+  }, [initialFilter]);
+
+  // Fetch dashboard counts
+  const fetchDashboardCounts = useCallback(async () => {
+    if (!fetchToken) {
+      console.error("No auth token provided for fetching dashboard counts");
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${apiBaseUrl}/api/dashboard-counts`, {
+        headers: { Authorization: `Bearer ${fetchToken}` },
+      });
+      setDashboardCounts(
+        response.data || { all: 0, installation: 0, production: 0, dispatch: 0 }
+      );
+    } catch (error) {
+      console.error("Error fetching dashboard counts:", error);
+      toast.error("Failed to fetch dashboard counts!");
+    }
+  }, [apiBaseUrl, fetchToken]);
+
+  // Initial fetch and refetch on mount
+  useEffect(() => {
+    fetchDashboardCounts();
+  }, [fetchDashboardCounts]);
+
+  // Handle filter change
+  const handleFilterChange = useCallback(
+    (filterKey) => {
+      setTrackerFilter(filterKey);
+      if (onFilterChange) {
+        onFilterChange(filterKey);
+      }
+    },
+    [onFilterChange]
+  );
+
+  // Render individual tracker card
+  const renderTrackerCard = useCallback(
+    (title, count, icon, bgColor, filterKey) => {
+      const active = trackerFilter === filterKey;
+      return (
+        <TrackerCard
+          key={filterKey}
+          onClick={() => handleFilterChange(filterKey)}
+          className={active ? "active" : ""}
+          style={{ background: bgColor }}
+        >
+          <Card.Body>
+            <div className="icon">{icon}</div>
+            <div className="count">{count}</div>
+            <div className="title">{title}</div>
+          </Card.Body>
+        </TrackerCard>
+      );
+    },
+    [trackerFilter, handleFilterChange]
+  );
+
+  // Only render if user has access
+  if (userRole !== "SuperAdmin" && userRole !== "Admin") {
+    return null;
+  }
+
+  return (
+    <TrackerGrid>
+      {renderTrackerCard(
+        "All Orders",
+        displayedCounts.all,
+        <FaHome />,
+        "linear-gradient(135deg, #bcd3ff 0%, #d1c4ff 100%)",
+        "all"
+      )}
+      {renderTrackerCard(
+        "Production Orders",
+        displayedCounts.production,
+        <FaIndustry />,
+        "linear-gradient(135deg, #b5ccff 0%, #c8b8ff 100%)",
+        "production"
+      )}
+      {renderTrackerCard(
+        "Installation Orders",
+        displayedCounts.installation,
+        <FaWrench />,
+        "linear-gradient(135deg, #c0d6ff 0%, #d4c2ff 100%)",
+        "installation"
+      )}
+      {renderTrackerCard(
+        "Dispatch Orders",
+        displayedCounts.dispatch,
+        <FaTruck />,
+        "linear-gradient(135deg, #c8d9ff 0%, #dbc8ff 100%)",
+        "dispatch"
+      )}
+    </TrackerGrid>
+  );
+};
+
 const Sales = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -963,6 +1136,13 @@ const Sales = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [dashboardCounts, setDashboardCounts] = useState({
+    all: 0,
+    installation: 0,
+    production: 0,
+    dispatch: 0,
+  });
+  const [trackerFilter, setTrackerFilter] = useState("all");
   const userRole = localStorage.getItem("role");
   const userId = localStorage.getItem("userId");
   const [openTooltipId, setOpenTooltipId] = useState(null);
@@ -1056,6 +1236,25 @@ const Sales = () => {
     }
   }, []);
 
+  // Fetch dashboard counts (global totals)
+  const fetchDashboardCounts = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${process.env.REACT_APP_URL}/api/dashboard-counts`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setDashboardCounts(
+        response.data || { all: 0, installation: 0, production: 0, dispatch: 0 }
+      );
+    } catch (error) {
+      console.error("Error fetching dashboard counts:", error);
+      toast.error("Failed to fetch dashboard counts!");
+    }
+  }, []);
+
   // WebSocket setup
   useEffect(() => {
     const baseOrigin = (() => {
@@ -1090,6 +1289,7 @@ const Sales = () => {
       const owners = [createdBy, assignedTo].filter(Boolean);
       if (!owners.includes(currentUserId)) return;
       setOrders((prev) => prev.filter((o) => o._id !== _id));
+      fetchDashboardCounts(); // Refresh counts on delete
     });
 
     socket.on("notification", (notif) => {
@@ -1113,21 +1313,37 @@ const Sales = () => {
             return [fullDocument, ...prev];
           });
         }
+        fetchDashboardCounts(); // Refresh counts on update/insert
       }
     );
 
+    // Live admin dashboard counts
+    socket.on("dashboardCounts", (counts) => {
+      if (counts && typeof counts === "object") {
+        setDashboardCounts((prev) => ({
+          all: Number(counts.all) || 0,
+          installation: Number(counts.installation) || 0,
+          production: Number(counts.production) || 0,
+          dispatch: Number(counts.dispatch) || 0,
+        }));
+      }
+    });
+
     fetchOrders();
     fetchNotifications();
+    fetchDashboardCounts(); // Initial fetch for dashboard counts
 
     return () => {
       socket.off("connect");
       socket.off("connect_error");
       socket.off("notification");
       socket.off("orderUpdate");
+      socket.off("deleteOrder");
+      socket.off("dashboardCounts");
       socket.disconnect();
       console.log("Socket.IO disconnected and listeners cleaned up");
     };
-  }, [fetchOrders, fetchNotifications, userRole, userId]);
+  }, [fetchOrders, fetchNotifications, userRole, userId, fetchDashboardCounts]);
 
   const calculateTotalResults = useMemo(() => {
     return Math.floor(
@@ -1150,7 +1366,8 @@ const Sales = () => {
       accountsStatus,
       dispatch,
       start,
-      end
+      end,
+      dashboardFilter
     ) => {
       let filtered = [...ordersToFilter].filter(
         (order) => order._id && order.orderId
@@ -1326,6 +1543,51 @@ const Sales = () => {
         });
       }
 
+      if (dashboardFilter !== "all") {
+        filtered = filtered.filter((order) => {
+          switch (dashboardFilter) {
+            case "production": {
+              // Match backend getDashboardCounts: sostatus Approved, dispatchFrom NOT in list, fulfillingStatus != "Fulfilled"
+              const dispatchFromOptions = [
+                "Patna",
+                "Bareilly",
+                "Ranchi",
+                "Lucknow",
+                "Delhi",
+                "Jaipur",
+                "Rajasthan",
+              ];
+              return (
+                order.sostatus === "Approved" &&
+                !dispatchFromOptions.includes(order.dispatchFrom) &&
+                order.fulfillingStatus !== "Fulfilled"
+              );
+            }
+            case "installation": {
+              // Match backend: Delivered but installation pending/in progress/site not ready/hold
+              const pendingInstallationStatuses = [
+                "Pending",
+                "In Progress",
+                "Site Not Ready",
+                "Hold",
+              ];
+              return (
+                order.dispatchStatus === "Delivered" &&
+                pendingInstallationStatuses.includes(order.installationStatus)
+              );
+            }
+            case "dispatch":
+              // Match backend: fulfillingStatus "Fulfilled" and not Delivered yet
+              return (
+                order.fulfillingStatus === "Fulfilled" &&
+                order.dispatchStatus !== "Delivered"
+              );
+            default:
+              return true;
+          }
+        });
+      }
+
       filtered = filtered.sort((a, b) => {
         const aUpdatedAt = a.updatedAt ? Date.parse(a.updatedAt) : 0;
         const bUpdatedAt = b.updatedAt ? Date.parse(b.updatedAt) : 0;
@@ -1361,7 +1623,8 @@ const Sales = () => {
       accountsStatusFilter,
       dispatchFilter,
       startDate,
-      endDate
+      endDate,
+      trackerFilter
     );
   }, [
     orders,
@@ -1373,6 +1636,7 @@ const Sales = () => {
     dispatchFilter,
     startDate,
     endDate,
+    trackerFilter,
     filterOrders,
   ]);
   // Event handlers
@@ -1383,6 +1647,7 @@ const Sales = () => {
     setProductStatusFilter("All");
     setAccountsStatusFilter("All");
     setDispatchFilter("All");
+    setTrackerFilter("all");
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
@@ -1451,12 +1716,14 @@ const Sales = () => {
           accountsStatusFilter,
           dispatchFilter,
           startDate,
-          endDate
+          endDate,
+          trackerFilter
         );
         return updatedOrders;
       });
       setIsAddModalOpen(false);
       toast.success("New order added!");
+      fetchDashboardCounts(); // Refresh counts after add
     },
     [
       fetchOrders,
@@ -1469,6 +1736,8 @@ const Sales = () => {
       dispatchFilter,
       startDate,
       endDate,
+      trackerFilter,
+      fetchDashboardCounts,
     ]
   );
 
@@ -1502,12 +1771,14 @@ const Sales = () => {
           accountsStatusFilter,
           dispatchFilter,
           startDate,
-          endDate
+          endDate,
+          trackerFilter
         );
         return updatedOrders;
       });
       setIsDeleteModalOpen(false);
       toast.success("Order deleted successfully!");
+      fetchDashboardCounts(); // Refresh counts after delete
     },
     [
       filterOrders,
@@ -1519,6 +1790,8 @@ const Sales = () => {
       dispatchFilter,
       startDate,
       endDate,
+      trackerFilter,
+      fetchDashboardCounts,
     ]
   );
 
@@ -1540,11 +1813,13 @@ const Sales = () => {
           accountsStatusFilter,
           dispatchFilter,
           startDate,
-          endDate
+          endDate,
+          trackerFilter
         );
         return updatedOrders;
       });
       setIsEditModalOpen(false);
+      fetchDashboardCounts(); // Refresh counts after update
     },
     [
       filterOrders,
@@ -1556,6 +1831,8 @@ const Sales = () => {
       dispatchFilter,
       startDate,
       endDate,
+      trackerFilter,
+      fetchDashboardCounts,
     ]
   );
 
@@ -1778,13 +2055,15 @@ const Sales = () => {
               accountsStatusFilter,
               dispatchFilter,
               startDate,
-              endDate
+              endDate,
+              trackerFilter
             );
             return updatedOrders;
           });
           toast.success(
             `Successfully uploaded ${response.data.data.length} orders!`
           );
+          fetchDashboardCounts(); // Refresh counts after bulk upload
         } catch (error) {
           console.error("Error uploading entries:", error);
 
@@ -1828,6 +2107,8 @@ const Sales = () => {
       dispatchFilter,
       startDate,
       endDate,
+      trackerFilter,
+      fetchDashboardCounts,
     ]
   );
   const handleExport = useCallback(() => {
@@ -2214,6 +2495,17 @@ const Sales = () => {
           fontFamily: "'Poppins', sans-serif",
         }}
       >
+        {(userRole === "SuperAdmin" || userRole === "Admin") && (
+          <OrderTracker
+            userRole={userRole}
+            apiBaseUrl={process.env.REACT_APP_URL}
+            onFilterChange={setTrackerFilter}
+            initialFilter={trackerFilter}
+            fetchUserId={userId}
+            fetchToken={localStorage.getItem("token")}
+            counts={dashboardCounts}
+          />
+        )}
         <div
           className="my-4"
           style={{
