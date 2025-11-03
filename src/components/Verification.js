@@ -476,7 +476,7 @@ const Verification = () => {
                         padding: "15px",
                         width: "160px",
                         minWidth: "120px",
-                        maxWidth: "120px",
+                        maxWidth: "160px",
                         textOverflow: "ellipsis",
                         overflow: "hidden",
                         whiteSpace: "nowrap",
