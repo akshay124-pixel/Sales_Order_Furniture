@@ -263,7 +263,7 @@ const Verification = () => {
                   { header: "Payment Collected", width: "120px" },
                   { header: "Payment Due", width: "120px" },
                   { header: "Actions", width: "120px" },
-                  { header: "Approval Status", width: "160px" },
+                  { header: "Approval Status", width: "180px" },
                   { header: "Product Details", width: "200px" },
                   { header: "Verification Remarks", width: "150px" },
                 ].map(({ header, width }) => (
@@ -476,7 +476,7 @@ const Verification = () => {
                         padding: "15px",
                         width: "160px",
                         minWidth: "120px",
-                        maxWidth: "160px",
+                        maxWidth: "180px",
                         textOverflow: "ellipsis",
                         overflow: "hidden",
                         whiteSpace: "nowrap",
