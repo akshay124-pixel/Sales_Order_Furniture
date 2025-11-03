@@ -263,7 +263,7 @@ const Verification = () => {
                   { header: "Payment Collected", width: "120px" },
                   { header: "Payment Due", width: "120px" },
                   { header: "Actions", width: "120px" },
-                  { header: "Approval Status", width: "120px" },
+                  { header: "Approval Status", width: "160px" },
                   { header: "Product Details", width: "200px" },
                   { header: "Verification Remarks", width: "150px" },
                 ].map(({ header, width }) => (
@@ -474,7 +474,7 @@ const Verification = () => {
                     <td
                       style={{
                         padding: "15px",
-                        width: "120px",
+                        width: "160px",
                         minWidth: "120px",
                         maxWidth: "120px",
                         textOverflow: "ellipsis",
