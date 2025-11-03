@@ -10,7 +10,7 @@ import { salesPersonlist } from "./Options";
 function Installation() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewOrder, setViewOrder] = useState(null);
@@ -29,7 +29,7 @@ function Installation() {
   const [salesPersonFilter, setSalesPersonFilter] = useState("All");
 
   const fetchInstallationOrders = useCallback(async () => {
-    setLoading(true);
+    setInitialLoading(true);
     setError(null);
     try {
       const response = await axios.get(
@@ -78,14 +78,14 @@ function Installation() {
         autoClose: 5000,
       });
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
   }, []);
 
   useEffect(() => {
     let isMounted = true;
     fetchInstallationOrders().then(() => {
-      if (!isMounted) setLoading(false);
+      if (!isMounted) setInitialLoading(false);
     });
     return () => {
       isMounted = false;
@@ -282,7 +282,7 @@ function Installation() {
           position: "top-right",
           autoClose: 3000,
         });
-        await fetchInstallationOrders();
+        // No table loading or refetch to avoid spinner; state already updated optimistically
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }
@@ -327,7 +327,7 @@ function Installation() {
     );
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div
         style={{
@@ -601,6 +601,7 @@ function Installation() {
                 backgroundColor: "rgba(255, 255, 255, 0.8)",
                 boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                 backdropFilter: "blur(10px)",
+                position: "relative",
               }}
             >
               <table
