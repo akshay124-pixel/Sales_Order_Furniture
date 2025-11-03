@@ -31,7 +31,10 @@ function Accounts() {
   const [statusFilter, setStatusFilter] = useState("All");
 
   const fetchAccountsOrders = useCallback(async () => {
-    setLoading(true);
+    // Only show loading for initial page load (no data yet)
+    if (orders.length === 0) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -82,9 +85,11 @@ function Accounts() {
       setError(errorMessage);
       toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
     } finally {
-      setLoading(false);
+      if (orders.length === 0) {
+        setLoading(false);
+      }
     }
-  }, []);
+  }, [orders.length]);
 
   useEffect(() => {
     if (formData.paymentReceived === "Received") {
@@ -280,7 +285,7 @@ function Accounts() {
           position: "top-right",
           autoClose: 3000,
         });
-        await fetchAccountsOrders();
+        // Avoid table reload to prevent any loading; state already updated optimistically
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }

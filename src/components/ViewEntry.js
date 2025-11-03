@@ -6,6 +6,16 @@ import { Copy } from "lucide-react";
 
 function ViewEntry({ isOpen, onClose, entry }) {
   const [copied, setCopied] = useState(false);
+  const isObjectId = (v) =>
+    typeof v === "string" && /^[a-fA-F0-9]{24}$/.test(v);
+  const getCreatedByName = (cb) =>
+    cb && typeof cb === "object"
+      ? cb.username || "Unknown"
+      : typeof cb === "string"
+      ? isObjectId(cb)
+        ? "Sales Order Team"
+        : cb
+      : "N/A";
 
   const handleCopy = useCallback(() => {
     if (!entry) return;
@@ -133,13 +143,7 @@ Remarks By Installation: ${entry.remarksByInstallation || "N/A"}
 Verification Remarks: ${entry.verificationRemarks || "N/A"}
 Sales Person: ${entry.salesPerson || "N/A"}
 Company: ${entry.company || "N/A"}
-Created By: ${
-      entry.createdBy && typeof entry.createdBy === "object"
-        ? entry.createdBy.username || "Unknown"
-        : typeof entry.createdBy === "string"
-        ? entry.createdBy
-        : "N/A"
-    }
+Created By: ${getCreatedByName(entry.createdBy)}
     `.trim();
 
     navigator.clipboard
@@ -402,11 +406,7 @@ Created By: ${
                 </div>
                 <div>
                   <strong>Created By:</strong>{" "}
-                  {entry.createdBy && typeof entry.createdBy === "object"
-                    ? entry.createdBy.username || "Unknown"
-                    : typeof entry.createdBy === "string"
-                    ? entry.createdBy
-                    : "N/A"}
+                  {getCreatedByName(entry.createdBy)}
                 </div>
                 <div>
                   <strong>Sales Person:</strong> {entry.salesPerson || "N/A"}
@@ -982,3 +982,4 @@ Created By: ${
 }
 
 export default ViewEntry;
+ 

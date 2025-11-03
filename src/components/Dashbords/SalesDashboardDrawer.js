@@ -631,12 +631,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
 
   // Memoize sales analytics computation
   const salesAnalytics = useMemo(() => {
-    console.log("Computing sales analytics for orders:", filteredOrders);
     return filteredOrders.reduce((acc, order) => {
       const createdBy = order.createdBy?.username?.trim() || "Sales Order Team";
-      console.log(
-        `Order ID: ${order.orderId || "N/A"}, CreatedBy: ${createdBy}`
-      );
 
       if (!acc[createdBy]) {
         acc[createdBy] = {
@@ -752,16 +748,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           },
         }
       );
-
-      console.log("Fetched orders:", response.data);
       setOrders(response.data || []);
     } catch (error) {
-      console.error("Error fetching orders:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
-
       let errorMessage = "Something went wrong while fetching orders.";
 
       if (error.response) {
@@ -819,11 +807,9 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       });
 
       socket.on("connect", () => {
-        console.log("Connected to Socket.IO server, ID:", socket.id);
         const userId = localStorage.getItem("userId");
         const role = localStorage.getItem("role");
         socket.emit("join", { userId, role });
-        toast.success("Connected to real-time updates!");
       });
 
       socket.on("orderUpdate", ({ operationType, fullDocument }) => {
@@ -846,27 +832,16 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         });
       });
 
-      socket.on("connect_error", (error) => {
-        console.error("Socket.IO connection error:", error.message);
-        toast.error(`Connection to server failed: ${error.message}`);
-      });
+      socket.on("connect_error", (error) => {});
 
-      socket.on("disconnect", (reason) => {
-        console.log("Socket.IO disconnected:", reason);
-        if (reason !== "io client disconnect") {
-          toast.warn(`Disconnected from server: ${reason}. Reconnecting...`);
-        }
-      });
+      socket.on("disconnect", (reason) => {});
 
       socket.on("reconnect", (attempt) => {
-        console.log("Socket.IO reconnected after attempt:", attempt);
-        toast.success("Reconnected to server!");
         fetchOrders();
       });
 
       return () => {
         socket.disconnect();
-        console.log("Socket.IO disconnected");
       };
     }
   }, [isOpen]);

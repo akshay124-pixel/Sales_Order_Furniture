@@ -375,6 +375,32 @@ body {
   width: 100%;
   min-width: ${totalTableWidth}px;
 }
+
+/* Loader overlay */
+.sales-table-container .loader-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 5;
+  transition: opacity 0.2s ease;
+}
+
+.gradient-spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: conic-gradient(#2575fc, #6a11cb, #2575fc);
+  -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 8px), #000 0);
+  mask: radial-gradient(farthest-side, #0000 calc(100% - 8px), #000 0);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(1turn); }
+}
 `;
 
 // Styled Components for Tracker
@@ -1023,7 +1049,6 @@ const OrderTracker = ({
   // Fetch dashboard counts
   const fetchDashboardCounts = useCallback(async () => {
     if (!fetchToken) {
-      console.error("No auth token provided for fetching dashboard counts");
       return;
     }
 
@@ -1035,7 +1060,6 @@ const OrderTracker = ({
         response.data || { all: 0, installation: 0, production: 0, dispatch: 0 }
       );
     } catch (error) {
-      console.error("Error fetching dashboard counts:", error);
       toast.error("Failed to fetch dashboard counts!");
     }
   }, [apiBaseUrl, fetchToken]);
@@ -1146,6 +1170,7 @@ const Sales = () => {
   const userRole = localStorage.getItem("role");
   const userId = localStorage.getItem("userId");
   const [openTooltipId, setOpenTooltipId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1169,7 +1194,6 @@ const Sales = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Token for notifications request:", token);
       if (!token) {
         throw new Error("No token found in localStorage");
       }
@@ -1181,7 +1205,6 @@ const Sales = () => {
       );
       setNotifications(response.data.data);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
       toast.error("Failed to fetch notifications!");
     }
   }, []);
@@ -1199,7 +1222,6 @@ const Sales = () => {
       );
       toast.success("All notifications marked as read!");
     } catch (error) {
-      console.error("Error marking notifications as read:", error);
       toast.error("Failed to mark notifications as read!");
     }
   }, []);
@@ -1214,7 +1236,6 @@ const Sales = () => {
       setNotifications([]);
       toast.success("All notifications cleared!");
     } catch (error) {
-      console.error("Error clearing notifications:", error);
       toast.error("Failed to clear notifications!");
     }
   }, []);
@@ -1231,7 +1252,6 @@ const Sales = () => {
       );
       setOrders(response.data);
     } catch (error) {
-      console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders!");
     }
   }, []);
@@ -1275,14 +1295,10 @@ const Sales = () => {
     });
 
     socket.on("connect", () => {
-      console.log("Socket.IO connected:", socket.id);
-
       socket.emit("join", { userId, role: userRole });
     });
 
-    socket.on("connect_error", (error) => {
-      console.error("Socket.IO connection error:", error);
-    });
+    socket.on("connect_error", (error) => {});
 
     socket.on("deleteOrder", ({ _id, createdBy, assignedTo }) => {
       const currentUserId = userId;
@@ -1329,9 +1345,17 @@ const Sales = () => {
       }
     });
 
-    fetchOrders();
-    fetchNotifications();
-    fetchDashboardCounts(); // Initial fetch for dashboard counts
+    (async () => {
+      try {
+        await Promise.all([
+          fetchOrders(),
+          fetchNotifications(),
+          fetchDashboardCounts(),
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
 
     return () => {
       socket.off("connect");
@@ -1341,7 +1365,6 @@ const Sales = () => {
       socket.off("deleteOrder");
       socket.off("dashboardCounts");
       socket.disconnect();
-      console.log("Socket.IO disconnected and listeners cleaned up");
     };
   }, [fetchOrders, fetchNotifications, userRole, userId, fetchDashboardCounts]);
 
@@ -2723,6 +2746,11 @@ const Sales = () => {
         )}
 
         <div className="sales-table-container">
+          {isLoading && (
+            <div className="loader-overlay">
+              <div className="gradient-spinner" />
+            </div>
+          )}
           <table className="sales-table">
             <thead>
               <tr>
