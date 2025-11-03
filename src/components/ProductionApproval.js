@@ -42,14 +42,20 @@ const ProductionApproval = () => {
     });
 
     socket.on("updateOrder", ({ _id, customername, orderId, notification }) => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
+      setOrders((prevOrders) => {
+        const nextStatus = notification?.sostatus;
+        if (nextStatus && nextStatus !== "Pending for Approval") {
+          return prevOrders.filter((o) => o._id !== _id);
+        }
+        return prevOrders.map((order) =>
           order._id === _id
             ? { ...order, ...notification, customername, orderId }
             : order
-        )
+        );
+      });
+      toast.info(
+        `Order ${orderId} updated: ${notification?.message || "Updated"}`
       );
-      toast.info(`Order ${orderId} updated: ${notification.message}`);
     });
 
     socket.on("disconnect", () => {
@@ -190,13 +196,18 @@ const ProductionApproval = () => {
   };
 
   const handleEntryUpdated = (updatedOrder) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
+    setOrders((prevOrders) => {
+      const nextStatus = updatedOrder?.sostatus;
+      if (nextStatus && nextStatus !== "Pending for Approval") {
+        return prevOrders.filter((o) => o._id !== updatedOrder._id);
+      }
+      return prevOrders.map((order) =>
         order._id === updatedOrder._id ? updatedOrder : order
-      )
-    );
+      );
+    });
     setIsEditModalOpen(false);
     toast.success("Order updated successfully!");
+    fetchOrders();
   };
 
   const handleExportToXLSX = () => {
