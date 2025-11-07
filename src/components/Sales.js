@@ -570,6 +570,10 @@ const Row = React.memo(({ index, style, data }) => {
                   ? "info"
                   : order.sostatus === "Approved"
                   ? "success"
+                  : order.sostatus === "Order Cancelled"
+                  ? "danger"
+                  : order.sostatus === "Hold By Production"
+                  ? "dark"
                   : "secondary"
               }
             >
@@ -917,14 +921,18 @@ const Row = React.memo(({ index, style, data }) => {
               style={{
                 background:
                   order.fulfillingStatus === "Under Process"
-                    ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                    ? "linear-gradient(135deg, #f39c12, #f7c200)" // orange
                     : order.fulfillingStatus === "Pending"
-                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // red
                     : order.fulfillingStatus === "Partial Dispatch"
-                    ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                    ? "linear-gradient(135deg, #00c6ff, #0072ff)" // blue
                     : order.fulfillingStatus === "Fulfilled"
-                    ? "linear-gradient(135deg, #28a745, #4cd964)"
-                    : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                    ? "linear-gradient(135deg, #28a745, #4cd964)" // green
+                    : order.fulfillingStatus === "Order Cancel"
+                    ? "linear-gradient(135deg, #8e0e00, #e52d27)" // dark red for cancel
+                    : order.fulfillingStatus === "Hold"
+                    ? "linear-gradient(135deg, #6a11cb, #2575fc)" // purple-blue for hold
+                    : "linear-gradient(135deg, #6c757d, #a9a9a9)", // default grey
               }}
             >
               {order.fulfillingStatus || "Pending"}

@@ -2707,6 +2707,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               >
                 <option value="Pending">Pending</option>
                 <option value="Under Process">Under Process</option>
+                <option value="Order Cancel">Order Cancel</option>
                 <option value="Partial Dispatch">Partial Dispatch</option>
                 <option value="Fulfilled">Fulfilled</option>
               </Form.Select>
@@ -2799,6 +2800,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             name="sostatus"
           >
             <option value="Pending for Approval">Pending for Approval</option>
+            <option value="Order Cancelled">Order Cancel</option>
             <option value="Accounts Approved">Accounts Approved</option>
             <option value="Approved">Approved</option>
           </Form.Select>

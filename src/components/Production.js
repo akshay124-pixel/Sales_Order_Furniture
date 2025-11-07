@@ -262,6 +262,8 @@ const Production = () => {
     "All",
     "Under Process",
     "Pending",
+    "Hold",
+    "Order Cancel",
     "Partial Dispatch",
     "Fulfilled",
     ...new Set(
@@ -272,6 +274,8 @@ const Production = () => {
             ![
               "Under Process",
               "Pending",
+              "Hold",
+              "Order Cancel",
               "Partial Dispatch",
               "Fulfilled",
             ].includes(status)
@@ -355,27 +359,41 @@ const Production = () => {
         }
       );
       if (response.data.success) {
+        const updatedOrder = response.data.data;
+
         setOrders((prevOrders) => {
-          if (response.data.data.fulfillingStatus === "Fulfilled") {
-            const updatedOrders = prevOrders.filter(
+          let updatedOrders;
+
+          // 🔥 Remove instantly if Fulfilled OR Order Cancel
+          if (
+            updatedOrder.fulfillingStatus === "Fulfilled" ||
+            updatedOrder.fulfillingStatus === "Order Cancel"
+          ) {
+            updatedOrders = prevOrders.filter(
               (order) => order._id !== editOrder._id
             );
-            return updatedOrders.sort((a, b) => {
-              const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
-              const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
-              return dateB - dateA;
-            });
           } else {
-            const updatedOrders = prevOrders.map((order) =>
-              order._id === editOrder._id ? response.data.data : order
+            updatedOrders = prevOrders.map((order) =>
+              order._id === editOrder._id ? updatedOrder : order
             );
-            return updatedOrders.sort((a, b) => {
-              const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
-              const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
-              return dateB - dateA;
-            });
           }
+
+          // Also instantly update filteredOrders
+          setFilteredOrders(
+            updatedOrders.filter(
+              (order) =>
+                order.fulfillingStatus !== "Fulfilled" &&
+                order.fulfillingStatus !== "Order Cancel"
+            )
+          );
+
+          return updatedOrders.sort((a, b) => {
+            const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+            const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+            return dateB - dateA;
+          });
         });
+
         setShowEditModal(false);
         toast.success("Order updated successfully!", {
           position: "top-right",
@@ -975,7 +993,6 @@ const Production = () => {
                         "Product Details",
                         "Size",
                         "Spec",
-
                         "Model Nos",
                         "Remarks",
                         "Production Status",
@@ -1305,6 +1322,10 @@ const Production = () => {
                                     ? "linear-gradient(135deg, #00c6ff, #0072ff)"
                                     : order.fulfillingStatus === "Fulfilled"
                                     ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                    : order.fulfillingStatus === "Order Cancel"
+                                    ? "linear-gradient(135deg, #8e0e00, #e52d27)" // red gradient for cancel
+                                    : order.fulfillingStatus === "Hold"
+                                    ? "linear-gradient(135deg, #2e2e2e, #4a4a4a)" // purple-blue gradient for hold
                                     : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                                 color: "#fff",
                                 padding: "5px 10px",
@@ -1473,6 +1494,8 @@ const Production = () => {
                   <option value="Under Process">Under Process</option>
                   <option value="Pending">Pending</option>
                   <option value="Partial Dispatch">Partial Dispatch</option>
+                  <option value="Hold">Hold</option>
+                  <option value="Order Cancel">Order Cancel</option>
                   <option value="Fulfilled">Completed</option>
                 </Form.Select>
               </Form.Group>
