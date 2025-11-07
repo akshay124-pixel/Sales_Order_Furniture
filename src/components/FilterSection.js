@@ -489,6 +489,8 @@ const FilterSection = ({
           options={[
             "All",
             "Pending",
+            "Hold",
+            "Order Cancel",
             "Under Process",
             "Partial Dispatch",
             "Fulfilled",
