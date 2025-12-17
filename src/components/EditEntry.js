@@ -1515,6 +1515,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {...register("name")}
             onChange={(e) => debouncedHandleInputChange("name", e.target.value)}
             isInvalid={!!errors.name}
+            placeholder="Enter contact person name"
           />
         </Form.Group>
         <Form.Group controlId="customername">
@@ -1525,6 +1526,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("customername", e.target.value)
             }
             isInvalid={!!errors.customername}
+            placeholder="Enter customer name"
           />
         </Form.Group>
         <Form.Group controlId="customerEmail">
@@ -1541,6 +1543,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("customerEmail", e.target.value)
             }
             isInvalid={!!errors.customerEmail}
+            placeholder="Enter email address"
           />
           <Form.Control.Feedback type="invalid">
             {errors.customerEmail?.message}
@@ -1713,6 +1716,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("shippingAddress", e.target.value)
             }
             isInvalid={!!errors.shippingAddress}
+            placeholder="Enter shipping address"
           />
         </Form.Group>
         <Form.Group controlId="billingAddress">
@@ -1725,6 +1729,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("billingAddress", e.target.value)
             }
             isInvalid={!!errors.billingAddress}
+            placeholder="Enter billing address"
           />
         </Form.Group>
         <Form.Group controlId="orderType">
@@ -1782,6 +1787,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("gemOrderNumber", e.target.value)
             }
             isInvalid={!!errors.gemOrderNumber}
+            placeholder="Enter GEM order number"
           />
         </Form.Group>
         {/* Products Section */}
@@ -2362,6 +2368,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.neftTransactionId}
             disabled={paymentMethod !== "NEFT" && paymentMethod !== "RTGS"}
+            placeholder="Enter transaction ID"
           />
           <Form.Control.Feedback type="invalid">
             {errors.neftTransactionId?.message}
@@ -2376,6 +2383,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.chequeId}
             disabled={paymentMethod !== "Cheque"}
+            placeholder="Enter cheque ID"
           />
           <Form.Control.Feedback type="invalid">
             {errors.chequeId?.message}
@@ -2590,6 +2598,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               )
             }
             isInvalid={!!errors.remarksByInstallation}
+            placeholder="Enter installation remarks"
           />
         </Form.Group>
         <Form.Group controlId="dispatchStatus">
@@ -2691,6 +2700,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("transporterDetails", e.target.value)
             }
             isInvalid={!!errors.transporterDetails}
+            placeholder="Enter transporter details"
           />
         </Form.Group>
        
@@ -2713,6 +2723,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("invoiceNo", e.target.value)
             }
             isInvalid={!!errors.invoiceNo}
+            placeholder="Enter invoice number"
           />
         </Form.Group>
         <Form.Group controlId="invoiceDate">
@@ -2889,6 +2900,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("remarksByProduction", e.target.value)
             }
             isInvalid={!!errors.remarksByProduction}
+            placeholder="Enter production remarks"
           />
         </Form.Group>
         <Form.Group controlId="remarksByAccounts">
@@ -2901,6 +2913,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("remarksByAccounts", e.target.value)
             }
             isInvalid={!!errors.remarksByAccounts}
+            placeholder="Enter accounts remarks"
           />
         </Form.Group>
         <Form.Group controlId="remarksByBilling">
@@ -2913,6 +2926,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("remarksByBilling", e.target.value)
             }
             isInvalid={!!errors.remarksByBilling}
+            placeholder="Enter billing remarks"
           />
         </Form.Group>
         <Form.Group controlId="verificationRemarks">
@@ -2925,6 +2939,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("verificationRemarks", e.target.value)
             }
             isInvalid={!!errors.verificationRemarks}
+            placeholder="Enter verification remarks"
           />
         </Form.Group>
         <Form.Group controlId="remarks">
@@ -2937,6 +2952,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("remarks", e.target.value)
             }
             isInvalid={!!errors.remarks}
+            placeholder="Enter remarks"
           />
         </Form.Group>
       </FormSection>
