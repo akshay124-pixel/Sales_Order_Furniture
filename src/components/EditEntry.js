@@ -130,7 +130,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       stamp: "",
       installationReport: "No",
       transporterDetails: "",
-
+      
       receiptDate: "",
       shippingAddress: "",
       billingAddress: "",
@@ -263,7 +263,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         report: entryToEdit.report || "",
         company: entryToEdit.company || "Promark",
         transporterDetails: entryToEdit.transporterDetails || "",
-
+      
         receiptDate: entryToEdit.receiptDate
           ? new Date(entryToEdit.receiptDate).toISOString().split("T")[0]
           : "",
@@ -404,7 +404,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         installationReport: data.installationReport || null,
 
         transporterDetails: data.transporterDetails || null,
-
+       
         receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
         shippingAddress: data.shippingAddress || null,
         billingAddress: data.billingAddress || null,
@@ -427,8 +427,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         sostatus: data.sostatus || "Pending for Approval",
         stockStatus: data.stockStatus || "In Stock",
       };
-
-      const token = localStorage.getItem("token");
+   const token = localStorage.getItem("token");
       const response = await axios.put(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         submissionData,
@@ -480,7 +479,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+             Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -1553,13 +1552,26 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {...register("contactNo", {
               pattern: {
                 value: /^\d{10}$/,
-                message: "Contact number must be 10 digits",
+                message: "Contact number must be exactly 10 digits",
+              },
+              maxLength: {
+                value: 10,
+                message: "Contact number must be exactly 10 digits",
               },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("contactNo", e.target.value)
-            }
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+              e.target.value = value;
+              debouncedHandleInputChange("contactNo", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
+            maxLength={10}
             isInvalid={!!errors.contactNo}
+            placeholder="Enter 10 digit number"
           />
           <Form.Control.Feedback type="invalid">
             {errors.contactNo?.message}
@@ -1571,13 +1583,26 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {...register("alterno", {
               pattern: {
                 value: /^\d{10}$/,
-                message: "Alternate contact number must be 10 digits",
+                message: "Alternate contact number must be exactly 10 digits",
+              },
+              maxLength: {
+                value: 10,
+                message: "Alternate contact number must be exactly 10 digits",
               },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("alterno", e.target.value)
-            }
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+              e.target.value = value;
+              debouncedHandleInputChange("alterno", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
+            maxLength={10}
             isInvalid={!!errors.alterno}
+            placeholder="Enter 10 digit number"
           />
           <Form.Control.Feedback type="invalid">
             {errors.alterno?.message}
@@ -1653,13 +1678,26 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {...register("pinCode", {
               pattern: {
                 value: /^\d{6}$/,
-                message: "Pin Code must be 6 digits",
+                message: "Pin Code must be exactly 6 digits",
+              },
+              maxLength: {
+                value: 6,
+                message: "Pin Code must be exactly 6 digits",
               },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("pinCode", e.target.value)
-            }
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+              e.target.value = value;
+              debouncedHandleInputChange("pinCode", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
+            maxLength={6}
             isInvalid={!!errors.pinCode}
+            placeholder="Enter 6 digit pin code"
           />
           <Form.Control.Feedback type="invalid">
             {errors.pinCode?.message}
@@ -2189,16 +2227,35 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="total">
           <Form.Label>💵 Total *</Form.Label>
           <Form.Control
-            type="number"
-            step="0.01"
             {...register("total", {
               required: "Total is required",
-              min: { value: 0, message: "Total cannot be negative" },
+              pattern: {
+                value: /^\d*$/,
+                message: "Total must be digits only",
+              },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("total", e.target.value)
-            }
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("total", value);
+            }}
+            onKeyDown={(e) => {
+              if (
+                e.key === " " ||
+                (!/\d/.test(e.key) &&
+                  ![
+                    "Backspace",
+                    "Delete",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "Tab",
+                  ].includes(e.key))
+              ) {
+                e.preventDefault();
+              }
+            }}
             isInvalid={!!errors.total}
+            placeholder="Enter digits only"
           />
           <Form.Control.Feedback type="invalid">
             {errors.total?.message}
@@ -2207,10 +2264,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="paymentCollected">
           <Form.Label>💰 Payment Collected</Form.Label>
           <Form.Control
-            {...register("paymentCollected")}
-            onChange={(e) =>
-              debouncedHandleInputChange("paymentCollected", e.target.value)
-            }
+            {...register("paymentCollected", {
+              pattern: {
+                value: /^\d*$/,
+                message: "Payment Collected must be digits only",
+              },
+            })}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              e.target.value = value;
+              debouncedHandleInputChange("paymentCollected", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
             isInvalid={!!errors.paymentCollected}
             placeholder="e.g., 5000"
           />
@@ -2315,10 +2384,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="paymentDue">
           <Form.Label>💰 Payment Due</Form.Label>
           <Form.Control
-            {...register("paymentDue")}
-            onChange={(e) =>
-              debouncedHandleInputChange("paymentDue", e.target.value)
-            }
+            {...register("paymentDue", {
+              pattern: {
+                value: /^\d*$/,
+                message: "Payment Due must be digits only",
+              },
+            })}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              e.target.value = value;
+              debouncedHandleInputChange("paymentDue", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
             isInvalid={!!errors.paymentDue}
             placeholder="e.g., 2000"
           />
@@ -2351,10 +2432,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
-            {...register("freightcs")}
-            onChange={(e) =>
-              debouncedHandleInputChange("freightcs", e.target.value)
-            }
+            {...register("freightcs", {
+              pattern: {
+                value: /^\d*$/,
+                message: "Freight Charges must be digits only",
+              },
+            })}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              e.target.value = value;
+              debouncedHandleInputChange("freightcs", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
             isInvalid={!!errors.freightcs}
             placeholder="e.g., 1000"
           />
@@ -2383,18 +2476,34 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="actualFreight">
           <Form.Label>🚚 Actual Freight</Form.Label>
           <Form.Control
-            type="number"
-            step="0.01"
             {...register("actualFreight", {
-              min: {
-                value: 0,
-                message: "Actual Freight cannot be negative",
+              pattern: {
+                value: /^\d*$/,
+                message: "Actual Freight must be digits only",
               },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("actualFreight", e.target.value)
-            }
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("actualFreight", value);
+            }}
+            onKeyDown={(e) => {
+              if (
+                e.key === " " ||
+                (!/\d/.test(e.key) &&
+                  ![
+                    "Backspace",
+                    "Delete",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "Tab",
+                  ].includes(e.key))
+              ) {
+                e.preventDefault();
+              }
+            }}
             isInvalid={!!errors.actualFreight}
+            placeholder="Enter digits only"
           />
           <Form.Control.Feedback type="invalid">
             {errors.actualFreight?.message}
@@ -2421,10 +2530,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="installation">
           <Form.Label>🛠️ Installation Charges</Form.Label>
           <Form.Control
-            {...register("installation")}
-            onChange={(e) =>
-              debouncedHandleInputChange("installation", e.target.value)
-            }
+            {...register("installation", {
+              pattern: {
+                value: /^\d*$/,
+                message: "Installation Charges must be digits only",
+              },
+            })}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              e.target.value = value;
+              debouncedHandleInputChange("installation", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
             isInvalid={!!errors.installation}
             placeholder="e.g., 500"
           />
@@ -2572,6 +2693,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.transporterDetails}
           />
         </Form.Group>
+       
         <Form.Group controlId="receiptDate">
           <Form.Label>📅 Receipt Date</Form.Label>
           <Form.Control
@@ -2607,22 +2729,54 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="piNumber">
           <Form.Label>📄 PI Number</Form.Label>
           <Form.Control
-            {...register("piNumber")}
-            onChange={(e) =>
-              debouncedHandleInputChange("piNumber", e.target.value)
-            }
+            {...register("piNumber", {
+              pattern: {
+                value: /^\d*$/,
+                message: "PI Number must be digits only",
+              },
+            })}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              e.target.value = value;
+              debouncedHandleInputChange("piNumber", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
             isInvalid={!!errors.piNumber}
+            placeholder="Enter digits only"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.piNumber?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="billNumber">
           <Form.Label>📄 Bill Number</Form.Label>
           <Form.Control
-            {...register("billNumber")}
-            onChange={(e) =>
-              debouncedHandleInputChange("billNumber", e.target.value)
-            }
+            {...register("billNumber", {
+              pattern: {
+                value: /^\d*$/,
+                message: "Bill Number must be digits only",
+              },
+            })}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              e.target.value = value;
+              debouncedHandleInputChange("billNumber", value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
+                e.preventDefault();
+              }
+            }}
             isInvalid={!!errors.billNumber}
+            placeholder="Enter digits only"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.billNumber?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="billStatus">
           <Form.Label>📋 Bill Status</Form.Label>
