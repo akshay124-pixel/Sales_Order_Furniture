@@ -559,7 +559,7 @@ Created By: ${getCreatedByName(entry.createdBy)}
                           {product.unitPrice?.toFixed(2) || "0.00"}
                         </div>
                         <div>
-                          <strong>GST:</strong> {product.gst || "N/A"}
+                          <strong>GST:</strong> {product.gst || "N/A"}%
                         </div>
                         {product.brand && (
                           <div>
