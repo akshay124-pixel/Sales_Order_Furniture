@@ -2763,32 +2763,17 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.piNumber?.message}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="billNumber">
-          <Form.Label>📄 Bill Number</Form.Label>
-          <Form.Control
-            {...register("billNumber", {
-              pattern: {
-                value: /^\d*$/,
-                message: "Bill Number must be digits only",
-              },
-            })}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '');
-              e.target.value = value;
-              debouncedHandleInputChange("billNumber", value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === ' ' || (!/\d/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key))) {
-                e.preventDefault();
-              }
-            }}
-            isInvalid={!!errors.billNumber}
-            placeholder="Enter digits only"
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.billNumber?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
+       <Form.Group controlId="billNumber">
+  <Form.Label>📄 Bill Number</Form.Label>
+  <Form.Control
+    {...register("billNumber")}
+    onChange={(e) =>
+      debouncedHandleInputChange("billNumber", e.target.value)
+    }
+    placeholder="Enter bill number"
+  />
+</Form.Group>
+
         <Form.Group controlId="billStatus">
           <Form.Label>📋 Bill Status</Form.Label>
           <Controller
