@@ -1042,7 +1042,7 @@ function Accounts() {
                     Total Payment
                   </Form.Label>
                   <Form.Control
-                    type="number"
+                    type="text"
                     step="0.01"
                     value={formData.total}
                     onChange={(e) =>
