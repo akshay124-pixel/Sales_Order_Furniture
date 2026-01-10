@@ -41,10 +41,7 @@ const EditVerification = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       onEntryUpdated(response.data.data);
-      toast.success("Verification order updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);

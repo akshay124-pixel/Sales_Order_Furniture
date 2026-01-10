@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Modal, Form, Spinner, Alert } from "react-bootstrap";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -6,9 +6,7 @@ import { useForm, Controller } from "react-hook-form";
 import styled from "styled-components";
 import debounce from "lodash/debounce";
 import { FaEdit, FaSyncAlt, FaCog } from "react-icons/fa";
-import { salesPersonlist } from "./Options";
-import { Reportinglist } from "./Options";
-import { productOptions } from "./Options";
+import { salesPersonlist, Reportinglist } from "./Options";
 // Styled Components
 const StyledModal = styled(Modal)`
   .modal-content {
@@ -43,12 +41,12 @@ const StyledButton = styled.button`
     props.variant === "primary"
       ? "linear-gradient(135deg, #2575fc, #6a11cb)"
       : props.variant === "info"
-      ? "linear-gradient(135deg, #2575fc, #6a11cb)"
-      : props.variant === "danger"
-      ? "#dc3545"
-      : props.variant === "success"
-      ? "#28a745"
-      : "linear-gradient(135deg, rgb(252, 152, 11), rgb(244, 193, 10))"};
+        ? "linear-gradient(135deg, #2575fc, #6a11cb)"
+        : props.variant === "danger"
+          ? "#dc3545"
+          : props.variant === "success"
+            ? "#28a745"
+            : "linear-gradient(135deg, rgb(252, 152, 11), rgb(244, 193, 10))"};
   &:hover {
     opacity: 0.9;
     transform: scale(1.05);
@@ -127,10 +125,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       salesPerson: "",
       report: "",
       company: "Promark",
-      stamp: "",
-      installationReport: "No",
       transporterDetails: "",
-      
+
       receiptDate: "",
       shippingAddress: "",
       billingAddress: "",
@@ -165,7 +161,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     []
   );
 
-  const [formData, setFormData] = useState(initialFormData);
+  const [, setFormData] = useState(initialFormData);
   const [updateData, setUpdateData] = useState(initialUpdateData);
   const [view, setView] = useState("options");
   const [loading, setLoading] = useState(false);
@@ -211,29 +207,29 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         products:
           entryToEdit.products && entryToEdit.products.length > 0
             ? entryToEdit.products.map((p) => ({
-                productType: p.productType || "",
-                size: p.size || "",
-                spec: p.spec || "",
-                qty: p.qty !== undefined ? String(p.qty) : "",
-                unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "",
-                modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
-                gst: p.gst || "18",
-                brand: p.brand || "",
-                warranty: p.warranty || "",
-              }))
+              productType: p.productType || "",
+              size: p.size || "",
+              spec: p.spec || "",
+              qty: p.qty !== undefined ? String(p.qty) : "",
+              unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "",
+              modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+              gst: p.gst || "18",
+              brand: p.brand || "",
+              warranty: p.warranty || "",
+            }))
             : [
-                {
-                  productType: "",
-                  size: "",
-                  spec: "",
-                  qty: "",
-                  unitPrice: "",
-                  modelNos: "",
-                  gst: "18",
-                  brand: "",
-                  warranty: "",
-                },
-              ],
+              {
+                productType: "",
+                size: "",
+                spec: "",
+                qty: "",
+                unitPrice: "",
+                modelNos: "",
+                gst: "18",
+                brand: "",
+                warranty: "",
+              },
+            ],
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
         paymentCollected: entryToEdit.paymentCollected || "",
         paymentMethod: entryToEdit.paymentMethod || "",
@@ -263,7 +259,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         report: entryToEdit.report || "",
         company: entryToEdit.company || "Promark",
         transporterDetails: entryToEdit.transporterDetails || "",
-      
+
         receiptDate: entryToEdit.receiptDate
           ? new Date(entryToEdit.receiptDate).toISOString().split("T")[0]
           : "",
@@ -293,8 +289,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           entryToEdit.createdBy && typeof entryToEdit.createdBy === "object"
             ? entryToEdit.createdBy.username || "Unknown"
             : typeof entryToEdit.createdBy === "string"
-            ? entryToEdit.createdBy
-            : "",
+              ? entryToEdit.createdBy
+              : "",
       };
       setFormData(newFormData);
       setUpdateData({
@@ -307,10 +303,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       setShowConfirm(false);
     }
   }, [isOpen, entryToEdit, reset]);
-  const debouncedHandleInputChange = useCallback(
-    debounce((name, value, index) => {
+  const _debouncedRef = useRef(null);
+  useEffect(() => {
+    _debouncedRef.current = debounce((name, value, index) => {
       if (name.startsWith("products.")) {
-        const [_, field, idx] = name.split(".");
+        const [, field, idx] = name.split(".");
         setFormData((prev) => {
           const newProducts = [...prev.products];
           newProducts[idx] = {
@@ -325,9 +322,18 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           [name]: value,
         }));
       }
-    }, 300),
-    []
-  );
+    }, 300);
+
+    return () => {
+      if (_debouncedRef.current && _debouncedRef.current.cancel) {
+        _debouncedRef.current.cancel();
+      }
+    };
+  }, []);
+
+  const debouncedHandleInputChange = (name, value, index) => {
+    if (_debouncedRef.current) _debouncedRef.current(name, value, index);
+  };
 
   const handleUpdateInputChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -362,15 +368,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           unitPrice: p.unitPrice ? Number(p.unitPrice) : undefined,
           serialNos: p.serialNos
             ? p.serialNos
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
             : [],
           modelNos: p.modelNos
             ? p.modelNos
-                .split(",")
-                .map((m) => m.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((m) => m.trim())
+              .filter(Boolean)
             : [],
           gst: p.gst || "18",
           brand: p.brand || null,
@@ -404,7 +410,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         installationReport: data.installationReport || null,
 
         transporterDetails: data.transporterDetails || null,
-       
+
         receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
         shippingAddress: data.shippingAddress || null,
         billingAddress: data.billingAddress || null,
@@ -427,7 +433,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         sostatus: data.sostatus || "Pending for Approval",
         stockStatus: data.stockStatus || "In Stock",
       };
-   const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         submissionData,
@@ -440,7 +446,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       );
 
       const updatedEntry = response.data.data;
-      toast.success("Entry updated successfully!");
+
       onEntryUpdated(updatedEntry);
       setView("options");
       onClose();
@@ -479,7 +485,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         {
           headers: {
             "Content-Type": "application/json",
-             Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -532,6 +538,26 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       newProducts.length > 0
         ? newProducts
         : [
+          {
+            productType: "",
+            size: "N/A",
+            spec: "N/A",
+            qty: "",
+            unitPrice: "",
+            serialNos: "",
+            modelNos: "",
+            gst: "18",
+            brand: "",
+            warranty: "",
+          },
+        ]
+    );
+    setFormData((prev) => ({
+      ...prev,
+      products:
+        newProducts.length > 0
+          ? newProducts
+          : [
             {
               productType: "",
               size: "N/A",
@@ -544,27 +570,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               brand: "",
               warranty: "",
             },
-          ]
-    );
-    setFormData((prev) => ({
-      ...prev,
-      products:
-        newProducts.length > 0
-          ? newProducts
-          : [
-              {
-                productType: "",
-                size: "N/A",
-                spec: "N/A",
-                qty: "",
-                unitPrice: "",
-                serialNos: "",
-                modelNos: "",
-                gst: "18",
-                brand: "",
-                warranty: "",
-              },
-            ],
+          ],
     }));
   };
 
@@ -1963,7 +1969,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                       Quantity * <span style={{ color: "#f43f5e" }}>*</span>
                     </Form.Label>
                     <Form.Control
-                      type="number"
+                      type="text"
                       {...register(`products.${index}.qty`, {
                         required: "Quantity is required",
                         min: {
@@ -2008,7 +2014,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                       Unit Price * <span style={{ color: "#f43f5e" }}>*</span>
                     </Form.Label>
                     <Form.Control
-                      type="number"
+                      type="text"
                       step="0.01"
                       {...register(`products.${index}.unitPrice`, {
                         required: "Unit Price is required",
@@ -2219,12 +2225,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               transition: "all 0.3s ease",
             }}
             onMouseOver={(e) =>
-              (e.currentTarget.style.boxShadow =
-                "0 6px 16px rgba(101, 86, 231, 0.5)")
+            (e.currentTarget.style.boxShadow =
+              "0 6px 16px rgba(101, 86, 231, 0.5)")
             }
             onMouseOut={(e) =>
-              (e.currentTarget.style.boxShadow =
-                "0 4px 12px rgba(101, 86, 231, 0.3)")
+            (e.currentTarget.style.boxShadow =
+              "0 4px 12px rgba(101, 86, 231, 0.3)")
             }
           >
             Add Product ➕
@@ -2703,7 +2709,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             placeholder="Enter transporter details"
           />
         </Form.Group>
-       
+
         <Form.Group controlId="receiptDate">
           <Form.Label>📅 Receipt Date</Form.Label>
           <Form.Control
@@ -2763,16 +2769,16 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.piNumber?.message}
           </Form.Control.Feedback>
         </Form.Group>
-       <Form.Group controlId="billNumber">
-  <Form.Label>📄 Bill Number</Form.Label>
-  <Form.Control
-    {...register("billNumber")}
-    onChange={(e) =>
-      debouncedHandleInputChange("billNumber", e.target.value)
-    }
-    placeholder="Enter bill number"
-  />
-</Form.Group>
+        <Form.Group controlId="billNumber">
+          <Form.Label>📄 Bill Number</Form.Label>
+          <Form.Control
+            {...register("billNumber")}
+            onChange={(e) =>
+              debouncedHandleInputChange("billNumber", e.target.value)
+            }
+            placeholder="Enter bill number"
+          />
+        </Form.Group>
 
         <Form.Group controlId="billStatus">
           <Form.Label>📋 Bill Status</Form.Label>

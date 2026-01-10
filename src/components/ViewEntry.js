@@ -8,14 +8,15 @@ function ViewEntry({ isOpen, onClose, entry }) {
   const [copied, setCopied] = useState(false);
   const isObjectId = (v) =>
     typeof v === "string" && /^[a-fA-F0-9]{24}$/.test(v);
-  const getCreatedByName = (cb) =>
+  const getCreatedByName = useCallback((cb) =>
     cb && typeof cb === "object"
       ? cb.username || "Unknown"
       : typeof cb === "string"
       ? isObjectId(cb)
         ? "Sales Order Team"
         : cb
-      : "N/A";
+      : "N/A",
+  []);
 
   const handleCopy = useCallback(() => {
     if (!entry) return;
@@ -157,7 +158,7 @@ Created By: ${getCreatedByName(entry.createdBy)}
         toast.error("Failed to copy details!");
         console.error("Copy error:", err);
       });
-  }, [entry]);
+  }, [entry, getCreatedByName]);
 
   if (!entry) return null;
 

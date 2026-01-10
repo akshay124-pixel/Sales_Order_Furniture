@@ -24,15 +24,19 @@ const Verification = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setOrders(response.data.data);
-      toast.success("Verification orders fetched successfully!");
+      const onlyPending = (response.data.data || []).filter(
+        (order) => order.sostatus === "Pending for Approval"
+      );
+
+      setOrders(onlyPending);
+
     } catch (error) {
       console.error("Error fetching verification orders:", error);
 
       // User-friendly message for non-technical users
       toast.error(
         error.response?.data?.message ||
-          "We couldn’t load your verification orders right now. Please check your internet and try again."
+        "We couldn’t load your verification orders right now. Please check your internet and try again."
       );
     }
   }, []);
@@ -40,22 +44,18 @@ const Verification = () => {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-
-  useEffect(() => {
-    filterOrders();
-  }, [orders, searchTerm]);
-
-  const filterOrders = () => {
+  const filterOrders = useCallback(() => {
     let filtered = [...orders];
+  
 
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter((order) => {
         const productDetails = order.products
           ? order.products
-              .map((p) => `${p.productType} (${p.qty})`)
-              .join(", ")
-              .toLowerCase()
+            .map((p) => `${p.productType} (${p.qty})`)
+            .join(", ")
+            .toLowerCase()
           : "";
         const total = order.total ? order.total.toFixed(2).toString() : "0.00";
         const soDate = order.soDate
@@ -86,7 +86,11 @@ const Verification = () => {
     });
 
     setFilteredOrders(filtered);
-  };
+  }, [orders, searchTerm]);
+
+  useEffect(() => {
+    filterOrders();
+  }, [filterOrders]);
 
   const handleViewClick = (order) => {
     setSelectedOrder(order);
@@ -105,7 +109,8 @@ const Verification = () => {
         .filter((order) => order.sostatus === "Pending for Approval")
     );
     setIsEditModalOpen(false);
-    toast.success("Order updated successfully!");
+    toast.success("Order verification updated successfully!");
+
   };
 
   const handleExportToXLSX = () => {
@@ -506,8 +511,8 @@ const Verification = () => {
                     >
                       {order.products
                         ? order.products
-                            .map((p) => `${p.productType} (${p.qty})`)
-                            .join(", ")
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
                         : "-"}
                     </td>
                     <td

@@ -112,8 +112,8 @@ function Accounts() {
       filtered = filtered.filter((order) => {
         const productDetails = Array.isArray(order.products)
           ? order.products
-              .map((p) => `${p.productType || ""} (${p.qty || ""})`)
-              .join(", ")
+            .map((p) => `${p.productType || ""} (${p.qty || ""})`)
+            .join(", ")
           : "";
         return (
           (order.billNumber || "").toLowerCase().includes(query) ||
@@ -273,19 +273,41 @@ function Accounts() {
           },
         }
       );
+
       if (response.data.success) {
         const updatedOrder = response.data.data;
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order._id === editOrder._id ? updatedOrder : order
-          )
-        );
+
+        const shouldRemoveFromDashboard =
+          updatedOrder.paymentReceived === "Received";
+
+        if (shouldRemoveFromDashboard) {
+          // 🔥 INSTANT REMOVE FROM UI
+          setOrders((prev) =>
+            prev.filter((o) => o._id !== updatedOrder._id)
+          );
+          setFilteredOrders((prev) =>
+            prev.filter((o) => o._id !== updatedOrder._id)
+          );
+        } else {
+          // 🔁 NORMAL UPDATE FLOW
+          setOrders((prev) =>
+            prev.map((o) =>
+              o._id === updatedOrder._id ? { ...o, ...updatedOrder } : o
+            )
+          );
+          setFilteredOrders((prev) =>
+            prev.map((o) =>
+              o._id === updatedOrder._id ? { ...o, ...updatedOrder } : o
+            )
+          );
+        }
+
         setShowEditModal(false);
+
         toast.success("Order updated successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
-        // Avoid table reload to prevent any loading; state already updated optimistically
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }
@@ -297,12 +319,13 @@ function Accounts() {
     }
   };
 
+
   const exportToExcel = useCallback(() => {
     const exportData = filteredOrders.map((order) => {
       const productDetails = Array.isArray(order.products)
         ? order.products
-            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
-            .join(", ")
+          .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+          .join(", ")
         : "N/A";
       return {
         "Order ID": order.orderId || "N/A",
@@ -691,8 +714,8 @@ function Accounts() {
                           (e.currentTarget.style.background = "#e9ecef")
                         }
                         onMouseLeave={(e) =>
-                          (e.currentTarget.style.background =
-                            index % 2 === 0 ? "#f8f9fa" : "#fff")
+                        (e.currentTarget.style.background =
+                          index % 2 === 0 ? "#f8f9fa" : "#fff")
                         }
                       >
                         <td
@@ -895,8 +918,8 @@ function Accounts() {
                                 order.paymentReceived === "Received"
                                   ? "linear-gradient(135deg, #28a745, #4cd964)"
                                   : order.paymentReceived === "Not Received"
-                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                    : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
@@ -1039,8 +1062,8 @@ function Accounts() {
                       transition: "all 0.3s ease",
                     }}
                     onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                   />
@@ -1075,8 +1098,8 @@ function Accounts() {
                       transition: "all 0.3s ease",
                     }}
                     onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     disabled={formData.paymentReceived === "Received"}
@@ -1109,8 +1132,8 @@ function Accounts() {
                       transition: "all 0.3s ease",
                     }}
                     onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                   >
@@ -1148,8 +1171,8 @@ function Accounts() {
                       transition: "all 0.3s ease",
                     }}
                     onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     disabled={formData.paymentReceived === "Received"}
@@ -1184,8 +1207,8 @@ function Accounts() {
                       transition: "all 0.3s ease",
                     }}
                     onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     disabled={formData.paymentMethod !== "NEFT"}
@@ -1217,8 +1240,8 @@ function Accounts() {
                       transition: "all 0.3s ease",
                     }}
                     onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     disabled={formData.paymentMethod !== "Cheque"}
@@ -1249,8 +1272,8 @@ function Accounts() {
                       transition: "all 0.3s ease",
                     }}
                     onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                   >
@@ -1283,8 +1306,8 @@ function Accounts() {
                       transition: "all 0.3s ease",
                     }}
                     onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     required

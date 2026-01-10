@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Button, Modal, Form, Spinner, Badge } from "react-bootstrap";
-import { FaEye, FaTimes } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import * as XLSX from "xlsx";
 import "../App.css";
@@ -75,54 +75,10 @@ const FilterLabel = styled(Form.Label)`
   }
 `;
 
-const FilterInput = styled(Form.Control)`
-  border-radius: 20px;
-  padding: 10px 15px;
-  border: 1px solid #ced4da;
-  font-size: 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
 
-  &:focus {
-    box-shadow: 0 0 10px rgba(37, 117, 252, 0.5);
-  }
-`;
-
-const FilterSelect = styled(Form.Select)`
-  border-radius: 20px;
-  padding: 10px;
-  border: 1px solid #ced4da;
-  font-size: 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  background: #fff;
-  transition: all 0.3s ease;
-
-  &:focus {
-    box-shadow: 0 0 10px rgba(37, 117, 252, 0.5);
-  }
-`;
-
-const FilterButton = styled(Button)`
-  background: ${({ variant }) =>
-    variant === "clear"
-      ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-      : "linear-gradient(135deg, #28a745, #4cd964)"};
-  border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  color: #fff;
-  font-weight: 600;
-  font-size: 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-`;
 const Production = () => {
   const [orders, setOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
+  // const [filteredOrders, setFilteredOrders] = useState([]); // Removed
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -142,6 +98,13 @@ const Production = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [orderTypeFilter, setOrderTypeFilter] = useState("All");
 
+  const clearFilters = useCallback(() => {
+    setSearchQuery("");
+    setStartDate(null);
+    setEndDate(null);
+    setStatusFilter("All");
+    setOrderTypeFilter("All");
+  }, []);
   const fetchOrders = async () => {
     setLoading(true);
     setError(null);
@@ -161,18 +124,24 @@ const Production = () => {
           return dateB - dateA;
         });
         setOrders(sortedOrders);
-        setFilteredOrders(sortedOrders);
+        // setFilteredOrders(sortedOrders); // Removed
       } else {
         throw new Error(response.data.message || "Failed to fetch orders");
       }
     } catch (error) {
       console.error("Fetch error:", error);
       const errorMessage =
-        error.response?.data?.message ||
         error.message ||
         "Failed to fetch production orders.";
       setError(errorMessage);
-      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
+      if (!toast.isActive("fetch-error")) {
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 5000,
+          toastId: "fetch-error",
+        });
+      }
+      setOrders([]); // Ensure orders is cleared on error
     } finally {
       setLoading(false);
     }
@@ -180,19 +149,16 @@ const Production = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
-  const clearFilters = () => {
-    setSearchQuery("");
-    setStartDate(null);
-    setEndDate(null);
-    setStatusFilter("All");
-    setOrderTypeFilter("All");
-  };
+
 
   // Filter orders based on search query, status, and order type
-  useEffect(() => {
+  const filteredOrders = useMemo(() => {
     let filtered = orders.filter(
-      (order) => order.fulfillingStatus !== "Fulfilled"
+      (order) =>
+        order.fulfillingStatus !== "Fulfilled" &&
+        order.fulfillingStatus !== "Order Cancel"
     );
+
     // Apply date range filter
     if (startDate || endDate) {
       filtered = filtered.filter((order) => {
@@ -210,13 +176,14 @@ const Production = () => {
         );
       });
     }
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) => {
         const productDetails = Array.isArray(order.products)
           ? order.products
-              .map((p) => `${p.productType || ""} (${p.qty || ""})`)
-              .join(", ")
+            .map((p) => `${p.productType || ""} (${p.qty || ""})`)
+            .join(", ")
           : "";
         const firstProduct =
           Array.isArray(order.products) && order.products.length > 0
@@ -239,23 +206,25 @@ const Production = () => {
         );
       });
     }
+
     if (statusFilter !== "All") {
       filtered = filtered.filter(
         (order) => order.fulfillingStatus === statusFilter
       );
     }
+
     if (orderTypeFilter !== "All") {
       filtered = filtered.filter(
         (order) => order.orderType === orderTypeFilter
       );
     }
+
     // Sort filtered orders by soDate in descending order (newest first)
-    filtered = filtered.sort((a, b) => {
+    return filtered.sort((a, b) => {
       const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
       const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
       return dateB - dateA;
     });
-    setFilteredOrders(filtered);
   }, [orders, searchQuery, statusFilter, orderTypeFilter, startDate, endDate]);
   // Get unique statuses for filter dropdown
   const uniqueStatuses = [
@@ -282,12 +251,13 @@ const Production = () => {
         )
     ),
   ];
-  const uniqueOrderTypes = [
+
+  const uniqueOrderTypes = useMemo(() => [
     "All",
     ...new Set(orders.map((order) => order.orderType || "N/A")),
-  ];
+  ], [orders]);
 
-  const handleEdit = (order) => {
+  const handleEdit = useCallback((order) => {
     setEditOrder(order);
     const products = Array.isArray(order.products) ? order.products : [];
     const productUnits = products.flatMap((product, productIndex) => {
@@ -311,7 +281,7 @@ const Production = () => {
     });
     setErrors({});
     setShowEditModal(true);
-  };
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -322,6 +292,7 @@ const Production = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
+
     const productMap = formData.productUnits.reduce((acc, unit) => {
       const {
         productIndex,
@@ -329,7 +300,7 @@ const Production = () => {
         size,
         spec,
         unitPrice,
-        gst, // Add gst
+        gst,
         modelNo,
       } = unit;
       if (!acc[productIndex]) {
@@ -339,7 +310,7 @@ const Production = () => {
           spec,
           unitPrice,
           qty: 0,
-          gst, // Add gst
+          gst,
           modelNos: [],
         };
       }
@@ -347,9 +318,11 @@ const Production = () => {
       acc[productIndex].modelNos.push(modelNo || null);
       return acc;
     }, {});
+
     const products = Object.values(productMap);
     const submitData = { ...formData, products };
     delete submitData.productUnits;
+
     try {
       const response = await axios.put(
         `${process.env.REACT_APP_URL}/api/edit/${editOrder?._id}`,
@@ -362,47 +335,23 @@ const Production = () => {
         const updatedOrder = response.data.data;
 
         setOrders((prevOrders) => {
-          let updatedOrders;
-
-          // 🔥 Remove instantly if Fulfilled OR Order Cancel
-          if (
-            updatedOrder.fulfillingStatus === "Fulfilled" ||
-            updatedOrder.fulfillingStatus === "Order Cancel"
-          ) {
-            updatedOrders = prevOrders.filter(
-              (order) => order._id !== editOrder._id
-            );
-          } else {
-            updatedOrders = prevOrders.map((order) =>
-              order._id === editOrder._id ? updatedOrder : order
-            );
-          }
-
-          // Also instantly update filteredOrders
-          setFilteredOrders(
-            updatedOrders.filter(
-              (order) =>
-                order.fulfillingStatus !== "Fulfilled" &&
-                order.fulfillingStatus !== "Order Cancel"
-            )
+          // Update the order in the main state
+          // The useMemo hook will automatically filter it out if status is Fulfilled/Order Cancel
+          return prevOrders.map((order) =>
+            order._id === editOrder._id ? updatedOrder : order
           );
-
-          return updatedOrders.sort((a, b) => {
-            const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
-            const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
-            return dateB - dateA;
-          });
         });
 
         setShowEditModal(false);
         toast.success("Order updated successfully!", {
           position: "top-right",
           autoClose: 3000,
+          toastId: "update-success", // Prevent duplicates
         });
       } else {
         throw new Error(
           response.data.message ||
-            "We couldn’t update your order. Please try again."
+          "We couldn’t update your order. Please try again."
         );
       }
     } catch (error) {
@@ -413,30 +362,27 @@ const Production = () => {
       toast.error(userFriendlyMessage, {
         position: "top-right",
         autoClose: 5000,
+        toastId: "update-error", // Prevent duplicates
       });
     }
   };
-  const handleView = (order) => {
+  const handleView = useCallback((order) => {
     setViewOrder(order);
     setShowViewModal(true);
     setCopied(false);
-  };
+  }, []);
 
   const handleCopy = useCallback(() => {
     if (!viewOrder) return;
     const productsText = Array.isArray(viewOrder.products)
       ? viewOrder.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Size: ${p.size || "N/A"}, Spec: ${
-                p.spec || "N/A"
-              }, Model Nos: ${
-                p.modelNos.length > 0 ? p.modelNos.join(", ") : "N/A"
-              })`
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"}, Model Nos: ${p.modelNos.length > 0 ? p.modelNos.join(", ") : "N/A"
+            })`
+        )
+        .join("\n")
       : "N/A";
     const textToCopy = `
       Order ID: ${viewOrder.orderId || "N/A"}
@@ -449,16 +395,20 @@ const Production = () => {
       .writeText(textToCopy)
       .then(() => {
         setCopied(true);
-        toast.success("Details copied to clipboard!");
+        toast.success("Details copied to clipboard!", {
+          toastId: "copy-success",
+        });
         setTimeout(() => setCopied(false), 2000);
       })
       .catch((err) => {
-        toast.error("Failed to copy details!");
+        toast.error("Failed to copy details!", {
+          toastId: "copy-error",
+        });
         console.error("Copy error:", err);
       });
   }, [viewOrder]);
 
-  const exportToExcel = () => {
+  const exportToExcel = useCallback(() => {
     const exportData = filteredOrders.map((order) => {
       const firstProduct =
         Array.isArray(order.products) && order.products.length > 0
@@ -466,8 +416,8 @@ const Production = () => {
           : {};
       const productDetails = Array.isArray(order.products)
         ? order.products
-            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
-            .join(", ")
+          .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+          .join(", ")
         : "N/A";
       const totalQty = Array.isArray(order.products)
         ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
@@ -501,7 +451,7 @@ const Production = () => {
       workbook,
       `Production_Orders_${new Date().toISOString().split("T")[0]}.xlsx`
     );
-  };
+  }, [filteredOrders]);
   const totalPending = filteredOrders.filter(
     (order) => order.fulfillingStatus === "Pending"
   ).length;
@@ -1019,22 +969,22 @@ const Production = () => {
                     {filteredOrders.map((order, index) => {
                       const firstProduct =
                         Array.isArray(order.products) &&
-                        order.products.length > 0
+                          order.products.length > 0
                           ? order.products[0]
                           : {};
                       const totalQty = Array.isArray(order.products)
                         ? order.products.reduce(
-                            (sum, p) => sum + (p.qty || 0),
-                            0
-                          )
+                          (sum, p) => sum + (p.qty || 0),
+                          0
+                        )
                         : "N/A";
                       const productDetails = Array.isArray(order.products)
                         ? order.products
-                            .map(
-                              (p) =>
-                                `${p.productType || "N/A"} (${p.qty || "N/A"})`
-                            )
-                            .join(", ")
+                          .map(
+                            (p) =>
+                              `${p.productType || "N/A"} (${p.qty || "N/A"})`
+                          )
+                          .join(", ")
                         : "N/A";
                       return (
                         <tr
@@ -1047,8 +997,8 @@ const Production = () => {
                             (e.currentTarget.style.background = "#e9ecef")
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.background =
-                              index % 2 === 0 ? "#f8f9fa" : "#fff")
+                          (e.currentTarget.style.background =
+                            index % 2 === 0 ? "#f8f9fa" : "#fff")
                           }
                         >
                           <td
@@ -1086,18 +1036,6 @@ const Production = () => {
                             title={
                               order.soDate
                                 ? new Date(order.soDate).toLocaleDateString(
-                                    "en-IN",
-                                    {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    }
-                                  )
-                                : "N/A"
-                            }
-                          >
-                            {order.soDate
-                              ? new Date(order.soDate).toLocaleDateString(
                                   "en-IN",
                                   {
                                     day: "2-digit",
@@ -1105,6 +1043,18 @@ const Production = () => {
                                     year: "numeric",
                                   }
                                 )
+                                : "N/A"
+                            }
+                          >
+                            {order.soDate
+                              ? new Date(order.soDate).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                }
+                              )
                               : "N/A"}
                           </td>
                           <td
@@ -1316,17 +1266,17 @@ const Production = () => {
                                   order.fulfillingStatus === "Under Process"
                                     ? "linear-gradient(135deg, #f39c12, #f7c200)"
                                     : order.fulfillingStatus === "Pending"
-                                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                    : order.fulfillingStatus ===
-                                      "Partial Dispatch"
-                                    ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                    : order.fulfillingStatus === "Fulfilled"
-                                    ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                    : order.fulfillingStatus === "Order Cancel"
-                                    ? "linear-gradient(135deg, #8e0e00, #e52d27)" // red gradient for cancel
-                                    : order.fulfillingStatus === "Hold"
-                                    ? "linear-gradient(135deg, #2e2e2e, #4a4a4a)" // purple-blue gradient for hold
-                                    : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                                      ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                      : order.fulfillingStatus ===
+                                        "Partial Dispatch"
+                                        ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                                        : order.fulfillingStatus === "Fulfilled"
+                                          ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                          : order.fulfillingStatus === "Order Cancel"
+                                            ? "linear-gradient(135deg, #8e0e00, #e52d27)" // red gradient for cancel
+                                            : order.fulfillingStatus === "Hold"
+                                              ? "linear-gradient(135deg, #2e2e2e, #4a4a4a)" // purple-blue gradient for hold
+                                              : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                                 color: "#fff",
                                 padding: "5px 10px",
                                 borderRadius: "12px",
@@ -1486,8 +1436,8 @@ const Production = () => {
                     transition: "all 0.3s ease",
                   }}
                   onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
@@ -1525,9 +1475,8 @@ const Production = () => {
                           newUnits[index].spec = e.target.value;
                           setFormData({ ...formData, productUnits: newUnits });
                         }}
-                        placeholder={`Model No for ${unit.productType} Unit ${
-                          index + 1
-                        }`}
+                        placeholder={`Model No for ${unit.productType} Unit ${index + 1
+                          }`}
                         style={{
                           borderRadius: "10px",
                           border: "1px solid #ced4da",
@@ -1536,8 +1485,8 @@ const Production = () => {
                           transition: "all 0.3s ease",
                         }}
                         onFocus={(e) =>
-                          (e.target.style.boxShadow =
-                            "0 0 10px rgba(37, 117, 252, 0.5)")
+                        (e.target.style.boxShadow =
+                          "0 0 10px rgba(37, 117, 252, 0.5)")
                         }
                         onBlur={(e) => (e.target.style.boxShadow = "none")}
                       />
@@ -1554,9 +1503,8 @@ const Production = () => {
                           newUnits[index].modelNo = e.target.value;
                           setFormData({ ...formData, productUnits: newUnits });
                         }}
-                        placeholder={`Model No for ${unit.productType} Unit ${
-                          index + 1
-                        }`}
+                        placeholder={`Model No for ${unit.productType} Unit ${index + 1
+                          }`}
                         style={{
                           borderRadius: "10px",
                           border: "1px solid #ced4da",
@@ -1565,8 +1513,8 @@ const Production = () => {
                           transition: "all 0.3s ease",
                         }}
                         onFocus={(e) =>
-                          (e.target.style.boxShadow =
-                            "0 0 10px rgba(37, 117, 252, 0.5)")
+                        (e.target.style.boxShadow =
+                          "0 0 10px rgba(37, 117, 252, 0.5)")
                         }
                         onBlur={(e) => (e.target.style.boxShadow = "none")}
                       />
@@ -1601,8 +1549,8 @@ const Production = () => {
                     transition: "all 0.3s ease",
                   }}
                   onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 />
@@ -1745,13 +1693,13 @@ const Production = () => {
                       <strong>SO Date:</strong>{" "}
                       {viewOrder.soDate
                         ? new Date(viewOrder.soDate).toLocaleDateString(
-                            "en-IN",
-                            {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            }
-                          )
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )
                         : "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -1806,7 +1754,7 @@ const Production = () => {
                     Product Information
                   </h3>
                   {Array.isArray(viewOrder.products) &&
-                  viewOrder.products.length > 0 ? (
+                    viewOrder.products.length > 0 ? (
                     <div
                       style={{
                         display: "flex",
@@ -1933,9 +1881,9 @@ const Production = () => {
                       <strong>Total Quantity:</strong>{" "}
                       {Array.isArray(viewOrder.products)
                         ? viewOrder.products.reduce(
-                            (sum, p) => sum + (p.qty || 0),
-                            0
-                          )
+                          (sum, p) => sum + (p.qty || 0),
+                          0
+                        )
                         : "N/A"}
                     </span>
                   </div>

@@ -76,7 +76,7 @@ const ProductionApproval = () => {
         }
       );
       setOrders(response.data.data);
-      toast.success("Production approval orders fetched successfully!");
+
     } catch (error) {
       console.error("Error fetching production approval orders:", error);
 
@@ -206,6 +206,7 @@ const ProductionApproval = () => {
       );
     });
     setIsEditModalOpen(false);
+
     toast.success("Order updated successfully!");
     fetchOrders();
   };
@@ -380,8 +381,8 @@ const ProductionApproval = () => {
                     <td style={{ padding: "15px" }}>
                       {order.products
                         ? order.products
-                            .map((p) => `${p.productType} (${p.qty})`)
-                            .join(", ")
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
                         : "-"}
                     </td>
                     <td style={{ padding: "15px" }}>
@@ -400,8 +401,8 @@ const ProductionApproval = () => {
                     <td style={{ padding: "15px" }}>
                       {order.deliveryDate
                         ? new Date(order.deliveryDate).toLocaleDateString(
-                            "en-GB"
-                          )
+                          "en-GB"
+                        )
                         : "-"}
                     </td>
 

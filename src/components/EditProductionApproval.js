@@ -74,10 +74,6 @@ const EditProductionApproval = ({
       );
       console.log("Updated order:", response.data.data);
       onEntryUpdated(response.data.data); // Pass updated order to parent
-      toast.success("Verification order updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
@@ -177,7 +173,6 @@ const EditProductionApproval = ({
             >
               <option value="">Select Status</option>
               <option value="Pending for Approval">Pending for Approval</option>
-              <option value="Accounts Approved">Accounts Approved</option>
               <option value="Approved">Approved</option>
             </Form.Select>
             {errors.sostatus && (

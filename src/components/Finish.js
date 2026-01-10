@@ -10,31 +10,155 @@ import "react-datepicker/dist/react-datepicker.css";
 import styled from "styled-components";
 
 // Styled Component for DatePicker
-const DatePickerWrapper = styled.div`
+// --- Modern Styled Components ---
+const ModernFilterContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 12px;
+  
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  margin-bottom: 30px;
+ 
+  overflow-x: auto;
+  flex-wrap: nowrap;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  @media (max-width: 1280px) {
+    flex-wrap: wrap;
+  }
+`;
+
+const FilterItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+  flex: 1;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin: 0;
+  }
+`;
+
+const ModernInput = styled.input`
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #94a3b8;
+  }
+`;
+
+const ModernSelect = styled.select`
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5em;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const ModernButton = styled.button`
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  ${props => props.variant === 'reset' && `
+    background: #fee2e2;
+    color: #ef4444;
+    &:hover { background: #fecaca; }
+  `}
+  
+  ${props => props.variant === 'primary' && `
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+    }
+  `}
+`;
+
+const StyledDatePickerWrapper = styled.div`
   display: flex;
   gap: 10px;
-  align-items: center;
+  width: 100%;
   .react-datepicker-wrapper {
-    width: 150px;
+    width: 100%;
   }
   .react-datepicker__input-container input {
-    padding: 8px 12px;
-    border-radius: 25px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: border-color 0.3s ease;
     width: 100%;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    
     &:focus {
-      border-color: #2575fc;
       outline: none;
+      border-color: #3b82f6;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     }
-  }
-  .react-datepicker {
-    z-index: 1000 !important;
-  }
-  .react-datepicker-popper {
-    z-index: 1000 !important;
   }
 `;
 
@@ -175,7 +299,7 @@ function Finish() {
       filtered = filtered.filter((order) =>
         dispatchedFilter === "Dispatched"
           ? order.dispatchStatus === "Dispatched" ||
-            order.dispatchStatus === "Docket Awaited Dispatched"
+          order.dispatchStatus === "Docket Awaited Dispatched"
           : order.dispatchStatus === "Not Dispatched"
       );
     }
@@ -211,31 +335,31 @@ function Finish() {
       filtered = filtered.filter((order) => {
         const productDetails = order.products
           ? order.products
-              .map((p) => `${p.productType} (${p.qty})`)
-              .join(", ")
-              .toLowerCase()
+            .map((p) => `${p.productType} (${p.qty})`)
+            .join(", ")
+            .toLowerCase()
           : "";
         const specDetails = order.products
           ? order.products
-              .map((p) => p.spec || "N/A")
-              .join(", ")
-              .toLowerCase()
+            .map((p) => p.spec || "N/A")
+            .join(", ")
+            .toLowerCase()
           : "";
         const sizeDetails = order.products
           ? order.products
-              .map((p) => p.size || "N/A")
-              .join(", ")
-              .toLowerCase()
+            .map((p) => p.size || "N/A")
+            .join(", ")
+            .toLowerCase()
           : "";
         const totalQty = order.products
           ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0).toString()
           : "N/A";
         const modelNos = order.products
           ? order.products
-              .flatMap((p) => p.modelNos || [])
-              .filter(Boolean)
-              .join(", ")
-              .toLowerCase() || "N/A"
+            .flatMap((p) => p.modelNos || [])
+            .filter(Boolean)
+            .join(", ")
+            .toLowerCase() || "N/A"
           : "";
         const soDate = order.soDate
           ? new Date(order.soDate).toLocaleDateString().toLowerCase()
@@ -390,13 +514,6 @@ function Finish() {
       });
     });
     setIsModalOpen(false);
-    toast.success(
-      `Order updated successfully! Status: ${updatedEntry.dispatchStatus}`,
-      {
-        position: "top-right",
-        autoClose: 3000,
-      }
-    );
     fetchFinishedGoods();
   };
 
@@ -410,15 +527,13 @@ function Finish() {
     if (!viewOrder) return;
     const productsText = viewOrder.products
       ? viewOrder.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
-                p.modelNos?.join(", ") || "N/A"
-              })`
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${p.modelNos?.join(", ") || "N/A"
+            })`
+        )
+        .join("\n")
       : "N/A";
     const orderText = `
       Order ID: ${viewOrder.orderId || "N/A"}
@@ -426,22 +541,19 @@ function Finish() {
       Model Nos: ${viewOrder.modelNos?.join(", ") || "N/A"}
       Bill No: ${viewOrder.billNumber || "N/A"}
       Products:\n${productsText}
-      SO Date: ${
-        viewOrder.soDate
-          ? new Date(viewOrder.soDate).toLocaleDateString()
-          : "N/A"
+      SO Date: ${viewOrder.soDate
+        ? new Date(viewOrder.soDate).toLocaleDateString()
+        : "N/A"
       }
-      Dispatch Date: ${
-        viewOrder.dispatchDate
-          ? new Date(viewOrder.dispatchDate).toLocaleDateString()
-          : "N/A"
+      Dispatch Date: ${viewOrder.dispatchDate
+        ? new Date(viewOrder.dispatchDate).toLocaleDateString()
+        : "N/A"
       }
       Dispatch From: ${viewOrder.dispatchFrom || "N/A"}
       Customer: ${viewOrder.customername || "N/A"}
-      Address: ${
-        viewOrder.shippingAddress ||
-        `${viewOrder.city || ""}, ${viewOrder.state || ""}` ||
-        "N/A"
+      Address: ${viewOrder.shippingAddress ||
+      `${viewOrder.city || ""}, ${viewOrder.state || ""}` ||
+      "N/A"
       }
       Dispatch Status: ${viewOrder.dispatchStatus || "Not Dispatched"}
     `.trim();
@@ -465,9 +577,9 @@ function Finish() {
         : "N/A",
       "Model Nos": order.products
         ? order.products
-            .flatMap((p) => p.modelNos || [])
-            .filter(Boolean)
-            .join(", ") || "N/A"
+          .flatMap((p) => p.modelNos || [])
+          .filter(Boolean)
+          .join(", ") || "N/A"
         : "N/A",
       Spec: order.products
         ? order.products.map((p) => p.spec || "N/A").join(", ")
@@ -477,14 +589,14 @@ function Finish() {
         : "N/A",
       "Serial Nos": order.products
         ? order.products
-            .map((p) => {
-              const serials = (p.serialNos || []).filter(Boolean);
-              return serials.length > 0
-                ? `${p.productType}: ${serials.join(", ")}`
-                : null;
-            })
-            .filter(Boolean)
-            .join("; ") || "N/A"
+          .map((p) => {
+            const serials = (p.serialNos || []).filter(Boolean);
+            return serials.length > 0
+              ? `${p.productType}: ${serials.join(", ")}`
+              : null;
+          })
+          .filter(Boolean)
+          .join("; ") || "N/A"
         : "N/A",
       Quantity: order.products
         ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
@@ -563,7 +675,6 @@ function Finish() {
           width: "100%",
           margin: "0",
           padding: "20px",
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
           borderRadius: "0",
           boxShadow: "none",
           minHeight: "100vh",
@@ -593,212 +704,121 @@ function Finish() {
         </header>
 
         <div style={{ padding: "20px" }}>
-          <div
-            style={{
-              display: "flex",
-              gap: "15px",
-              marginBottom: "20px",
-              flexWrap: "wrap",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ flex: "1", minWidth: "250px" }}>
-              <input
+          <ModernFilterContainer>
+            <FilterItem style={{ flex: 1.5, minWidth: "200px" }}>
+              <label>Search</label>
+              <ModernInput
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search across all fields..."
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                  fontSize: "1rem",
-                  boxShadow: "inset 0 1px 3px rgba(0, 0, 0, 0.1)",
-                  transition: "border-color 0.3s ease",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "#2575fc")}
-                onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                placeholder="Search orders..."
               />
-            </div>
-            <DatePickerWrapper>
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => setStartDate(date)}
-                selectsStart
-                startDate={startDate}
-                endDate={endDate}
-                placeholderText="Start Date"
-                dateFormat="dd/MM/yyyy"
-                isClearable
-              />
-              <DatePicker
-                selected={endDate}
-                onChange={(date) => setEndDate(date)}
-                selectsEnd
-                startDate={startDate}
-                endDate={endDate}
-                minDate={startDate}
-                placeholderText="End Date"
-                dateFormat="dd/MM/yyyy"
-                isClearable
-              />
-            </DatePickerWrapper>
-            <div>
-              <label
-                style={{
-                  fontWeight: "600",
-                  marginRight: "10px",
-                  color: "#333",
-                }}
-              >
-                Freight Status:
-              </label>
-              <select
+            </FilterItem>
+
+            <FilterItem style={{ minWidth: "200px" }}>
+              <label>Date Range</label>
+              <StyledDatePickerWrapper>
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  placeholderText="Start"
+                  dateFormat="dd/MM/yyyy"
+                  isClearable
+                />
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  placeholderText="End"
+                  dateFormat="dd/MM/yyyy"
+                  isClearable
+                />
+              </StyledDatePickerWrapper>
+            </FilterItem>
+
+            <FilterItem>
+              <label>Freight</label>
+              <ModernSelect
                 value={freightStatusFilter}
                 onChange={(e) => setFreightStatusFilter(e.target.value)}
-                style={{
-                  padding: "8px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                }}
               >
                 <option value="">All</option>
                 <option value="To Pay">To Pay</option>
                 <option value="Including">Including</option>
                 <option value="Extra">Extra</option>
-              </select>
-            </div>
-            <div>
-              <label
-                style={{
-                  fontWeight: "600",
-                  marginRight: "10px",
-                  color: "#333",
-                }}
-              >
-                Order Type:
-              </label>
-              <select
+              </ModernSelect>
+            </FilterItem>
+
+            <FilterItem>
+              <label>Type</label>
+              <ModernSelect
                 value={orderTypeFilter}
                 onChange={(e) => setOrderTypeFilter(e.target.value)}
-                style={{
-                  padding: "8px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                }}
               >
                 {uniqueOrderTypes.map((orderType) => (
                   <option key={orderType} value={orderType}>
                     {orderType || "All"}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div>
-              <label
-                style={{
-                  fontWeight: "600",
-                  marginRight: "10px",
-                  color: "#333",
-                }}
-              >
-                Dispatch From:
-              </label>
-              <select
+              </ModernSelect>
+            </FilterItem>
+
+            <FilterItem>
+              <label>From</label>
+              <ModernSelect
                 value={dispatchFromFilter}
                 onChange={(e) => setDispatchFromFilter(e.target.value)}
-                style={{
-                  padding: "8px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                }}
               >
                 {dispatchFromOptions.map((dispatchFrom) => (
                   <option key={dispatchFrom} value={dispatchFrom}>
                     {dispatchFrom || "All"}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div>
-              <label
-                style={{
-                  fontWeight: "600",
-                  marginRight: "10px",
-                  color: "#333",
-                }}
-              >
-                Dispatch Status:
-              </label>
-              <select
+              </ModernSelect>
+            </FilterItem>
+
+            <FilterItem>
+              <label>Dispatch</label>
+              <ModernSelect
                 value={dispatchStatusFilter}
                 onChange={(e) => setDispatchStatusFilter(e.target.value)}
-                style={{
-                  padding: "8px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                }}
               >
                 <option value="">All</option>
                 <option value="Not Dispatched">Not Dispatched</option>
                 <option value="Dispatched">Dispatched</option>
                 <option value="Delivered">Delivered</option>
-              </select>
-            </div>
-            <div>
-              <label
-                style={{
-                  fontWeight: "600",
-                  marginRight: "10px",
-                  color: "#333",
-                }}
-              >
-                Production Status:
-              </label>
-              <select
+              </ModernSelect>
+            </FilterItem>
+
+            <FilterItem>
+              <label>Production</label>
+              <ModernSelect
                 value={productionStatusFilter}
                 onChange={(e) => setProductionStatusFilter(e.target.value)}
-                style={{
-                  padding: "8px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                }}
               >
                 <option value="">All</option>
                 <option value="Under Process">Under Process</option>
                 <option value="Pending">Pending</option>
                 <option value="Partial Dispatch">Partial Dispatch</option>
                 <option value="Completed">Completed</option>
-              </select>
+              </ModernSelect>
+            </FilterItem>
+
+            <div style={{ display: 'flex', gap: '8px', paddingBottom: '1px' }}>
+              <ModernButton onClick={handleReset} variant="reset">
+                Reset
+              </ModernButton>
+              <ModernButton onClick={handleExportToXLSX} variant="primary">
+                Export
+              </ModernButton>
             </div>
-            <Button
-              onClick={handleReset}
-              style={{
-                background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "5px",
-                color: "#fff",
-                fontWeight: "600",
-              }}
-            >
-              Reset Filters
-            </Button>
-            <Button
-              onClick={handleExportToXLSX}
-              style={{
-                background: "linear-gradient(135deg, #28a745, #4cd964)",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "5px",
-                color: "#fff",
-                fontWeight: "600",
-              }}
-            >
-              Export to XLSX
-            </Button>
-          </div>
+          </ModernFilterContainer>
 
           <div
             style={{
@@ -924,8 +944,8 @@ function Finish() {
                   {filteredOrders.map((order, index) => {
                     const productDetails = order.products
                       ? order.products
-                          .map((p) => `${p.productType} (${p.qty})`)
-                          .join(", ")
+                        .map((p) => `${p.productType} (${p.qty})`)
+                        .join(", ")
                       : "N/A";
                     const sizeDetails = order.products
                       ? order.products.map((p) => p.size || "N/A").join(", ")
@@ -938,9 +958,9 @@ function Finish() {
                       : "N/A";
                     const modelNos = order.products
                       ? order.products
-                          .flatMap((p) => p.modelNos || [])
-                          .filter(Boolean)
-                          .join(", ") || "N/A"
+                        .flatMap((p) => p.modelNos || [])
+                        .filter(Boolean)
+                        .join(", ") || "N/A"
                       : "N/A";
 
                     return (
@@ -954,8 +974,8 @@ function Finish() {
                           (e.currentTarget.style.background = "#e9ecef")
                         }
                         onMouseLeave={(e) =>
-                          (e.currentTarget.style.background =
-                            index % 2 === 0 ? "#f8f9fa" : "#fff")
+                        (e.currentTarget.style.background =
+                          index % 2 === 0 ? "#f8f9fa" : "#fff")
                         }
                       >
                         <td
@@ -1197,8 +1217,8 @@ function Finish() {
                           title={
                             order.dispatchDate
                               ? new Date(
-                                  order.dispatchDate
-                                ).toLocaleDateString()
+                                order.dispatchDate
+                              ).toLocaleDateString()
                               : "N/A"
                           }
                         >
@@ -1246,8 +1266,8 @@ function Finish() {
                                 order.billStatus === "Pending"
                                   ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
                                   : order.billStatus === "Under Billing"
-                                  ? "linear-gradient(135deg, #ffc107, #ffca2c)"
-                                  : "linear-gradient(135deg, #28a745, #4cd964)",
+                                    ? "linear-gradient(135deg, #ffc107, #ffca2c)"
+                                    : "linear-gradient(135deg, #28a745, #4cd964)",
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
@@ -1283,8 +1303,8 @@ function Finish() {
                                 order.freightstatus === "To Pay"
                                   ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
                                   : order.freightstatus === "Including"
-                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                  : "linear-gradient(135deg, #ffc107, #ffca2c)",
+                                    ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                    : "linear-gradient(135deg, #ffc107, #ffca2c)",
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
@@ -1320,11 +1340,11 @@ function Finish() {
                                 order.fulfillingStatus === "Under Process"
                                   ? "linear-gradient(135deg, #ff9800, #f44336)"
                                   : order.fulfillingStatus === "Pending"
-                                  ? "linear-gradient(135deg, #ffeb3b, #ff9800)"
-                                  : order.fulfillingStatus ===
-                                    "Partial Dispatch"
-                                  ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                  : "linear-gradient(135deg, #28a745, #4cd964)",
+                                    ? "linear-gradient(135deg, #ffeb3b, #ff9800)"
+                                    : order.fulfillingStatus ===
+                                      "Partial Dispatch"
+                                      ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                                      : "linear-gradient(135deg, #28a745, #4cd964)",
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
@@ -1361,19 +1381,19 @@ function Finish() {
                                   ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Not Dispatched
                                   : order.dispatchStatus ===
                                     "Docket Awaited Dispatched"
-                                  ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                                  : order.dispatchStatus === "Dispatched"
-                                  ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue for Dispatched
-                                  : order.dispatchStatus === "Delivered"
-                                  ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Delivered
-                                  : order.dispatchStatus ===
-                                    "Hold by Salesperson"
-                                  ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue (lighter) for Hold by Salesperson
-                                  : order.dispatchStatus === "Hold by Customer"
-                                  ? "linear-gradient(135deg, #8e44ad, #be94e6)" // Purple for Hold by Customer
-                                  : order.dispatchStatus === "Order Cancelled"
-                                  ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Order Cancelled
-                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
+                                    ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                                    : order.dispatchStatus === "Dispatched"
+                                      ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue for Dispatched
+                                      : order.dispatchStatus === "Delivered"
+                                        ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Delivered
+                                        : order.dispatchStatus ===
+                                          "Hold by Salesperson"
+                                          ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue (lighter) for Hold by Salesperson
+                                          : order.dispatchStatus === "Hold by Customer"
+                                            ? "linear-gradient(135deg, #8e44ad, #be94e6)" // Purple for Hold by Customer
+                                            : order.dispatchStatus === "Order Cancelled"
+                                              ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Order Cancelled
+                                              : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",

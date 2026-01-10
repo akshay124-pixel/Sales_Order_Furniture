@@ -35,7 +35,7 @@ function DeleteModal({ isOpen, onClose, onDelete, itemId }) {
 
       if (response.data.success) {
         onDelete([itemId]); // Pass single ID as array for consistency with parent
-        toast.success("Entry deleted successfully!");
+     
         onClose(); // Close the modal
       } else {
         throw new Error(response.data.message || "Deletion failed");

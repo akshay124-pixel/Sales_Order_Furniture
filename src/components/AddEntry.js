@@ -16,7 +16,6 @@ import {
 
 function AddEntry({ onSubmit, onClose }) {
   const [selectedState, setSelectedState] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [currentProduct, setCurrentProduct] = useState({
@@ -165,8 +164,8 @@ function AddEntry({ onSubmit, onClose }) {
             : {}),
           ...(name === "dispatchFrom"
             ? {
-                fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled",
-              }
+              fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled",
+            }
             : {}),
         };
         return updatedFormData;
@@ -279,7 +278,6 @@ function AddEntry({ onSubmit, onClose }) {
   const handleStateChange = (e) => {
     const state = e.target.value;
     setSelectedState(state);
-    setSelectedCity("");
     setFormData((prev) => ({
       ...prev,
       state,
@@ -289,7 +287,6 @@ function AddEntry({ onSubmit, onClose }) {
 
   const handleCityChange = (e) => {
     const city = e.target.value;
-    setSelectedCity(city);
     setFormData((prev) => ({
       ...prev,
       city,
@@ -442,7 +439,7 @@ function AddEntry({ onSubmit, onClose }) {
           },
         }
       );
-      toast.success("Order submitted successfully!");
+
       onSubmit(response.data);
       onClose();
     } catch (error) {
@@ -511,14 +508,14 @@ function AddEntry({ onSubmit, onClose }) {
     },
     ...(formData.company === "Others"
       ? [
-          {
-            label: "Custom Company",
-            name: "customCompany",
-            type: "text",
-            placeholder: "Enter Custom Company",
-            ariaLabel: "Custom Company",
-          },
-        ]
+        {
+          label: "Custom Company",
+          name: "customCompany",
+          type: "text",
+          placeholder: "Enter Custom Company",
+          ariaLabel: "Custom Company",
+        },
+      ]
       : []),
     {
       label: "Dispatch From *",
@@ -531,34 +528,34 @@ function AddEntry({ onSubmit, onClose }) {
     },
     ...(formData.orderType === "B2G"
       ? [
-          {
-            label: "GEM Order Number *",
-            name: "gemOrderNumber",
-            type: "text",
-            required: true,
-            placeholder: "Enter GEM Order Number",
-            ariaLabel: "GEM Order Number",
-          },
-          {
-            label: "Delivery Date",
-            name: "deliveryDate",
-            type: "date",
-            placeholder: "Select Delivery Date",
-            ariaLabel: "Delivery Date",
-          },
-        ]
+        {
+          label: "GEM Order Number *",
+          name: "gemOrderNumber",
+          type: "text",
+          required: true,
+          placeholder: "Enter GEM Order Number",
+          ariaLabel: "GEM Order Number",
+        },
+        {
+          label: "Delivery Date",
+          name: "deliveryDate",
+          type: "date",
+          placeholder: "Select Delivery Date",
+          ariaLabel: "Delivery Date",
+        },
+      ]
       : []),
     ...(formData.orderType === "Demo"
       ? [
-          {
-            label: "Demo Date *",
-            name: "demoDate",
-            type: "date",
-            required: true,
-            placeholder: "Select Demo Date",
-            ariaLabel: "Demo Date",
-          },
-        ]
+        {
+          label: "Demo Date *",
+          name: "demoDate",
+          type: "date",
+          required: true,
+          placeholder: "Select Demo Date",
+          ariaLabel: "Demo Date",
+        },
+      ]
       : []),
   ];
 
@@ -1081,8 +1078,8 @@ function AddEntry({ onSubmit, onClose }) {
                         fontSize: "1rem",
                         color: "#1e293b",
                         ...(formData[field.name] &&
-                        field.name === "pinCode" &&
-                        !/^\d{6}$/.test(formData[field.name])
+                          field.name === "pinCode" &&
+                          !/^\d{6}$/.test(formData[field.name])
                           ? { borderColor: "red" }
                           : {}),
                       }}
@@ -1275,7 +1272,7 @@ function AddEntry({ onSubmit, onClose }) {
                   Quantity * <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="qty"
                   value={currentProduct.qty}
                   onChange={handleProductChange}
@@ -1306,7 +1303,7 @@ function AddEntry({ onSubmit, onClose }) {
                   Unit Price * <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="unitPrice"
                   value={currentProduct.unitPrice}
                   onChange={handleProductChange}
@@ -1390,7 +1387,7 @@ function AddEntry({ onSubmit, onClose }) {
                   aria-label="Model Numbers"
                 />
               </div>
-              <div style={{ alignSelf: "stretch",marginTop:"32px" }}>
+              <div style={{ alignSelf: "stretch", marginTop: "32px" }}>
                 <button
                   type="button"
                   onClick={addProduct}
@@ -1773,7 +1770,7 @@ function AddEntry({ onSubmit, onClose }) {
                     Payment Collected
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="paymentCollected"
                     value={formData.paymentCollected}
                     onChange={handleChange}

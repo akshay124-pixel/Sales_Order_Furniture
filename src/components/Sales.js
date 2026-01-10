@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { FaEye, FaBell } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
 import { Button, Badge, Popover } from "react-bootstrap";
 import { FaHome, FaWrench, FaIndustry, FaTruck } from "react-icons/fa";
 import { Card } from "react-bootstrap";
@@ -24,44 +24,6 @@ const EditEntry = React.lazy(() => import("./EditEntry"));
 const AddEntry = React.lazy(() => import("./AddEntry"));
 
 // Styled Components
-const NotificationWrapper = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
-const NotificationIcon = styled(FaBell)`
-  font-size: 1.9rem;
-  color: blue;
-  cursor: pointer;
-  transition: transform 0.3s ease, color 0.3s ease;
-  &:hover {
-    transform: scale(1.2);
-    color: #ffd700;
-  }
-`;
-
-const NotificationBadge = styled(Badge)`
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  background: #dc3545;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.2);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-`;
 
 const NotificationPopover = styled(Popover)`
   min-width: 300px;
@@ -129,34 +91,7 @@ const MarkReadButton = styled(Button)`
   }
 `;
 
-const DatePickerWrapper = styled.div`
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  .react-datepicker-wrapper {
-    width: 150px;
-  }
-  .react-datepicker__input-container input {
-    padding: 14px 20px;
-    border-radius: 30px;
-    border: none;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    font-size: 1rem;
-    font-weight: 500;
-    transition: all 0.4s ease;
-    width: 100%;
-    &:focus {
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-      transform: scale(1.02);
-      outline: none;
-    }
-  }
-  .react-datepicker,
-  .react-datepicker-popper {
-    z-index: 1000 !important;
-  }
-`;
+/* DatePickerWrapper removed (was unused) */
 
 // Updated columnWidths array (removed Credit Days width: 100)
 const columnWidths = [
@@ -458,7 +393,6 @@ const Row = React.memo(({ index, style, data }) => {
   } = data;
 
   const order = orders[index];
-  const complete = isOrderComplete(order);
   const firstProduct =
     order.products && order.products[0] ? order.products[0] : {};
   const productDetails = order.products
@@ -466,21 +400,22 @@ const Row = React.memo(({ index, style, data }) => {
     : "-";
   const totalUnitPrice = order.products
     ? order.products.reduce(
-        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-        0
-      )
+      (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+      0
+    )
     : 0;
   const totalQty = order.products
     ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
     : 0;
   const gstValues = order.products
     ? order.products
-        .map((p) => `${p.gst}`)
-        .filter(Boolean)
-        .join(", ")
+      .map((p) => `${p.gst}`)
+      .filter(Boolean)
+      .join(", ")
     : "-";
 
   const getRowBackground = () => {
+    if (order.sostatus === "Order Cancelled") return "#ffe5e5";
     if (isOrderComplete(order)) return "#ffffff";
     if (order.sostatus === "Approved") return "#e6ffed";
     if (order.sostatus === "Accounts Approved") return "#e6f0ff";
@@ -488,6 +423,7 @@ const Row = React.memo(({ index, style, data }) => {
   };
 
   const getHoverBackground = () => {
+    if (order.sostatus === "Order Cancelled") return "#ffcccc";
     if (isOrderComplete(order)) return "#f0f7ff";
     if (order.sostatus === "Approved") return "#d1f7dc";
     if (order.sostatus === "Accounts Approved") return "#d1e4ff";
@@ -519,23 +455,23 @@ const Row = React.memo(({ index, style, data }) => {
           width: columnWidths[2],
           content: order.soDate
             ? new Date(order.soDate).toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })
             : "-",
           title: order.soDate
             ? new Date(order.soDate).toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })
             : "-",
         },
         {
@@ -567,14 +503,14 @@ const Row = React.memo(({ index, style, data }) => {
                 order.sostatus === "Pending for Approval"
                   ? "warning"
                   : order.sostatus === "Accounts Approved"
-                  ? "info"
-                  : order.sostatus === "Approved"
-                  ? "success"
-                  : order.sostatus === "Order Cancelled"
-                  ? "danger"
-                  : order.sostatus === "Hold By Production"
-                  ? "dark"
-                  : "secondary"
+                    ? "info"
+                    : order.sostatus === "Approved"
+                      ? "success"
+                      : order.sostatus === "Order Cancelled"
+                        ? "danger"
+                        : order.sostatus === "Hold By Production"
+                          ? "dark"
+                          : "secondary"
               }
             >
               {order.sostatus || "-"}
@@ -602,7 +538,7 @@ const Row = React.memo(({ index, style, data }) => {
               >
                 <FaEye />
               </Button>
-              {(userRole == "Admin" || userRole == "SuperAdmin") && (
+              {(userRole === "Admin" || userRole === "SuperAdmin") && (
                 <>
                   <button
                     className="editBtn"
@@ -817,10 +753,10 @@ const Row = React.memo(({ index, style, data }) => {
                 order.installationStatus === "Pending"
                   ? "warning"
                   : order.installationStatus === "In Progress"
-                  ? "info"
-                  : order.installationStatus === "Completed"
-                  ? "success"
-                  : "secondary"
+                    ? "info"
+                    : order.installationStatus === "Completed"
+                      ? "success"
+                      : "secondary"
               }
             >
               {order.installationStatus || "-"}
@@ -857,18 +793,18 @@ const Row = React.memo(({ index, style, data }) => {
                 order.dispatchStatus === "Not Dispatched"
                   ? "warning"
                   : order.dispatchStatus === "Docket Awaited Dispatched"
-                  ? "info"
-                  : order.dispatchStatus === "Dispatched"
-                  ? "primary"
-                  : order.dispatchStatus === "Delivered"
-                  ? "success"
-                  : order.dispatchStatus === "Hold by Salesperson"
-                  ? "dark"
-                  : order.dispatchStatus === "Hold by Customer"
-                  ? "light"
-                  : order.dispatchStatus === "Order Cancelled"
-                  ? "danger"
-                  : "secondary"
+                    ? "info"
+                    : order.dispatchStatus === "Dispatched"
+                      ? "primary"
+                      : order.dispatchStatus === "Delivered"
+                        ? "success"
+                        : order.dispatchStatus === "Hold by Salesperson"
+                          ? "dark"
+                          : order.dispatchStatus === "Hold by Customer"
+                            ? "light"
+                            : order.dispatchStatus === "Order Cancelled"
+                              ? "danger"
+                              : "secondary"
               }
             >
               {order.dispatchStatus || "-"}
@@ -903,10 +839,10 @@ const Row = React.memo(({ index, style, data }) => {
                 order.billStatus === "Pending"
                   ? "warning"
                   : order.billStatus === "Under Billing"
-                  ? "info"
-                  : order.billStatus === "Billing Complete"
-                  ? "success"
-                  : "secondary"
+                    ? "info"
+                    : order.billStatus === "Billing Complete"
+                      ? "success"
+                      : "secondary"
               }
             >
               {order.billStatus || "-"}
@@ -923,16 +859,16 @@ const Row = React.memo(({ index, style, data }) => {
                   order.fulfillingStatus === "Under Process"
                     ? "linear-gradient(135deg, #f39c12, #f7c200)" // orange
                     : order.fulfillingStatus === "Pending"
-                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // red
-                    : order.fulfillingStatus === "Partial Dispatch"
-                    ? "linear-gradient(135deg, #00c6ff, #0072ff)" // blue
-                    : order.fulfillingStatus === "Fulfilled"
-                    ? "linear-gradient(135deg, #28a745, #4cd964)" // green
-                    : order.fulfillingStatus === "Order Cancel"
-                    ? "linear-gradient(135deg, #8e0e00, #e52d27)" // dark red for cancel
-                    : order.fulfillingStatus === "Hold"
-                    ? "linear-gradient(135deg, #6a11cb, #2575fc)" // purple-blue for hold
-                    : "linear-gradient(135deg, #6c757d, #a9a9a9)", // default grey
+                      ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // red
+                      : order.fulfillingStatus === "Partial Dispatch"
+                        ? "linear-gradient(135deg, #00c6ff, #0072ff)" // blue
+                        : order.fulfillingStatus === "Fulfilled"
+                          ? "linear-gradient(135deg, #28a745, #4cd964)" // green
+                          : order.fulfillingStatus === "Order Cancel"
+                            ? "linear-gradient(135deg, #8e0e00, #e52d27)" // dark red for cancel
+                            : order.fulfillingStatus === "Hold"
+                              ? "linear-gradient(135deg, #6a11cb, #2575fc)" // purple-blue for hold
+                              : "linear-gradient(135deg, #6c757d, #a9a9a9)", // default grey
               }}
             >
               {order.fulfillingStatus || "Pending"}
@@ -966,14 +902,14 @@ const Row = React.memo(({ index, style, data }) => {
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
               : typeof order.createdBy === "string"
-              ? order.createdBy
-              : "-",
+                ? order.createdBy
+                : "-",
           title:
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
               : typeof order.createdBy === "string"
-              ? order.createdBy
-              : "-",
+                ? order.createdBy
+                : "-",
         },
         {
           width: columnWidths[46],
@@ -1306,7 +1242,7 @@ const Sales = () => {
       socket.emit("join", { userId, role: userRole });
     });
 
-    socket.on("connect_error", (error) => {});
+    socket.on("connect_error", (error) => { });
 
     socket.on("deleteOrder", ({ _id, createdBy, assignedTo }) => {
       const currentUserId = userId;
@@ -1545,26 +1481,26 @@ const Sales = () => {
           const startDateAdjusted =
             start && start instanceof Date && !isNaN(start.getTime())
               ? new Date(
-                  start.getFullYear(),
-                  start.getMonth(),
-                  start.getDate(),
-                  0,
-                  0,
-                  0,
-                  0
-                )
+                start.getFullYear(),
+                start.getMonth(),
+                start.getDate(),
+                0,
+                0,
+                0,
+                0
+              )
               : null;
           const endDateAdjusted =
             end && end instanceof Date && !isNaN(end.getTime())
               ? new Date(
-                  end.getFullYear(),
-                  end.getMonth(),
-                  end.getDate(),
-                  23,
-                  59,
-                  59,
-                  999
-                )
+                end.getFullYear(),
+                end.getMonth(),
+                end.getDate(),
+                23,
+                59,
+                59,
+                999
+              )
               : null;
 
           return (
@@ -1734,7 +1670,7 @@ const Sales = () => {
   const handleAddEntry = useCallback(
     async (newEntry) => {
       setIsAddModalOpen(false);
-      toast.success("New order added!");
+
       await fetchOrders();
       setOrders((prev) => {
         const updatedOrders = [...prev, newEntry];
@@ -1753,7 +1689,7 @@ const Sales = () => {
         return updatedOrders;
       });
       setIsAddModalOpen(false);
-      toast.success("New order added!");
+
       fetchDashboardCounts(); // Refresh counts after add
     },
     [
@@ -1808,7 +1744,7 @@ const Sales = () => {
         return updatedOrders;
       });
       setIsDeleteModalOpen(false);
-      toast.success("Order deleted successfully!");
+
       fetchDashboardCounts(); // Refresh counts after delete
     },
     [
@@ -1912,9 +1848,9 @@ const Sales = () => {
           const headers = parsedData[0].map((h) =>
             h
               ? h
-                  .toLowerCase()
-                  .replace(/\s+/g, "")
-                  .replace(/[^a-z0-9]/g, "")
+                .toLowerCase()
+                .replace(/\s+/g, "")
+                .replace(/[^a-z0-9]/g, "")
               : ""
           );
           const rows = parsedData
@@ -1946,15 +1882,15 @@ const Sales = () => {
                     unitPrice: Number(entry.unitprice) || 0,
                     serialNos: entry.serialnos
                       ? String(entry.serialnos)
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter(Boolean)
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean)
                       : [],
                     modelNos: entry.modelnos
                       ? String(entry.modelnos)
-                          .split(",")
-                          .map((m) => m.trim())
-                          .filter(Boolean)
+                        .split(",")
+                        .map((m) => m.trim())
+                        .filter(Boolean)
                       : [],
                     gst: String(entry.gst || "18").trim(),
                   },
@@ -1970,15 +1906,15 @@ const Sales = () => {
                   unitPrice: Number(entry.unitprice) || 0,
                   serialNos: entry.serialnos
                     ? String(entry.serialnos)
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean)
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean)
                     : [],
                   modelNos: entry.modelnos
                     ? String(entry.modelnos)
-                        .split(",")
-                        .map((m) => m.trim())
-                        .filter(Boolean)
+                      .split(",")
+                      .map((m) => m.trim())
+                      .filter(Boolean)
                     : [],
                   gst: String(entry.gst || "18").trim(),
                 },
@@ -2091,9 +2027,7 @@ const Sales = () => {
             );
             return updatedOrders;
           });
-          toast.success(
-            `Successfully uploaded ${response.data.data.length} orders!`
-          );
+
           fetchDashboardCounts(); // Refresh counts after bulk upload
         } catch (error) {
           console.error("Error uploading entries:", error);
@@ -2173,14 +2107,14 @@ const Sales = () => {
           : "-",
         "Unit Price": order.products
           ? order.products
-              .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
-              .toFixed(2)
+            .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
+            .toFixed(2)
           : "0.00",
         GST: order.products
           ? order.products
-              .map((p) => `${p.gst}`)
-              .filter(Boolean)
-              .join(", ")
+            .map((p) => `${p.gst}`)
+            .filter(Boolean)
+            .join(", ")
           : "-",
         Total: order.total?.toFixed(2) || "0.00",
         "Payment Collected": formatCurrency(order.paymentCollected) || "-",
@@ -2210,8 +2144,8 @@ const Sales = () => {
           order.createdBy && typeof order.createdBy === "object"
             ? order.createdBy.username || "Unknown"
             : typeof order.createdBy === "string"
-            ? order.createdBy
-            : "-",
+              ? order.createdBy
+              : "-",
         Remarks: order.remarks || "-",
       }));
 

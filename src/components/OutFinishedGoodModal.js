@@ -41,8 +41,8 @@ const OutFinishedGoodModal = ({
       const validDispatchStatus = isBillingComplete
         ? dispatchStatus
         : ["Delivered"].includes(dispatchStatus)
-        ? "Not Dispatched"
-        : dispatchStatus;
+          ? "Not Dispatched"
+          : dispatchStatus;
 
       const products =
         entryToEdit.products?.map((product) => ({
@@ -63,8 +63,14 @@ const OutFinishedGoodModal = ({
         dispatchDate: initialData.dispatchDate
           ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
-
-        actualFreight: initialData.actualFreight || "",
+        actualFreight:
+          initialData?.actualFreight !== undefined &&
+            initialData?.actualFreight !== null
+            ? String(initialData.actualFreight)
+            : entryToEdit?.actualFreight !== undefined &&
+              entryToEdit?.actualFreight !== null
+              ? String(entryToEdit.actualFreight)
+              : "",
         dispatchStatus: validDispatchStatus,
         remarksBydispatch: initialData.remarksBydispatch || "",
         installationReport: initialData.installationReport || "No",
@@ -103,8 +109,8 @@ const OutFinishedGoodModal = ({
             value === ""
               ? ""
               : Number(value) >= 0
-              ? value
-              : updatedProducts[index][field],
+                ? value
+                : updatedProducts[index][field],
         };
       } else {
         updatedProducts[index] = {
@@ -274,13 +280,12 @@ const OutFinishedGoodModal = ({
         autoClose: 5000,
       });
     } finally {
-      setLoading(false);
-      setShowConfirm(false);
-    }
-  };
-  const isBillingComplete = entryToEdit?.billStatus === "Billing Complete";
-  const showProductFields =
-    formData.dispatchFrom && formData.dispatchFrom !== "Morinda";
+        setLoading(false);
+        setShowConfirm(false);
+      }
+    };
+    const showProductFields =
+      formData.dispatchFrom && formData.dispatchFrom !== "Morinda";
 
   return (
     <Modal
@@ -353,7 +358,7 @@ const OutFinishedGoodModal = ({
         {[
           { key: "dispatchDate", label: "Dispatch Date", type: "date" },
 
-          { key: "actualFreight", label: "Actual Freight", type: "number" },
+          { key: "actualFreight", label: "Actual Freight", type: "text" },
           {
             key: "transporterDetails",
             label: "Transporter Details",
@@ -422,8 +427,8 @@ const OutFinishedGoodModal = ({
             <Option value="Dispatched">Dispatched</Option>
             {(entryToEdit?.billStatus || "Pending").trim().toLowerCase() ===
               "billing complete" && (
-              <Option value="Delivered">Delivered</Option>
-            )}
+                <Option value="Delivered">Delivered</Option>
+              )}
           </Select>
         </div>
 
@@ -544,7 +549,7 @@ const OutFinishedGoodModal = ({
                       </label>
                       <Input
                         placeholder="Enter quantity"
-                        type="number"
+                        type="text"
                         value={product.qty}
                         onChange={(e) =>
                           handleProductChange(index, "qty", e.target.value)
@@ -571,7 +576,7 @@ const OutFinishedGoodModal = ({
                       </label>
                       <Input
                         placeholder="Enter unit price"
-                        type="number"
+                        type="text"
                         value={product.unitPrice}
                         onChange={(e) =>
                           handleProductChange(
@@ -724,12 +729,12 @@ const OutFinishedGoodModal = ({
                   boxShadow: "0 4px 8px rgba(37, 117, 252, 0.2)",
                 }}
                 onMouseEnter={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 6px 12px rgba(37, 117, 252, 0.3)")
+                (e.target.style.boxShadow =
+                  "0 6px 12px rgba(37, 117, 252, 0.3)")
                 }
                 onMouseLeave={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 4px 8px rgba(37, 117, 252, 0.2)")
+                (e.target.style.boxShadow =
+                  "0 4px 8px rgba(37, 117, 252, 0.2)")
                 }
               >
                 {loading ? "Saving..." : "Confirm"}
@@ -753,8 +758,8 @@ const OutFinishedGoodModal = ({
                 boxShadow: "0 4px 8px rgba(37, 117, 252, 0.2)",
               }}
               onMouseEnter={(e) =>
-                (e.target.style.boxShadow =
-                  "0 6px 12px rgba(37, 117, 252, 0.3)")
+              (e.target.style.boxShadow =
+                "0 6px 12px rgba(37, 117, 252, 0.3)")
               }
               onMouseLeave={(e) =>
                 (e.target.style.boxShadow = "0 4px 8px rgba(37, 117, 252, 0.2)")

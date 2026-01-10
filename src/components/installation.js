@@ -101,8 +101,8 @@ function Installation() {
       filtered = filtered.filter((order) => {
         const productDetails = Array.isArray(order.products)
           ? order.products
-              .map((p) => `${p.productType || ""} (${p.qty || ""})`)
-              .join(", ")
+            .map((p) => `${p.productType || ""} (${p.qty || ""})`)
+            .join(", ")
           : "";
         return (
           (order.orderId || "").toLowerCase().includes(query) ||
@@ -194,17 +194,14 @@ function Installation() {
     if (!viewOrder) return;
     const productsText = Array.isArray(viewOrder.products)
       ? viewOrder.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Size: ${p.size || "N/A"}, Spec: ${
-                p.spec || "N/A"
-              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
-                p.modelNos?.join(", ") || "N/A"
-              })`
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
+            }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${p.modelNos?.join(", ") || "N/A"
+            })`
+        )
+        .join("\n")
       : "N/A";
     const orderText = `
       Order ID: ${viewOrder.orderId || "N/A"}
@@ -236,6 +233,7 @@ function Installation() {
     setEditOrder(order);
     setFormData({
       installationStatus: order.installationStatus || "Pending",
+      installationReport: order.installationReport || "No",
       remarksByInstallation: order.remarksByInstallation || "",
     });
     setErrors({});
@@ -270,18 +268,47 @@ function Installation() {
       );
       if (response.data.success) {
         const updatedOrder = response.data.data;
-        setOrders((prevOrders) =>
-          prevOrders
-            .map((order) =>
-              order._id === editOrder._id ? updatedOrder : order
+
+        const shouldRemoveFromDashboard =
+          updatedOrder.installationStatus === "Completed" &&
+          updatedOrder.installationReport === "Yes";
+
+        if (shouldRemoveFromDashboard) {
+          // 🔥 REMOVE instantly from dashboard
+          setOrders((prev) =>
+            prev.filter((o) => o._id !== editOrder._id)
+          );
+          setFilteredOrders((prev) =>
+            prev.filter((o) => o._id !== editOrder._id)
+          );
+        } else {
+          // 🔁 NORMAL UPDATE
+          const updatedOrderData = {
+            ...editOrder,
+            installationStatus: updatedOrder.installationStatus,
+            installationReport: updatedOrder.installationReport,
+            remarksByInstallation: updatedOrder.remarksByInstallation,
+          };
+
+          setOrders((prev) =>
+            prev.map((o) =>
+              o._id === editOrder._id ? updatedOrderData : o
             )
-            .filter((order) => order.installationStatus !== "Completed")
-        );
+          );
+
+          setFilteredOrders((prev) =>
+            prev.map((o) =>
+              o._id === editOrder._id ? updatedOrderData : o
+            )
+          );
+        }
+
         setShowEditModal(false);
         toast.success("Order updated successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
+
         // No table loading or refetch to avoid spinner; state already updated optimistically
       } else {
         throw new Error(response.data.message || "Failed to update order");
@@ -305,8 +332,8 @@ function Installation() {
     const exportData = filteredOrders.map((order) => {
       const productDetails = Array.isArray(order.products)
         ? order.products
-            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
-            .join(", ")
+          .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+          .join(", ")
         : "N/A";
       return {
         "Order ID": order.orderId || "N/A",
@@ -665,18 +692,18 @@ function Installation() {
                     .map((order, index) => {
                       const productDetails = Array.isArray(order.products)
                         ? order.products
-                            .map(
-                              (p) =>
-                                `${p.productType || "N/A"} (${p.qty || "N/A"})`
-                            )
-                            .join(", ")
+                          .map(
+                            (p) =>
+                              `${p.productType || "N/A"} (${p.qty || "N/A"})`
+                          )
+                          .join(", ")
                         : "N/A";
                       const isOverdue = isDispatchOverdue(order.dispatchDate);
                       const baseBg = isOverdue
                         ? "#fff3cd" // Light yellow for overdue rows
                         : index % 2 === 0
-                        ? "#f8f9fa"
-                        : "#fff";
+                          ? "#f8f9fa"
+                          : "#fff";
                       const hoverBg = isOverdue
                         ? "#ffeaa7" // Darker yellow on hover
                         : "#e9ecef";
@@ -732,12 +759,12 @@ function Installation() {
                           >
                             {order.soDate
                               ? new Date(order.soDate)
-                                  .toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  })
-                                  .replace(/\//g, "/")
+                                .toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })
+                                .replace(/\//g, "/")
                               : "N/A"}
                           </td>
                           <td
@@ -758,12 +785,12 @@ function Installation() {
                           >
                             {order.dispatchDate
                               ? new Date(order.dispatchDate)
-                                  .toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  })
-                                  .replace(/\//g, "/")
+                                .toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })
+                                .replace(/\//g, "/")
                               : "N/A"}
                           </td>
                           <td
@@ -860,8 +887,8 @@ function Installation() {
                                   order.installationReport === "Yes"
                                     ? "linear-gradient(135deg, #28a745, #4cd964)" // green gradient
                                     : order.installationReport === "No"
-                                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // red gradient
-                                    : "linear-gradient(135deg, #6c757d, #a9a9a9)", // grey fallback
+                                      ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // red gradient
+                                      : "linear-gradient(135deg, #6c757d, #a9a9a9)", // grey fallback
                                 color: "#fff",
                                 padding: "5px 10px",
                                 borderRadius: "12px",
@@ -898,12 +925,12 @@ function Installation() {
                                   order.installationStatus === "Pending"
                                     ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
                                     : order.installationStatus === "In Progress"
-                                    ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                                    : order.installationStatus === "Completed"
-                                    ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                    : order.installationStatus === "Failed"
-                                    ? "linear-gradient(135deg, #6c757d, #5a6268)"
-                                    : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                                      ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                                      : order.installationStatus === "Completed"
+                                        ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                        : order.installationStatus === "Failed"
+                                          ? "linear-gradient(135deg, #6c757d, #5a6268)"
+                                          : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                                 color: "#fff",
                                 padding: "5px 10px",
                                 borderRadius: "12px",
@@ -1173,7 +1200,7 @@ function Installation() {
                   Product Info
                 </h3>
                 {Array.isArray(viewOrder.products) &&
-                viewOrder.products.length > 0 ? (
+                  viewOrder.products.length > 0 ? (
                   viewOrder.products.map((product, index) => (
                     <div
                       key={index}
@@ -1302,8 +1329,8 @@ function Installation() {
                   transition: "all 0.3s ease",
                 }}
                 onFocus={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                (e.target.style.boxShadow =
+                  "0 0 10px rgba(37, 117, 252, 0.5)")
                 }
                 onBlur={(e) => (e.target.style.boxShadow = "none")}
               >
@@ -1344,8 +1371,8 @@ function Installation() {
                     transition: "all 0.3s ease",
                   }}
                   onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
@@ -1385,8 +1412,8 @@ function Installation() {
                   transition: "all 0.3s ease",
                 }}
                 onFocus={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                (e.target.style.boxShadow =
+                  "0 0 10px rgba(37, 117, 252, 0.5)")
                 }
                 onBlur={(e) => (e.target.style.boxShadow = "none")}
                 required

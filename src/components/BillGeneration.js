@@ -25,7 +25,6 @@ const BillGeneration = () => {
         }
       );
       setOrders(response.data.data);
-      toast.success("Bill orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching bill orders:", error);
       toast.error("Failed to fetch bill orders!");
@@ -36,11 +35,7 @@ const BillGeneration = () => {
     fetchOrders();
   }, [fetchOrders]);
 
-  useEffect(() => {
-    filterOrders();
-  }, [orders, searchTerm]);
-
-  const filterOrders = () => {
+  const filterOrders = useCallback(() => {
     let filtered = [...orders];
 
     if (searchTerm) {
@@ -48,9 +43,9 @@ const BillGeneration = () => {
       filtered = filtered.filter((order) => {
         const productDetails = order.products
           ? order.products
-              .map((p) => `${p.productType} (${p.qty})`)
-              .join(", ")
-              .toLowerCase()
+            .map((p) => `${p.productType} (${p.qty})`)
+            .join(", ")
+            .toLowerCase()
           : "";
         const total = order.total ? order.total.toFixed(2).toString() : "0.00";
         const soDate = order.soDate
@@ -83,7 +78,11 @@ const BillGeneration = () => {
     });
 
     setFilteredOrders(filtered);
-  };
+  }, [orders, searchTerm]);
+
+  useEffect(() => {
+    filterOrders();
+  }, [filterOrders]);
 
   const handleViewClick = (order) => {
     setSelectedOrder(order);
@@ -102,7 +101,6 @@ const BillGeneration = () => {
         .filter((order) => order.billStatus !== "Billing Complete")
     );
     setIsEditModalOpen(false);
-    toast.success("Order updated successfully!");
   };
 
   const handleExportToXLSX = () => {
@@ -418,8 +416,8 @@ const BillGeneration = () => {
                     >
                       {order.invoiceDate
                         ? new Date(order.invoiceDate).toLocaleDateString(
-                            "en-GB"
-                          )
+                          "en-GB"
+                        )
                         : "-"}
                     </td>
                     <td
@@ -438,8 +436,8 @@ const BillGeneration = () => {
                           order.billStatus === "Pending"
                             ? "warning"
                             : order.billStatus === "Under Billing"
-                            ? "info"
-                            : "success"
+                              ? "info"
+                              : "success"
                         }
                         style={{ padding: "6px 12px", fontSize: "0.9rem" }}
                       >
@@ -510,8 +508,8 @@ const BillGeneration = () => {
                     >
                       {order.products
                         ? order.products
-                            .map((p) => `${p.productType} (${p.qty})`)
-                            .join(", ")
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
                         : "-"}
                     </td>
                     <td
