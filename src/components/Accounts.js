@@ -1078,7 +1078,7 @@ function Accounts() {
                     Payment Collected
                   </Form.Label>
                   <Form.Control
-                    type="number"
+                    type="text"
                     step="0.01"
                     value={formData.paymentCollected}
                     onChange={(e) =>
