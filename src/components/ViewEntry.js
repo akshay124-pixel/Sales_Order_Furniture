@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Modal, Button, Badge, Accordion, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
-import { Copy } from "lucide-react";
+import { Copy, Download } from "lucide-react";
 
 function ViewEntry({ isOpen, onClose, entry }) {
   const [copied, setCopied] = useState(false);
@@ -12,53 +12,133 @@ function ViewEntry({ isOpen, onClose, entry }) {
     cb && typeof cb === "object"
       ? cb.username || "Unknown"
       : typeof cb === "string"
-      ? isObjectId(cb)
-        ? "Sales Order Team"
-        : cb
-      : "N/A",
-  []);
+        ? isObjectId(cb)
+          ? "Sales Order Team"
+          : cb
+        : "N/A",
+    []);
 
+  const isValidPoFilePath = (filePath) => {
+    return (
+      filePath &&
+      typeof filePath === "string" &&
+      filePath.trim() !== "" &&
+      filePath !== "N/A" &&
+      filePath !== "/"
+    );
+  };
+  const handleDownload = async (filePath) => {
+    // Determine path to use: passed arg or default to poFilePath if it's the specific PO check
+    // If filePath is passed (e.g. installation file), use it directly. Otherwise check poFilePath.
+    const targetPath = filePath || entry?.poFilePath;
+
+    if (!isValidPoFilePath(targetPath)) {
+      toast.error("No valid file available to download!");
+      return;
+    }
+
+    try {
+      // Ensure path points to Uploads directory if not already there
+      let processedPath = targetPath;
+      if (!processedPath.includes("Uploads") && !processedPath.startsWith("http")) {
+        processedPath = `/Uploads/${processedPath.startsWith("/") ? processedPath.slice(1) : processedPath}`;
+      }
+
+      const fileUrl = `${process.env.REACT_APP_URL}${processedPath.startsWith("/") ? "" : "/"}${processedPath}`;
+
+      // Validate file URL
+      if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
+        toast.error("Invalid file path provided!");
+        return;
+      }
+
+      const response = await fetch(fileUrl, {
+        method: "GET",
+        headers: {
+          Accept:
+            "application/pdf,image/png,image/jpeg,image/jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const contentType = response.headers.get("content-type");
+      const validTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+
+      if (!contentType || !validTypes.includes(contentType)) {
+        throw new Error("Invalid file type returned from server!");
+      }
+
+      const blob = await response.blob();
+
+      // ✅ FileName fix
+      const extension = contentType.split("/")[1] || "file";
+      const fileName =
+        targetPath.split("/").pop() ||
+        `order_${entry.orderId || "unknown"}.${extension}`;
+
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+
+      toast.success("File download started!");
+    } catch (err) {
+      toast.error("Failed to download file! Check server or file path.");
+      console.error("Download error:", err);
+    }
+  };
   const handleCopy = useCallback(() => {
     if (!entry) return;
 
     const productsText = entry.products
       ? entry.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Size: ${p.size || "N/A"}, Spec: ${
-                p.spec || "N/A"
-              }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${
-                p.gst || "N/A"
-              }, Serial Nos: ${
-                p.serialNos?.length > 0 ? p.serialNos.join(", ") : "N/A"
-              }, Model Nos: ${
-                p.modelNos?.length > 0 ? p.modelNos.join(", ") : "N/A"
-              }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
+            }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${p.gst || "N/A"
+            }, Serial Nos: ${p.serialNos?.length > 0 ? p.serialNos.join(", ") : "N/A"
+            }, Model Nos: ${p.modelNos?.length > 0 ? p.modelNos.join(", ") : "N/A"
+            }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`
+        )
+        .join("\n")
       : "N/A";
 
     const totalUnitPrice = entry.products
       ? entry.products.reduce(
-          (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-          0
-        )
+        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+        0
+      )
       : 0;
 
     const gstText = entry.products
       ? entry.products
-          .map((p) => p.gst)
-          .filter(Boolean)
-          .join(", ")
+        .map((p) => p.gst)
+        .filter(Boolean)
+        .join(", ")
       : "N/A";
 
     const textToCopy = `
 Order ID: ${entry.orderId || "N/A"}
-SO Date: ${
-      entry.soDate ? new Date(entry.soDate).toLocaleDateString("en-GB") : "N/A"
-    }
+SO Date: ${entry.soDate ? new Date(entry.soDate).toLocaleDateString("en-GB") : "N/A"
+      }
 Customer Name: ${entry.customername || "N/A"}
 Contact Person Name: ${entry.name || "N/A"}
 Contact No: ${entry.contactNo || "N/A"}
@@ -73,9 +153,8 @@ Total Unit Price: ₹${totalUnitPrice.toFixed(2)}
 GST: ${gstText}
 Freight Charges: ${entry.freightcs || "N/A"}
 Freight Status: ${entry.freightstatus || "N/A"}
-Actual Freight: ${
-      entry.actualFreight ? `₹${entry.actualFreight.toFixed(2)}` : "N/A"
-    }
+Actual Freight: ${entry.actualFreight ? `₹${entry.actualFreight.toFixed(2)}` : "N/A"
+      }
 Install Charges Status: ${entry.installchargesstatus || "N/A"}
 Installation: ${entry.installation || "N/A"}
 Total: ₹${entry.total?.toFixed(2) || "0.00"}
@@ -94,28 +173,24 @@ Transporter Details: ${entry.transporterDetails || "N/A"}
 Shipping Address: ${entry.shippingAddress || "N/A"}
 Billing Address: ${entry.billingAddress || "N/A"}
 Dispatch From: ${entry.dispatchFrom || "N/A"}
-Dispatch Date: ${
-      entry.dispatchDate
+Dispatch Date: ${entry.dispatchDate
         ? new Date(entry.dispatchDate).toLocaleDateString("en-GB")
         : "N/A"
-    }
+      }
 
-Delivery Date: ${
-      entry.deliveryDate
+Delivery Date: ${entry.deliveryDate
         ? new Date(entry.deliveryDate).toLocaleDateString("en-GB")
         : "N/A"
-    }
-Receipt Date: ${
-      entry.receiptDate
+      }
+Receipt Date: ${entry.receiptDate
         ? new Date(entry.receiptDate).toLocaleDateString("en-GB")
         : "N/A"
-    }
+      }
 Invoice No: ${entry.invoiceNo || "N/A"}
-Invoice Date: ${
-      entry.invoiceDate
+Invoice Date: ${entry.invoiceDate
         ? new Date(entry.invoiceDate).toLocaleDateString("en-GB")
         : "N/A"
-    }
+      }
 Bill Number: ${entry.billNumber || "N/A"}
 PI Number: ${entry.piNumber || "N/A"}
 Bill Status: ${entry.billStatus || "N/A"}
@@ -126,16 +201,14 @@ Dispatch Status: ${entry.dispatchStatus || "N/A"}
 Installation Status: ${entry.installationStatus || "N/A"}
 Completion Status: ${entry.completionStatus || "N/A"}
 
-Demo Date: ${
-      entry.demoDate
+Demo Date: ${entry.demoDate
         ? new Date(entry.demoDate).toLocaleDateString("en-GB")
         : "N/A"
-    }
-Fulfillment Date: ${
-      entry.fulfillmentDate
+      }
+Fulfillment Date: ${entry.fulfillmentDate
         ? new Date(entry.fulfillmentDate).toLocaleDateString("en-GB")
         : "N/A"
-    }
+      }
 Remarks: ${entry.remarks || "N/A"}
 Remarks By Production: ${entry.remarksByProduction || "N/A"}
 Remarks By Accounts: ${entry.remarksByAccounts || "N/A"}
@@ -164,16 +237,16 @@ Created By: ${getCreatedByName(entry.createdBy)}
 
   const totalUnitPrice = entry.products
     ? entry.products.reduce(
-        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-        0
-      )
+      (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+      0
+    )
     : 0;
 
   const gstText = entry.products
     ? entry.products
-        .map((p) => p.gst)
-        .filter(Boolean)
-        .join(", ")
+      .map((p) => p.gst)
+      .filter(Boolean)
+      .join(", ")
     : "N/A";
 
   return (
@@ -283,13 +356,13 @@ Created By: ${getCreatedByName(entry.createdBy)}
                   <strong>SO Date & Time:</strong>{" "}
                   {entry.soDate
                     ? new Date(entry.soDate).toLocaleString("en-GB", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
                     : "N/A"}
                 </div>
                 <div>
@@ -299,12 +372,12 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.orderType === "Demo"
                         ? "warning"
                         : entry.orderType === "B2C"
-                        ? "success"
-                        : entry.orderType === "B2B"
-                        ? "info"
-                        : entry.orderType === "B2G"
-                        ? "primary"
-                        : "secondary"
+                          ? "success"
+                          : entry.orderType === "B2B"
+                            ? "info"
+                            : entry.orderType === "B2G"
+                              ? "primary"
+                              : "secondary"
                     }
                   >
                     {entry.orderType || "N/A"}
@@ -349,10 +422,10 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.sostatus === "Pending for Approval"
                         ? "warning"
                         : entry.sostatus === "Accounts Approved"
-                        ? "info"
-                        : entry.sostatus === "Approved"
-                        ? "success"
-                        : "secondary"
+                          ? "info"
+                          : entry.sostatus === "Approved"
+                            ? "success"
+                            : "secondary"
                     }
                   >
                     {entry.sostatus || "N/A"}
@@ -365,12 +438,12 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.dispatchStatus === "Not Dispatched"
                         ? "warning"
                         : entry.dispatchStatus === "Dispatched"
-                        ? "info"
-                        : entry.dispatchStatus === "Delivered"
-                        ? "success"
-                        : entry.dispatchStatus === "Docket Awaited Dispatched"
-                        ? "primary"
-                        : "secondary"
+                          ? "info"
+                          : entry.dispatchStatus === "Delivered"
+                            ? "success"
+                            : entry.dispatchStatus === "Docket Awaited Dispatched"
+                              ? "primary"
+                              : "secondary"
                     }
                   >
                     {entry.dispatchStatus || "N/A"}
@@ -401,8 +474,8 @@ Created By: ${getCreatedByName(entry.createdBy)}
                   <strong>Production Date:</strong>{" "}
                   {entry.fulfillmentDate
                     ? new Date(entry.fulfillmentDate).toLocaleDateString(
-                        "en-GB"
-                      )
+                      "en-GB"
+                    )
                     : "N/A"}
                 </div>
                 <div>
@@ -637,10 +710,10 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.freightstatus === "Including"
                         ? "success"
                         : entry.freightstatus === "To Pay"
-                        ? "warning"
-                        : entry.freightstatus === "Self-Pickup"
-                        ? "info"
-                        : "primary"
+                          ? "warning"
+                          : entry.freightstatus === "Self-Pickup"
+                            ? "info"
+                            : "primary"
                     }
                   >
                     {entry.freightstatus || "N/A"}
@@ -659,8 +732,10 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.installchargesstatus === "Including"
                         ? "success"
                         : entry.installchargesstatus === "To Pay"
-                        ? "warning"
-                        : "primary"
+                          ? "warning"
+                          : entry.installchargesstatus === "Not in Scope"
+                            ? "warning"
+                            : "primary"
                     }
                   >
                     {entry.installchargesstatus || "N/A"}
@@ -685,12 +760,12 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.paymentMethod === "Cash"
                         ? "success"
                         : entry.paymentMethod === "NEFT"
-                        ? "info"
-                        : entry.paymentMethod === "RTGS"
-                        ? "primary"
-                        : entry.paymentMethod === "Cheque"
-                        ? "warning"
-                        : "secondary"
+                          ? "info"
+                          : entry.paymentMethod === "RTGS"
+                            ? "primary"
+                            : entry.paymentMethod === "Cheque"
+                              ? "warning"
+                              : "secondary"
                     }
                   >
                     {entry.paymentMethod || "N/A"}
@@ -717,10 +792,10 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.paymentTerms === "100% Advance"
                         ? "success"
                         : entry.paymentTerms === "Partial Advance"
-                        ? "info"
-                        : entry.paymentTerms === "Credit"
-                        ? "warning"
-                        : "secondary"
+                          ? "info"
+                          : entry.paymentTerms === "Credit"
+                            ? "warning"
+                            : "secondary"
                     }
                   >
                     {entry.paymentTerms || "N/A"}
@@ -759,10 +834,10 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.billStatus === "Pending"
                         ? "warning"
                         : entry.billStatus === "Under Billing"
-                        ? "info"
-                        : entry.billStatus === "Billing Complete"
-                        ? "success"
-                        : "secondary"
+                          ? "info"
+                          : entry.billStatus === "Billing Complete"
+                            ? "success"
+                            : "secondary"
                     }
                   >
                     {entry.billStatus || "N/A"}
@@ -823,12 +898,12 @@ Created By: ${getCreatedByName(entry.createdBy)}
                         entry.fulfillingStatus === "Under Process"
                           ? "linear-gradient(135deg, #f39c12, #f7c200)"
                           : entry.fulfillingStatus === "Pending"
-                          ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                          : entry.fulfillingStatus === "Partial Dispatch"
-                          ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                          : entry.fulfillingStatus === "Fulfilled"
-                          ? "linear-gradient(135deg, #28a745, #4cd964)"
-                          : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                            : entry.fulfillingStatus === "Partial Dispatch"
+                              ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                              : entry.fulfillingStatus === "Fulfilled"
+                                ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                       color: "#fff",
                       padding: "5px 10px",
                       borderRadius: "12px",
@@ -885,12 +960,12 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.installationStatus === "Pending"
                         ? "warning"
                         : entry.installationStatus === "In Progress"
-                        ? "info"
-                        : entry.installationStatus === "Completed"
-                        ? "success"
-                        : entry.installationStatus === "Failed"
-                        ? "danger"
-                        : "secondary"
+                          ? "info"
+                          : entry.installationStatus === "Completed"
+                            ? "success"
+                            : entry.installationStatus === "Failed"
+                              ? "danger"
+                              : "secondary"
                     }
                   >
                     {entry.installationStatus || "N/A"}
@@ -903,13 +978,51 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.installationReport === "Yes"
                         ? "success"
                         : entry.installationReport === "No"
-                        ? "danger"
-                        : "secondary"
+                          ? "danger"
+                          : "secondary"
                     }
                   >
                     {entry.installationReport || "No"}
                   </Badge>
+                </div><div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <strong>Installation Report:</strong>
+                  {entry.installationFile ? (
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={() => handleDownload(entry.installationFile)}
+                      style={{
+                        background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                        padding: "6px 14px",
+                        borderRadius: "20px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        color: "#ffffff",
+                        border: "none",
+                        boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = "translateY(-1px) scale(1.02)";
+                        e.target.style.boxShadow = "0 5px 12px rgba(0,0,0,0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = "translateY(0) scale(1)";
+                        e.target.style.boxShadow = "0 3px 8px rgba(0,0,0,0.2)";
+                      }}
+                    >
+                      <Download size={14} />
+                      Download Report
+                    </Button>
+                  ) : (
+                    "N/A"
+                  )}
                 </div>
+
                 <div>
                   <strong>Remarks (Installation):</strong>{" "}
                   {entry.remarksByInstallation || "N/A"}
@@ -925,10 +1038,10 @@ Created By: ${getCreatedByName(entry.createdBy)}
                       entry.company === "Promark"
                         ? "success"
                         : entry.company === "Foxmate"
-                        ? "info"
-                        : entry.company === "Promine"
-                        ? "warning"
-                        : "primary"
+                          ? "info"
+                          : entry.company === "Promine"
+                            ? "warning"
+                            : "primary"
                     }
                   >
                     {entry.company || "N/A"}
@@ -937,6 +1050,7 @@ Created By: ${getCreatedByName(entry.createdBy)}
                 <div>
                   <strong>Dispatch From:</strong> {entry.dispatchFrom || "N/A"}
                 </div>
+
                 <div>
                   <strong>Transporter Details:</strong>{" "}
                   {entry.transporterDetails || "N/A"}
@@ -983,4 +1097,3 @@ Created By: ${getCreatedByName(entry.createdBy)}
 }
 
 export default ViewEntry;
- 

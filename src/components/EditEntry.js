@@ -2536,6 +2536,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="To Pay">To Pay</option>
             <option value="Including">Including</option>
             <option value="Extra">Extra</option>
+             <option value="Not in Scope">Not in Scope</option>
           </Form.Select>
           <Form.Control.Feedback type="invalid">
             {errors.installchargesstatus?.message}

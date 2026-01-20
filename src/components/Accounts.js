@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import ViewEntry from "./ViewEntry";
 
-function Accounts() {
+function Accounts() { 
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);

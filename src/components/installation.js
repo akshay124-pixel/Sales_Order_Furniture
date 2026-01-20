@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
-import { FaEye, FaTimes } from "react-icons/fa";
+import { FaEye, FaTimes, FaEnvelope, FaDownload } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import "../App.css";
@@ -21,12 +21,61 @@ function Installation() {
     installationStatus: "Pending",
     remarksByInstallation: "",
   });
+  const [currentFile, setCurrentFile] = useState(null);
   const [errors, setErrors] = useState({});
+  const [mailingInProgress, setMailingInProgress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [salesPersonFilter, setSalesPersonFilter] = useState("All");
+
+  const handleDownload = async (filePath) => {
+    if (!filePath || typeof filePath !== "string") {
+      toast.error("Invalid file path!");
+      return;
+    }
+
+    try {
+      // Ensure path points to Uploads directory if not already there
+      let processedPath = filePath;
+      if (!processedPath.includes("Uploads") && !processedPath.startsWith("http")) {
+        processedPath = `/Uploads/${processedPath.startsWith("/") ? processedPath.slice(1) : processedPath}`;
+      }
+
+      const fileUrl = `${process.env.REACT_APP_URL}${processedPath.startsWith("/") ? "" : "/"}${processedPath}`;
+
+      const response = await fetch(fileUrl, {
+        method: "GET",
+        headers: {
+          Accept:
+            "application/pdf,image/png,image/jpeg,image/jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch file");
+      }
+
+      const blob = await response.blob();
+      const contentType = response.headers.get("content-type") || "application/octet-stream";
+      const extension = contentType.split("/")[1] || "file";
+      const fileName = filePath.split("/").pop() || `download.${extension}`;
+
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+
+      toast.success("Download started!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Download failed. Check server.");
+    }
+  };
 
   const fetchInstallationOrders = useCallback(async () => {
     setInitialLoading(true);
@@ -235,7 +284,9 @@ function Installation() {
       installationStatus: order.installationStatus || "Pending",
       installationReport: order.installationReport || "No",
       remarksByInstallation: order.remarksByInstallation || "",
+      installationFile: null,
     });
+    setCurrentFile(order.installationFile || null);
     setErrors({});
     setShowEditModal(true);
   };
@@ -248,6 +299,24 @@ function Installation() {
     ) {
       newErrors.remarksByInstallation = "Remarks are required";
     }
+
+    if (
+      formData.installationStatus === "Completed" &&
+      formData.installationReport === "Yes" &&
+      !formData.installationFile &&
+      !currentFile
+    ) {
+      newErrors.installationFile =
+        "Please upload Installation Report file. It is mandatory when report is marked Yes.";
+      toast.warning(
+        "Please upload Installation Report file. It is mandatory when report is marked Yes.",
+        {
+          position: "top-right",
+          autoClose: 5000,
+        }
+      );
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -257,12 +326,22 @@ function Installation() {
     if (!validateForm()) return;
 
     try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("installationStatus", formData.installationStatus);
+      formDataToSend.append("installationReport", formData.installationReport || "No");
+      formDataToSend.append("remarksByInstallation", formData.remarksByInstallation);
+
+      if (formData.installationFile) {
+        formDataToSend.append("installationFile", formData.installationFile);
+      }
+
       const response = await axios.put(
         `${process.env.REACT_APP_URL}/api/edit/${editOrder?._id}`,
-        formData,
+        formDataToSend,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -320,6 +399,32 @@ function Installation() {
       });
     }
   };
+
+  // Send Mail
+  const handleSendMail = useCallback(async (order) => {
+    setMailingInProgress(order._id);
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_URL}/api/send-completion-mail`,
+        { orderId: order._id },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(`Mail sent for Order #${order.orderId || order._id}`);
+      } else {
+        toast.error(response.data.message || "Failed to send mail");
+      }
+    } catch (error) {
+      console.error("Mail Error:", error);
+      toast.error("Error sending mail");
+    } finally {
+      setMailingInProgress("");
+    }
+  }, []);
+
   const handleClearFilters = () => {
     setSearchQuery("");
     setStatusFilter("All");
@@ -1023,7 +1128,31 @@ function Installation() {
                                 >
                                   <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
                                 </svg>
-                              </button>
+                              </button> <Button
+                                variant="info"
+                                onClick={() => handleSendMail(order)}
+                                disabled={mailingInProgress === order._id}
+                                className="mail-btn"
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  borderRadius: "50%",
+                                  padding: "0",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  background: "linear-gradient(135deg, #0dcaf0, #0aa2c0)",
+                                  border: "none",
+                                }}
+                                title="Send Installation Assignment Mail"
+                              >
+                                {mailingInProgress === order._id ? (
+                                  <Spinner animation="border" size="sm" style={{ color: "white" }} />
+                                ) : (
+                                  <FaEnvelope style={{ color: "white", fontSize: "16px" }} />
+                                )}
+                              </Button>
+
                             </div>
                           </td>
                         </tr>
@@ -1156,6 +1285,51 @@ function Installation() {
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Installation Report:</strong>{" "}
+                    {viewOrder.installationFile ? (
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          marginTop: "5px",
+                        }}
+                      >
+                        <Button
+                          size="sm"
+                          onClick={() => handleDownload(viewOrder.installationFile)}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "6px 14px",
+                            borderRadius: "20px",
+                            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                            color: "#fff",
+                            fontWeight: "600",
+                            fontSize: "0.85rem",
+                            border: "none",
+                            boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+                            transition: "all 0.3s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = "translateY(-1px) scale(1.02)";
+                            e.target.style.boxShadow = "0 5px 12px rgba(0,0,0,0.3)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0) scale(1)";
+                            e.target.style.boxShadow = "0 3px 8px rgba(0,0,0,0.2)";
+                          }}
+                        >
+                          <FaDownload size={12} />
+                          Download Report
+                        </Button>
+                      </div>
+                    ) : (
+                      "N/A"
+                    )}
+
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Shipping Address:</strong>{" "}
@@ -1387,6 +1561,104 @@ function Installation() {
                 )}
               </Form.Group>
             )}
+            {formData.installationStatus === "Completed" && (
+              <Form.Group style={{ marginBottom: "20px" }}>
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                  Upload Installation Report File <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+
+                <div
+                  style={{
+                    border: errors.installationFile ? "2px dashed red" : "2px dashed #6a11cb",
+                    borderRadius: "12px",
+                    padding: "15px",
+                    textAlign: "center",
+                    background: "#f8f9ff",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Form.Control
+                    type="file"
+                    accept=".pdf,.jpg,.png,.jpeg,.doc,.docx"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        installationFile: e.target.files[0],
+                      })
+                    }
+
+                    style={{ display: "none" }}
+                    id="installationFileUpload"
+                  />
+
+                  <label htmlFor="installationFileUpload" style={{ cursor: "pointer", width: "100%" }}>
+                    <div style={{ fontSize: "0.95rem", color: "#333", fontWeight: "600" }}>
+                      {formData.installationFile
+                        ? `Selected: ${formData.installationFile.name}`
+                        : "Click to upload Installation Report (PDF / Image / Doc)"}
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                      Max size as per server limit
+                    </div>
+                  </label>
+                </div>
+                {errors.installationFile && (
+                  <Form.Text style={{ color: "red", fontSize: "0.875rem", display: "block", marginTop: "5px" }}>
+                    {errors.installationFile}
+                  </Form.Text>
+                )}
+              </Form.Group>
+            )}
+
+            {currentFile && (
+              <div
+                style={{
+                  marginBottom: "20px",
+                  padding: "10px",
+                  background: "#eef2f7",
+                  borderRadius: "8px",
+                  borderLeft: "4px solid #2575fc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between"
+                }}
+              >
+                <span style={{ fontWeight: "600", marginRight: "10px", color: "#333" }}>
+                  Current Report:
+                </span>
+                <Button
+                  size="sm"
+                  onClick={() => handleDownload(currentFile)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "6px 14px",
+                    borderRadius: "20px",
+                    background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                    color: "#fff",
+                    fontWeight: "600",
+                    fontSize: "0.85rem",
+                    border: "none",
+                    boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = "translateY(-1px) scale(1.02)";
+                    e.target.style.boxShadow = "0 5px 12px rgba(0,0,0,0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = "translateY(0) scale(1)";
+                    e.target.style.boxShadow = "0 3px 8px rgba(0,0,0,0.2)";
+                  }}
+                >
+                  <FaDownload size={12} />
+                  Download File
+                </Button>
+              </div>
+            )}
+
+
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                 Remarks by Installation <span style={{ color: "red" }}>*</span>

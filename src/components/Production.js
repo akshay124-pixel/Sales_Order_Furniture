@@ -452,6 +452,88 @@ const Production = () => {
       `Production_Orders_${new Date().toISOString().split("T")[0]}.xlsx`
     );
   }, [filteredOrders]);
+
+  const isValidPoFilePath = (filePath) => {
+    return (
+      filePath &&
+      typeof filePath === "string" &&
+      filePath.trim() !== "" &&
+      filePath !== "N/A" &&
+      filePath !== "/"
+    );
+  };
+
+  const handleDownload = async (filePath) => {
+    if (!isValidPoFilePath(filePath)) {
+      toast.error("No valid file available to download!");
+      return;
+    }
+
+    try {
+      // Ensure path points to Uploads directory if not already there
+      let processedPath = filePath;
+      if (!processedPath.includes("Uploads") && !processedPath.startsWith("http")) {
+        processedPath = `/Uploads/${processedPath.startsWith("/") ? processedPath.slice(1) : processedPath}`;
+      }
+
+      const fileUrl = `${process.env.REACT_APP_URL}${processedPath.startsWith("/") ? "" : "/"}${processedPath}`;
+
+      // Validate file URL
+      if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
+        toast.error("Invalid file path provided!");
+        return;
+      }
+
+      const response = await fetch(fileUrl, {
+        method: "GET",
+        headers: {
+          Accept:
+            "application/pdf,image/png,image/jpeg,image/jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const contentType = response.headers.get("content-type");
+      const validTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+
+      if (!contentType || !validTypes.includes(contentType)) {
+        throw new Error("Invalid file type returned from server!");
+      }
+
+      const blob = await response.blob();
+      const extension = contentType.split("/")[1] || "file";
+      const fileName =
+        filePath.split("/").pop() ||
+        `order_${viewOrder?.orderId || "unknown"}.${extension}`;
+
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+
+      toast.success("File download started!");
+    } catch (err) {
+      toast.error("Failed to download file! Check server or file path.");
+      console.error("Download error:", err);
+    }
+  };
   const totalPending = filteredOrders.filter(
     (order) => order.fulfillingStatus === "Pending"
   ).length;
@@ -1731,6 +1813,28 @@ const Production = () => {
                       {viewOrder.dispatchFrom || "N/A"}
                     </span>
                   </div>
+                  {viewOrder.installationFile && (
+                    <div style={{ marginTop: "15px" }}>
+                      <strong>Installation Report: </strong>
+                      <Button
+                        variant="info"
+                        size="sm"
+                        onClick={() => handleDownload(viewOrder.installationFile)}
+                        style={{
+                          background: "linear-gradient(135deg, #17a2b8, #138496)",
+                          border: "none",
+                          color: "white",
+                          marginLeft: "10px",
+                          borderRadius: "20px",
+                          padding: "5px 15px",
+                          fontSize: "0.9rem",
+                          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        Download Report 📥
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div
                   style={{
