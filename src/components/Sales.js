@@ -3,7 +3,6 @@ import { FaEye } from "react-icons/fa";
 import { Button, Badge, Popover } from "react-bootstrap";
 import { FaHome, FaWrench, FaIndustry, FaTruck } from "react-icons/fa";
 import { Card } from "react-bootstrap";
-
 import FilterSection from "./FilterSection";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
@@ -2187,6 +2186,7 @@ const Sales = () => {
       "billingAddress",
       "billStatus",
       "dispatchStatus",
+      "installationReport"
     ];
 
     // Check if all required fields are present and valid
@@ -2250,6 +2250,10 @@ const Sales = () => {
       if (field === "dispatchStatus") {
         // Require dispatch to be delivered
         return value === "Delivered";
+      }
+      if (field === "installationReport") {
+        // Require installation report to be delivered
+        return value === "Yes";
       }
 
       // For other fields, ensure they are non-empty strings
